@@ -1,4 +1,4 @@
-package soccorso_web;
+package jakarta_configuration.resources;
 
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
