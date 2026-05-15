@@ -1,4 +1,4 @@
-package com.mycompany.webengigneering.resources;
+package soccorso_web.resources;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
