@@ -1,4 +1,4 @@
-<! DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset = "UTF-8"<
@@ -7,3 +7,4 @@
 <body>
     <h1></h1>
 </body>
+</html>
