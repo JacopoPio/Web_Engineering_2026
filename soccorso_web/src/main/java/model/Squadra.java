@@ -21,8 +21,8 @@ public class Squadra {
     @OneToMany(mappedBy = "squadra")
     private List<Operatore> operatori = new ArrayList<>();
     
-    @OneToOne(mappedBy = "squadra")
-    private Missione missione;
+    @OneToMany(mappedBy = "squadra")
+    private List<Missione> missione = new ArrayList<>();
     
     public Squadra()
     {
@@ -49,10 +49,7 @@ public class Squadra {
     public void setNome(String nome) {
         this.nome = nome;
     }
-    public Squadra()
-    {
-        super();
-    }
+ 
     @Override
     public int hashCode() {
         int hash = 7;

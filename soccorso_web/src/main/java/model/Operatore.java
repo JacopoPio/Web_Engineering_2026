@@ -32,7 +32,6 @@ public class Operatore {
     
     private String indirizzo;
     private boolean caposquadra;
-    private int id_squadra;
     
     @ManyToOne
     @JoinColumn(name = "id_squadra")
