@@ -5,18 +5,27 @@
 package model;
 
 import java.util.Objects;
+import jakarta.persistence.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table(name = "richiesta")
 public class Richiesta {
+    
+    @Id
     private String email_segnalante;
     private String descrizione;
     private String indirizzo;
     private String stato;
     private String pathFoto;
 
+    public Richiesta()
+    {
+        super();
+    }
     public String getEmail_segnalante() {
         return this.email_segnalante;
     }
@@ -68,7 +77,7 @@ public class Richiesta {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.email_segnalante);
+        hash = 89 * hash + this.email_segnalante.hashCode();
         return hash;
     }
 

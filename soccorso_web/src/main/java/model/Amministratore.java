@@ -6,12 +6,17 @@ package model;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import jakarta.persistence.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table(name = "amministratore")
 public class Amministratore {
+    
+    @Id
     private String email;
     private String nome;
     private String cognome;
@@ -92,7 +97,7 @@ public class Amministratore {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 31 * hash + Objects.hashCode(this.email);
+        hash = 31 * hash + this.email.hashCode();
         return hash;
     }
 

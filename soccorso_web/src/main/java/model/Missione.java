@@ -24,8 +24,8 @@ public class Missione {
     @ManyToMany
     @JoinTable(
             name = "missione_mezzo",
-            joinColumns = @JoinColumn(name = "targa_mezzo"),
-            inverseJoinColumns = @JoinColumn(name = "id_missione")
+            joinColumns = @JoinColumn(name = "id_missione"),
+            inverseJoinColumns = @JoinColumn(name = "targa_mezzo")
     )
     private List<Mezzo> mezzi = new ArrayList<>();
     @ManyToMany

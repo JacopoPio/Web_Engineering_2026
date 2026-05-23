@@ -3,16 +3,26 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package model;
+import jakarta.persistence.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table(name = "materiale")
 public class Materiale {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String tipo;
     private String descrizione;
-
+    
+    public Materiale()
+    {
+        super();
+    }
     public Materiale(int id, String tipo, String descrizione) {
         this.id = id;
         this.tipo = tipo;

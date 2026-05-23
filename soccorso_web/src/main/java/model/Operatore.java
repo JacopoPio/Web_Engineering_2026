@@ -6,22 +6,37 @@ package model;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import jakarta.persistence.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table (name = "operatore")
 public class Operatore {
+    @Id
     private String email;
+    
+    @Column (name = "password")
     private String password;
     private String nome;
     private String cognome;
     private String CF;
+    
+    @Column(name = "data_nascita")
     private LocalDate data_nascita;
+    
+    @Column(name = "città_di_nascita")
     private String città_di_nascita;
+    
     private String indirizzo;
     private boolean caposquadra;
     private int id_squadra;
+    
+    @ManyToOne
+    @JoinColumn(name = "id_squadra")
+    private Squadra squadra;
     
     public Operatore()
     {

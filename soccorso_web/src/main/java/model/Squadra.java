@@ -3,15 +3,31 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package model;
+import java.util.*;
+import jakarta.persistence.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table(name = "squadra")
 public class Squadra {
-    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String nome;
+    
+    @OneToMany(mappedBy = "squadra")
+    private List<Operatore> operatori = new ArrayList<>();
+    
+    @OneToOne(mappedBy = "squadra")
+    private Missione missione;
+    
+    public Squadra()
+    {
+        super();
+    }
 
     public Squadra(int id, String nome) {
         this.id = id;
@@ -33,7 +49,10 @@ public class Squadra {
     public void setNome(String nome) {
         this.nome = nome;
     }
-
+    public Squadra()
+    {
+        super();
+    }
     @Override
     public int hashCode() {
         int hash = 7;
