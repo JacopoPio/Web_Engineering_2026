@@ -3,18 +3,24 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package model;
-
-import java.util.Objects;
+import jakarta.persistence.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table(name = "patente")
 public class Patente {
+    @Id
     private String tipo;
 
     public Patente(String tipo) {
         this.tipo = tipo;
+    }
+    public Patente()
+    {
+        super();
     }
 
     public String getTipo() {
@@ -28,7 +34,7 @@ public class Patente {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 37 * hash + Objects.hashCode(this.tipo);
+        hash = 37 * hash + this.tipo.hashCode();
         return hash;
     }
 

@@ -5,16 +5,27 @@
 package model;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.*;
+import java.util.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table(name = "aggiornamento")
 public class Aggiornamento {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String descrizione;
     private LocalDateTime data_update;
-
+    
+    
+    @ManyToMany(mappedBy = "aggiornamenti")
+    private List<Missione> missioni = new ArrayList<>();
+    
+    
     public Aggiornamento(int id, String descrizione, LocalDateTime data_update) {
         this.id = id;
         this.descrizione = descrizione;

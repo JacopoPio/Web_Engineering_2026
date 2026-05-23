@@ -4,13 +4,16 @@
  */
 package model;
 
-import java.util.Objects;
+import jakarta.persistence.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table(name = "abilita")
 public class Abilita {
+    @Id
     private String nome;
 
     public Abilita(String nome) {
@@ -28,7 +31,7 @@ public class Abilita {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 17 * hash + Objects.hashCode(this.nome);
+        hash = 17 * hash + this.nome.hashCode();
         return hash;
     }
 

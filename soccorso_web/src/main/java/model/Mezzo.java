@@ -3,20 +3,29 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package model;
-
-import java.util.Objects;
+import jakarta.persistence.*;
+import java.util.*;
 
 /**
  *
  * @author Jacopo Antonio
  */
+@Entity
+@Table(name = "mezzo")
 public class Mezzo {
-    private String tipo;
+    @Id
     private String targa;
+    private String tipo;
+    @ManyToMany(mappedBy = "mezzi")
+    private List<Missione> missioni = new ArrayList<>();
 
     public Mezzo(String tipo, String targa) {
         this.tipo = tipo;
         this.targa = targa;
+    }
+    public Mezzo()
+    {
+        super();
     }
 
     public String getTipo() {
@@ -53,7 +62,7 @@ public class Mezzo {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 11 * hash + Objects.hashCode(this.targa);
+        hash = 11 * hash + this.targa.hashCode();
         return hash;
     }
     
