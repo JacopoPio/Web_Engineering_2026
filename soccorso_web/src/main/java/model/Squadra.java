@@ -21,12 +21,28 @@ public class Squadra {
     @OneToMany(mappedBy = "squadra")
     private List<Operatore> operatori = new ArrayList<>();
     
-    @OneToMany(mappedBy = "squadra")
+    @OneToOne(mappedBy = "squadra")
     private List<Missione> missione = new ArrayList<>();
     
     public Squadra()
     {
         super();
+    }
+
+    public List<Operatore> getOperatori() {
+        return this.operatori;
+    }
+
+    public void setOperatori(List<Operatore> operatori) {
+        this.operatori = operatori;
+    }
+
+    public List<Missione> getMissione() {
+        return this.missione;
+    }
+
+    public void setMissione(List<Missione> missione) {
+        this.missione = missione;
     }
 
     public Squadra(int id, String nome) {

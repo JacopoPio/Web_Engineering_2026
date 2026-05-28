@@ -29,7 +29,7 @@ public class Richiesta {
     public String getEmail_segnalante() {
         return this.email_segnalante;
     }
-
+    
     public void setEmail_segnalante(String email_segnalante) {
         this.email_segnalante = email_segnalante;
     }

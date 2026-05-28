@@ -5,8 +5,8 @@
 package model;
 
 import java.time.LocalDate;
-import java.util.Objects;
 import jakarta.persistence.*;
+import java.util.*;
 
 /**
  *
@@ -25,9 +25,29 @@ public class Amministratore {
     private String CF;
     private String indirizzo;
     private String password;
+    @ManyToMany(mappedBy = "amministratori")
+    private List<Patente> patenti = new ArrayList<>();
+    @ManyToMany(mappedBy = "amministratori")
+    private List<Abilita> abilita = new ArrayList<>();
     public Amministratore()
     {
         super();
+    }
+
+    public List<Patente> getPatenti() {
+        return this.patenti;
+    }
+
+    public void setPatenti(List<Patente> patenti) {
+        this.patenti = patenti;
+    }
+
+    public List<Abilita> getAbilita() {
+        return this.abilita;
+    }
+
+    public void setAbilita(List<Abilita> abilita) {
+        this.abilita = abilita;
     }
 
     public String getEmail() {

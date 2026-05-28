@@ -19,6 +19,14 @@ public class Mezzo {
     @ManyToMany(mappedBy = "mezzi")
     private List<Missione> missioni = new ArrayList<>();
 
+    public List<Missione> getMissioni() {
+        return this.missioni;
+    }
+
+    public void setMissioni(List<Missione> missioni) {
+        this.missioni = missioni;
+    }
+
     public Mezzo(String tipo, String targa) {
         this.tipo = tipo;
         this.targa = targa;

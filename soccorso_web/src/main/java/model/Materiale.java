@@ -4,6 +4,7 @@
  */
 package model;
 import jakarta.persistence.*;
+import java.util.*;
 
 /**
  *
@@ -28,13 +29,22 @@ public class Materiale {
         this.tipo = tipo;
         this.descrizione = descrizione;
     }
-
+    @ManyToMany(mappedBy = "materiali")
+    private List<Missione> missioni = new ArrayList<>();
     public int getId() {
         return this.id;
     }
 
     public String getTipo() {
         return this.tipo;
+    }
+
+    public List<Missione> getMissioni() {
+        return this.missioni;
+    }
+
+    public void setMissioni(List<Missione> missioni) {
+        this.missioni = missioni;
     }
 
     public String getDescrizione() {

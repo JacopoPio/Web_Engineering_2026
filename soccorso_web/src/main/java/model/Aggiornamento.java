@@ -32,6 +32,14 @@ public class Aggiornamento {
         this.data_update = data_update;
     }
 
+    public List<Missione> getMissioni() {
+        return this.missioni;
+    }
+
+    public void setMissioni(List<Missione> missioni) {
+        this.missioni = missioni;
+    }
+
     public int getId() {
         return this.id;
     }

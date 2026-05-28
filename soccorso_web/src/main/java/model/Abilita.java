@@ -5,6 +5,7 @@
 package model;
 
 import jakarta.persistence.*;
+import java.util.*;
 
 /**
  *
@@ -15,9 +16,38 @@ import jakarta.persistence.*;
 public class Abilita {
     @Id
     private String nome;
-
+    @ManyToMany
+    @JoinTable(
+            name = "amministratore_abilità",
+            joinColumns = @JoinColumn(name = "email_amministratore"),
+            inverseJoinColumns = @JoinColumn(name = "nome_abilita")
+    )
+    private List<Amministratore> amministratori = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "operatore_abilità",
+            joinColumns = @JoinColumn(name = "email_operatore"),
+            inverseJoinColumns = @JoinColumn(name = "nome_abilita")
+    )
+    private List<Operatore> operatori = new ArrayList<>();
     public Abilita(String nome) {
         this.nome = nome;
+    }
+
+    public List<Amministratore> getAmministratori() {
+        return this.amministratori;
+    }
+
+    public void setAmministratori(List<Amministratore> amministratori) {
+        this.amministratori = amministratori;
+    }
+
+    public List<Operatore> getOperatori() {
+        return this.operatori;
+    }
+
+    public void setOperatori(List<Operatore> operatori) {
+        this.operatori = operatori;
     }
 
     public String getNome() {
@@ -46,5 +76,8 @@ public class Abilita {
         Abilita a = (Abilita) obj;
         return this.nome.equalsIgnoreCase(a.nome);
     }
-    
+    @Override
+    public String toString() {
+        return "Abilita: " + nome + '\n';
+    }
 }

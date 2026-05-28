@@ -35,6 +35,50 @@ public class Missione {
             inverseJoinColumns = @JoinColumn(name = "id_aggiornamento")
     )
     private List<Aggiornamento> aggiornamenti = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "missione_materiale",
+            joinColumns = @JoinColumn(name = "id_missione"),
+            inverseJoinColumns = @JoinColumn(name = "id_materiale")
+    )
+    private List<Materiale> materiali = new ArrayList<>();
+    @OneToOne
+    @JoinColumn(name = "missione")
+    private Squadra squadra;
+
+    public List<Mezzo> getMezzi() {
+        return this.mezzi;
+    }
+
+    public Squadra getSquadra() {
+        return this.squadra;
+    }
+
+    public void setSquadra(Squadra squadra) {
+        this.squadra = squadra;
+    }
+    
+
+    public void setMezzi(List<Mezzo> mezzi) {
+        this.mezzi = mezzi;
+    }
+
+    public List<Aggiornamento> getAggiornamenti() {
+        return this.aggiornamenti;
+    }
+
+    public void setAggiornamenti(List<Aggiornamento> aggiornamenti) {
+        this.aggiornamenti = aggiornamenti;
+    }
+
+    public List<Materiale> getMateriali() {
+        return this.materiali;
+    }
+
+    public void setMateriali(List<Materiale> materiali) {
+        this.materiali = materiali;
+    }
+    
     public Missione()
     {
         super();

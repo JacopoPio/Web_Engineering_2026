@@ -5,7 +5,7 @@
 package model;
 
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.*;
 import jakarta.persistence.*;
 
 /**
@@ -37,6 +37,10 @@ public class Operatore {
     @JoinColumn(name = "id_squadra")
     private Squadra squadra;
     
+    @ManyToMany(mappedBy="operatori")
+    private List<Abilita> abilita = new ArrayList<>();
+    @ManyToMany(mappedBy="operatori")
+    private List<Patente> patente = new ArrayList<>();
     public Operatore()
     {
         super();
@@ -47,6 +51,22 @@ public class Operatore {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public List<Abilita> getAbilita() {
+        return this.abilita;
+    }
+
+    public void setAbilita(List<Abilita> abilita) {
+        this.abilita = abilita;
+    }
+
+    public List<Patente> getPatente() {
+        return this.patente;
+    }
+
+    public void setPatente(List<Patente> patente) {
+        this.patente = patente;
     }
 
     public String getPassword() {
@@ -113,18 +133,18 @@ public class Operatore {
         this.caposquadra = caposquadra;
     }
 
-    public int getId_squadra() {
-        return this.id_squadra;
+    public Squadra getSquadra() {
+        return squadra;
     }
 
-    public void setId_squadra(int id_squadra) {
-        this.id_squadra = id_squadra;
+    public void setSquadra(Squadra squadra) {
+        this.squadra = squadra;
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 53 * hash + Objects.hashCode(this.email);
+        hash = 53 * hash + this.email.hashCode();
         return hash;
     }
 
@@ -150,7 +170,7 @@ public class Operatore {
                 "\nCittà nascita: " + this.città_di_nascita +
                 "\nIndirizzo: " + this.indirizzo +
                 "\nCaposquadra: " + this.caposquadra +
-                "\nid_squadra: " + this.id_squadra+ "\n";
+                "\nid_squadra: " + this.squadra.getId()+ "\n";
     }
     
 }
