@@ -9,8 +9,8 @@ import model.Amministratore;
 
 
 public interface DaoInterfaceAmministratore {
-    public Amministratore save(Amministratore mezzo);
+    public Amministratore save(Amministratore admin);
     public List<Amministratore> findAll();
-    public Amministratore update(Amministratore mezzo);
-    public boolean delete(Amministratore mezzo);
+    public Amministratore update(Amministratore admin);
+    public boolean delete(Amministratore admin);
 }

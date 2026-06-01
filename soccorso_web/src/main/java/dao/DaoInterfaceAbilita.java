@@ -9,8 +9,8 @@ import model.Abilita;
 
 
 public interface DaoInterfaceAbilita {
-    public Abilita save(Abilita mezzo);
+    public Abilita save(Abilita abilita);
     public List<Abilita> findAll();
-    public Abilita update(Abilita mezzo);
-    public boolean delete(Abilita mezzo);
+    public Abilita update(Abilita abilita);
+    public boolean delete(String nome);
 }

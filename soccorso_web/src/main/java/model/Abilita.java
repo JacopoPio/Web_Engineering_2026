@@ -19,17 +19,21 @@ public class Abilita {
     @ManyToMany
     @JoinTable(
             name = "amministratore_abilità",
-            joinColumns = @JoinColumn(name = "email_amministratore"),
-            inverseJoinColumns = @JoinColumn(name = "nome_abilita")
+            joinColumns = @JoinColumn(name = "nome_abilita"),
+            inverseJoinColumns = @JoinColumn(name = "email_amministratore")
     )
     private List<Amministratore> amministratori = new ArrayList<>();
     @ManyToMany
     @JoinTable(
             name = "operatore_abilità",
-            joinColumns = @JoinColumn(name = "email_operatore"),
-            inverseJoinColumns = @JoinColumn(name = "nome_abilita")
+            joinColumns = @JoinColumn(name = "nome_abilita"),
+            inverseJoinColumns = @JoinColumn(name = "email_operatore")
     )
     private List<Operatore> operatori = new ArrayList<>();
+    public Abilita()
+    {
+        super();
+    }
     public Abilita(String nome) {
         this.nome = nome;
     }

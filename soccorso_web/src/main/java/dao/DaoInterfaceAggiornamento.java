@@ -13,8 +13,8 @@ import model.Aggiornamento;
 
 
 public interface DaoInterfaceAggiornamento {
-    public Aggiornamento save(Aggiornamento mezzo);
+    public Aggiornamento save(Aggiornamento aggiornamento);
     public List<Aggiornamento> findAll();
-    public Aggiornamento update(Aggiornamento mezzo);
-    public boolean delete(Aggiornamento mezzo);
+    public Aggiornamento update(Aggiornamento aggiornamento);
+    public boolean delete(Aggiornamento aggiornamento);
 }

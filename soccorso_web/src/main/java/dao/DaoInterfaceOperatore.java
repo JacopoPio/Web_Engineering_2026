@@ -9,8 +9,8 @@ import model.Operatore;
 
 
 public interface DaoInterfaceOperatore {
-    public Operatore save(Operatore mezzo);
+    public Operatore save(Operatore op);
     public List<Operatore> findAll();
-    public Operatore update(Operatore mezzo);
-    public boolean delete(Operatore mezzo);
+    public Operatore update(Operatore op);
+    public boolean delete(Operatore op);
 }

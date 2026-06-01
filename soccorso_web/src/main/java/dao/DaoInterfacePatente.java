@@ -4,17 +4,14 @@
  */
 package dao;
 
-/**
- *
- * @author alesp
- */
+
 import java.util.List;
 import model.Patente;
 
 
 public interface DaoInterfacePatente  {
-    public Patente save(Patente mezzo);
+    public Patente save(Patente patente);
     public List<Patente> findAll();
-    public Patente update(Patente mezzo);
-    public boolean delete(Patente mezzo);
+    public Patente update(Patente patente);
+    public boolean delete(String tipoPatente);
 }

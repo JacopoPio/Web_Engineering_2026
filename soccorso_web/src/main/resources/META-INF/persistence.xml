@@ -1,7 +1,47 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
-    <!-- Define Persistence Unit -->
-    <persistence-unit name="my_persistence_unit">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<persistence xmlns="https://jakarta.ee"
+             xmlns:xsi="http://w3.org"
+             xsi:schemaLocation="https://jakarta.ee https://jakarta.ee/persistence_3_0.xsd"
+             version="3.0">
+
+    <!-- Il nome della persistence-unit deve coincidere con quello usato in JPAUtil -->
+    <persistence-unit name="Soccorso" transaction-type="RESOURCE_LOCAL">
         
+        <!-- Il provider di persistenza (Hibernate) -->
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <!-- Elenco delle tue classi Entità (Opzionale in Tomcat, ma consigliato) -->
+        <class>model.Abilita</class>
+        <class>model.Aggiornamento</class>
+        <class>model.Amministratore</class>
+        <class>model.Materiale</class>
+        <class>model.Mezzo</class>
+        <class>model.Missione</class>
+        <class>model.Operatore</class>
+        <class>model.Patente</class>
+        <class>model.Richiesta</class>
+        <class>model.Squadra</class>
+        <properties>
+            <!-- 1. Driver JDBC per MySQL -->
+            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
+
+            <!-- 2. URL del Database (Modifica 'nome_tuo_db' con il nome dello schema su Workbench) -->
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/soccorso?useSSL=false&amp;serverTimezone=UTC" />
+
+            <!-- 3. Credenziali di accesso a MySQL Workbench -->
+            <property name="jakarta.persistence.jdbc.user" value="root" />
+            <property name="jakarta.persistence.jdbc.password" value="root" />
+
+            <!-- 4. Configurazione Dialetto Hibernate per MySQL 8+ -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+
+            <!-- 5. Strategia di generazione delle tabelle (Vedi spiegazione sotto) -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="update" />
+
+            <!-- 6. Mostra le query SQL nella console di Tomcat (Utile per il debug) -->
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+        </properties>
     </persistence-unit>
 </persistence>
+

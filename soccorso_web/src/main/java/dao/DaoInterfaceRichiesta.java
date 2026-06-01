@@ -13,9 +13,9 @@ import java.util.List;
 import model.Richiesta;
 
 public interface DaoInterfaceRichiesta {
-    public Richiesta save(Richiesta mezzo);
+    public Richiesta save(Richiesta richiesta);
     public List<Richiesta> findAll();
-    public Richiesta update(Richiesta mezzo);
-    public boolean delete(Richiesta mezzo);
+    public Richiesta update(Richiesta richiesta);
+    public boolean delete(Richiesta richiesta);
 }
 

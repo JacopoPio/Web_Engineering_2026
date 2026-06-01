@@ -13,9 +13,9 @@ import model.Materiale;
 
 
 public interface DaoInterfaceMateriale {
-    public Materiale save(Materiale mezzo);
+    public Materiale save(Materiale materiale);
     public List<Materiale> findAll();
-    public Materiale update(Materiale mezzo);
-    public boolean delete(Materiale mezzo);
+    public Materiale update(Materiale materiale);
+    public boolean delete(int idMateriale);
 }
 

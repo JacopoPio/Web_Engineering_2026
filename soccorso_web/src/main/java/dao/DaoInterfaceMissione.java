@@ -9,8 +9,8 @@ import model.Missione;
 
 
 public interface DaoInterfaceMissione {
-    public Missione save(Missione mezzo);
+    public Missione save(Missione missione);
     public List<Missione> findAll();
-    public Missione update(Missione mezzo);
-    public boolean delete(Missione mezzo);
+    public Missione update(Missione missione);
+    public boolean delete(Missione missione);
 }

@@ -28,8 +28,8 @@ public class Patente {
     @ManyToMany
     @JoinTable(
             name = "operatore_patente",
-            joinColumns = @JoinColumn(name = "email_operatore"),
-            inverseJoinColumns = @JoinColumn(name = "tipo_patente")
+            joinColumns = @JoinColumn(name = "tipo_patente"),
+            inverseJoinColumns = @JoinColumn(name = "email_operatore")
     )
     private List<Operatore> operatori = new ArrayList<>();
     public Patente()
