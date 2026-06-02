@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset = "UTF-8"<
+    <meta charset = "UTF-8">
     <title>HOME - Soccorso Web</title>
     <style>
         body{
-            font-family: Ariel;
+            font-family: Arial;
             margin: 0;
             padding: 0;
             background: #f4f4f4;
         }
         header{
-            background: #d32f2f2;
+            background: #d32f2f;
             color: white;
             padding: 20px;
             text-align: center;
