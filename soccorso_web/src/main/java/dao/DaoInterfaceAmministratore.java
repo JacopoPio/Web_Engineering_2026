@@ -12,5 +12,5 @@ public interface DaoInterfaceAmministratore {
     public Amministratore save(Amministratore admin);
     public List<Amministratore> findAll();
     public Amministratore update(Amministratore admin);
-    public boolean delete(Amministratore admin);
+    public boolean delete(String emailAdmin);
 }

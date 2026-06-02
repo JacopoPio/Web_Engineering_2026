@@ -12,5 +12,5 @@ public interface DaoInterfaceMissione {
     public Missione save(Missione missione);
     public List<Missione> findAll();
     public Missione update(Missione missione);
-    public boolean delete(Missione missione);
+    public boolean delete(int idMissione);
 }

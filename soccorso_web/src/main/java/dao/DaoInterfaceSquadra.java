@@ -12,5 +12,5 @@ public interface DaoInterfaceSquadra {
     public Squadra save(Squadra squadra);
     public List<Squadra> findAll();
     public Squadra update(Squadra squadra);
-    public boolean delete(Squadra squadra);
+    public boolean delete(int idSquadra);
 }

@@ -12,5 +12,5 @@ public interface DaoInterfaceOperatore {
     public Operatore save(Operatore op);
     public List<Operatore> findAll();
     public Operatore update(Operatore op);
-    public boolean delete(Operatore op);
+    public boolean delete(String emailOp);
 }

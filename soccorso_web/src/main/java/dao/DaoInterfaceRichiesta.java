@@ -16,6 +16,6 @@ public interface DaoInterfaceRichiesta {
     public Richiesta save(Richiesta richiesta);
     public List<Richiesta> findAll();
     public Richiesta update(Richiesta richiesta);
-    public boolean delete(Richiesta richiesta);
+    public boolean delete(String email_segnalante);
 }
 

@@ -16,5 +16,5 @@ public interface DaoInterfaceAggiornamento {
     public Aggiornamento save(Aggiornamento aggiornamento);
     public List<Aggiornamento> findAll();
     public Aggiornamento update(Aggiornamento aggiornamento);
-    public boolean delete(Aggiornamento aggiornamento);
+    public boolean delete(int idAggiornamento);
 }
