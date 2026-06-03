@@ -18,40 +18,46 @@ public class AdminServlet extends HttpServlet {
      protected void doGet(HttpServletRequest request, HttpServletResponse response)
              throws ServletException, IOException{
                 HttpSession session = request.getSession(false);
-                String nome = "Amministratore";
-                String ruolo = "ADMIN";
-                
-                if (session != null) {
-                    Object nomeSessione = session.getAttribute("nome");
-                    Object ruoloSessione = session.getAttribute("ruolo");
-                        
-                    if(nomeSessione != null){
-                        nome = nomeSessione.toString();
-                    }
-                    if(ruoloSessione != null){
-                        ruolo = ruoloSessione.toString();
-                    }
-                }
-        
-                request.setAttribute("nome", nome);
-                request.setAttribute("ruolo", ruolo);
-                request.getRequestDispatcher("/admin.ftl").forward(request, response);
-     }
+           
+                if (session == null || session.getAttribute("ruolo") == null) {
+                    
+                  request.getRequestDispatcher("/accesso-negato.ftl").forward(request, response);
+            return;
+        }
 
-    /**
-     *
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
-     */
+        String ruolo = session.getAttribute("ruolo").toString();
+        if (!"ADMIN".equalsIgnoreCase(ruolo)) {
+            request.getRequestDispatcher("/accesso-negato.ftl").forward(request, response);
+            return;
+        }
+
+        String nome = "Amministratore";
+        Object nomeSessione = session.getAttribute("nome");
+        if (nomeSessione != null) {
+            nome = nomeSessione.toString();
+        }
+
+        request.setAttribute("nome", nome);
+        request.setAttribute("ruolo", ruolo);
+
+        request.setAttribute("richiesteAttive", 0);
+        request.setAttribute("richiesteInCorso", 0);
+        request.setAttribute("richiesteChiuse", 0);
+        request.setAttribute("operatoriDisponibili", 0);
+        request.setAttribute("mezziDisponibili", 0);
+        request.setAttribute("materialiDisponibili", 0);
+
+        request.getRequestDispatcher("/admin.ftl").forward(request, response);
+    }
+
     @Override
-     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-             throws ServletException, IOException{
-                doGet(request, response);
-            }
-     @Override
-     public String getServletInfo(){
-         return "Serrvlet area amministratore";
-     }
- }
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        doGet(request, response);
+    }
+
+    @Override
+    public String getServletInfo() {
+        return "Servlet area amministratore";
+    }
+}

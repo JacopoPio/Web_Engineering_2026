@@ -50,14 +50,17 @@
 <body>
     <header>
         <h1>Pannello Amministratore</h1>
-        <p>Benvenuto ${nome}</p>
-        <p>Ruolo: ${ruolo}</p>
+        <p>Benvenuto ${nome!"Amministratore"}</p>
+        <p>Ruolo: ${ruolo!"ADMIN"}</p>
     </header>
 
     <nav>
         <a href="admin">Dashboard</a>
         <a href="gestione-utenti">Gestione Utenti</a>
         <a href="richieste">Richieste</a>
+        <a href="mezzi">Mezzi</a>
+        <a href="materiali">Materiali</a>
+        <a href="operatori">Operatori</a>
         <a href="logout">Logout</a>
     </nav>
 
@@ -74,7 +77,12 @@
             <h3>Gestione Utenti</h3>
             <p>Visualizza, modifica o elimina gli utenti.</p>
         </div>
-
+         <div class="card">
+        <h3>Missioni in corso</h3>
+        <p>Monitora missioni aperte, aggiornamenti e risorse impegnate.</p>
+         <div class="card">
+        <h3>Anagrafiche e risorse</h3>
+        <p>Gestisci operatori, mezzi e materiali censiti nel sistema.</p>
         <div class="card">
             <h3>Report sistema</h3>
             <p>Consulta statistiche e informazioni generali sulla piattaforma.</p>
