@@ -56,7 +56,7 @@
 </head>
 <body>
     <header>
-        <h1>${{titolo}! "Soccorso Web"}</h1>
+        <h1>${titolo! "Soccorso Web"}</h1>
         <p>${messaggio!"Portale per la gestione delle richieste"}</p>
     </header>
     
@@ -66,7 +66,6 @@
         <a href="contatti">Contatti</a>
     </nav>
     <main>
-        <h2>Benvenuto ${nome}</h2>
         <p>
             Questo è un portale per la richiesta e la gestione di domande di soccorso.
             Qui puoi trovare informazioni, servizi disponibili e contatti utili in caso di problemi.
