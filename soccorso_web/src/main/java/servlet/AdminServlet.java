@@ -1,10 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package servlet;
 
-import java.io.IOException;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateExceptionHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,42 +10,88 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 @WebServlet(name = "AdminServlet", urlPatterns = {"/admin"})
 public class AdminServlet extends HttpServlet {
-     @Override
-     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-             throws ServletException, IOException{
-                HttpSession session = request.getSession(false);
-           
-                if (session == null || session.getAttribute("ruolo") == null) {
-                    
-                  request.getRequestDispatcher("/accesso-negato.ftl").forward(request, response);
+
+    private Configuration cfg;
+
+    @Override
+    public void init() throws ServletException {
+        cfg = new Configuration(Configuration.VERSION_2_3_32);
+
+        cfg.setClassLoaderForTemplateLoading(
+                Thread.currentThread().getContextClassLoader(),
+                "/templates"
+        );
+
+        cfg.setDefaultEncoding("UTF-8");
+        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+    }
+
+    private void renderTemplate(HttpServletResponse response, String templateName, Map<String, Object> data)
+            throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+
+        try {
+            Template template = cfg.getTemplate(templateName);
+            template.process(data, response.getWriter());
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("ruolo") == null) {
+            Map<String, Object> data = new HashMap<>();
+            data.put("titolo", "Accesso negato");
+            data.put("messaggio", "Devi effettuare il login per accedere all'area amministratore.");
+
+            renderTemplate(response, "accesso-negato.ftl", data);
             return;
         }
 
         String ruolo = session.getAttribute("ruolo").toString();
+
         if (!"ADMIN".equalsIgnoreCase(ruolo)) {
-            request.getRequestDispatcher("/accesso-negato.ftl").forward(request, response);
+            Map<String, Object> data = new HashMap<>();
+            data.put("titolo", "Accesso negato");
+            data.put("messaggio", "Non hai i permessi per accedere all'area amministratore.");
+
+            renderTemplate(response, "accesso-negato.ftl", data);
             return;
         }
 
         String nome = "Amministratore";
         Object nomeSessione = session.getAttribute("nome");
+
         if (nomeSessione != null) {
             nome = nomeSessione.toString();
         }
 
-        request.setAttribute("nome", nome);
-        request.setAttribute("ruolo", ruolo);
+        Map<String, Object> data = new HashMap<>();
 
-        request.setAttribute("richiesteAttive", 0);
-        request.setAttribute("richiesteInCorso", 0);
-        request.setAttribute("richiesteChiuse", 0);
-        request.setAttribute("operatoriDisponibili", 0);
-        request.setAttribute("mezziDisponibili", 0);
-        request.setAttribute("materialiDisponibili", 0);
+        data.put("titolo", "Area Amministratore");
+        data.put("nome", nome);
+        data.put("ruolo", ruolo);
 
-        request.getRequestDispatcher("/admin.ftl").forward(request, response);
+        data.put("richiesteAttive", 0);
+        data.put("richiesteInCorso", 0);
+        data.put("richiesteChiuse", 0);
+        data.put("operatoriDisponibili", 0);
+        data.put("mezziDisponibili", 0);
+        data.put("materialiDisponibili", 0);
+
+        renderTemplate(response, "admin.ftl", data);
     }
 
     @Override
