@@ -4,33 +4,37 @@
  */
 package servlet;
 
+import dao.DaoInterfaceRichiesta;
+import dao.dao_impl.DaoInterfaceRichiestaImpl;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import jakarta_configuration.resources.JPAUtil;
 import model.Richiesta;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.UUID;
 import java.io.IOException;
+import java.net.InetAddress;
 
 /**
  *
  * @author alesp
  */
 @WebServlet(name = "RichiestaInvioServlet", urlPatterns = {"/richiesta-invio"})
+@MultipartConfig
 public class RichiestInvioServlet extends HttpServlet {
 
-    private EntityManagerFactory emf;
+    private EntityManager emf;
 
     @Override
     public void init() throws ServletException {
-        emf = Persistence.createEntityManagerFactory("SoccorsoWebPU");
+        this.emf = JPAUtil.getEntityManager();
     }
 
     @Override
@@ -38,14 +42,16 @@ public class RichiestInvioServlet extends HttpServlet {
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-
         String descrizione = request.getParameter("descrizione");
         String indirizzo = request.getParameter("posizione");
         String emailSegnalante = request.getParameter("emailSegnalante");
+        String nomeSegnalante = request.getParameter("nomeSegnalante");
+        byte[] ipOrigine = request.getRemoteAddr().equals("0:0:0:0:0:0:0:1") ? new byte[]{127,0,0,1} 
+                : InetAddress.getByName(request.getRemoteAddr()).getAddress();
 
         if (descrizione == null || descrizione.isBlank()
                 || indirizzo == null || indirizzo.isBlank()
-                || emailSegnalante == null || emailSegnalante.isBlank()) {
+                || emailSegnalante == null || emailSegnalante.isBlank() || nomeSegnalante.isBlank()) {
 
             response.sendRedirect(request.getContextPath() + "/home?errore=campi");
             return;
@@ -54,6 +60,7 @@ public class RichiestInvioServlet extends HttpServlet {
         descrizione = descrizione.trim();
         indirizzo = indirizzo.trim();
         emailSegnalante = emailSegnalante.trim().toLowerCase();
+        nomeSegnalante = nomeSegnalante.trim().toLowerCase();
 
         String pathFoto = salvaFoto(request);
 
@@ -61,41 +68,16 @@ public class RichiestInvioServlet extends HttpServlet {
                 emailSegnalante,
                 descrizione,
                 indirizzo,
-                "DA_CONFERMARE",
-                pathFoto
+                "in corso",
+                pathFoto,
+                nomeSegnalante,
+                ipOrigine
         );
 
-        EntityManager em = emf.createEntityManager();
-
-        try {
-            em.getTransaction().begin();
-
-            Richiesta esistente = em.find(Richiesta.class, emailSegnalante);
-
-            if (esistente != null) {
-                em.getTransaction().rollback();
-                response.sendRedirect(request.getContextPath() + "/home?errore=email");
-                return;
-            }
-
-            em.persist(richiesta);
-
-            em.getTransaction().commit();
-
-            response.sendRedirect(request.getContextPath() + "/richiesta-inviata");
-
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-
-            throw new ServletException("Errore durante il salvataggio della richiesta", e);
-
-        } finally {
-            em.close();
-        }
+        DaoInterfaceRichiesta gestore_richiesta = new DaoInterfaceRichiestaImpl(this.emf);
+        Richiesta richiesta_salvata = gestore_richiesta.save(richiesta);
     }
-
+    
     private String salvaFoto(HttpServletRequest request)
             throws IOException, ServletException {
 

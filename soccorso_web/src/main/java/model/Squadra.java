@@ -22,7 +22,7 @@ public class Squadra {
     private List<Operatore> operatori = new ArrayList<>();
     
     @OneToOne(mappedBy = "squadra")
-    private List<Missione> missione = new ArrayList<>();
+    private Missione missione;
     
     public Squadra()
     {
@@ -37,11 +37,11 @@ public class Squadra {
         this.operatori = operatori;
     }
 
-    public List<Missione> getMissione() {
+    public Missione getMissione() {
         return this.missione;
     }
 
-    public void setMissione(List<Missione> missione) {
+    public void setMissione(Missione missione) {
         this.missione = missione;
     }
 

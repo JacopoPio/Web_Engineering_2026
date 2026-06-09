@@ -77,11 +77,11 @@
             <label for="posizione">Posizione</label>
             <input id="posizione" name="posizione" type="text" required>
             <label for="emailSegnalante">Email segnalante</label>
-            <input id="emailSegnalante" name="EmailSegnalante" type="text" required>
+            <input id="emailSegnalante" name="emailSegnalante" type="text" required>
             <label for="foto">Foto Opzionale</label>
             <input id="foto" name="foto" type="file" accept="image/*">
-            <label for="captcha">Captcha</label>
-            <input id="captcha" name="captcha" type="text" required>
+            <label for="nomeSegnalante">Nome segnalante</label>
+            <input id="nomeSegnalante" name="nomeSegnalante" type="text" required>
             
             <button type="submit">Invia Richiesta</button>
 </form>
