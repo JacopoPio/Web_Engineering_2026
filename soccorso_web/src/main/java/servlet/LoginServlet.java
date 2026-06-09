@@ -41,7 +41,7 @@ public class LoginServlet extends HttpServlet {
             Template template = cfg.getTemplate(templateName);
             template.process(data, response.getWriter());
         } catch (Exception e) {
-            throw new ServletException(e);
+            throw new ServletException("Errore durante il caricamento del template " + templateName, e);
         }
     }
 
@@ -50,6 +50,9 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
 
         Map<String, Object> data = new HashMap<>();
+        data.put("contextPath", request.getContextPath());
+        data.put("pageTitle", "Login");
+
         renderTemplate(response, "login.ftl", data);
     }
 
@@ -57,17 +60,35 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
+
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
+        if (username != null) {
+            username = username.trim();
+        }
+
+        if (password != null) {
+            password = password.trim();
+        }
+
+        System.out.println("USERNAME RICEVUTO = " + username);
+        System.out.println("PASSWORD RICEVUTA = " + password);
+
         if ("admin".equals(username) && "admin123".equals(password)) {
+
             HttpSession session = request.getSession();
             session.setAttribute("nome", username);
             session.setAttribute("ruolo", "ADMIN");
 
             response.sendRedirect(request.getContextPath() + "/admin");
+            return;
+
         } else {
             Map<String, Object> data = new HashMap<>();
+            data.put("contextPath", request.getContextPath());
+            data.put("pageTitle", "Login");
             data.put("errore", "Username o password non validi");
 
             renderTemplate(response, "login.ftl", data);

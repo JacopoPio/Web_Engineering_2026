@@ -30,6 +30,7 @@ public class DaoInterfaceRichiestaImpl implements DaoInterfaceRichiesta {
             throw e;
         }
     }
+    
 
     @Override
     public List<Richiesta> findAll() {

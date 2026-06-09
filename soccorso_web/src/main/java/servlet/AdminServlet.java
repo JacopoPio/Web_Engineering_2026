@@ -41,8 +41,23 @@ public class AdminServlet extends HttpServlet {
             Template template = cfg.getTemplate(templateName);
             template.process(data, response.getWriter());
         } catch (Exception e) {
-            throw new ServletException(e);
+            throw new ServletException("Errore durante il caricamento del template: " + templateName, e);
         }
+    }
+
+    private void mostraAccessoNegato(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     String messaggio)
+            throws ServletException, IOException {
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("contextPath", request.getContextPath());
+        data.put("pageTitle", "Accesso negato");
+        data.put("titolo", "Accesso negato");
+        data.put("messaggio", messaggio);
+
+        renderTemplate(response, "accesso-negato.ftl", data);
     }
 
     @Override
@@ -51,39 +66,61 @@ public class AdminServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
 
+        /*
+         * 1. Controllo se l'utente ha una sessione valida.
+         * Se non ha fatto login, non può entrare nell'area admin.
+         */
         if (session == null || session.getAttribute("ruolo") == null) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("titolo", "Accesso negato");
-            data.put("messaggio", "Devi effettuare il login per accedere all'area amministratore.");
-
-            renderTemplate(response, "accesso-negato.ftl", data);
+            mostraAccessoNegato(
+                    request,
+                    response,
+                    "Devi effettuare il login per accedere all'area amministratore."
+            );
             return;
         }
 
+        /*
+         * 2. Controllo il ruolo.
+         * Solo chi ha ruolo ADMIN può entrare.
+         */
         String ruolo = session.getAttribute("ruolo").toString();
 
         if (!"ADMIN".equalsIgnoreCase(ruolo)) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("titolo", "Accesso negato");
-            data.put("messaggio", "Non hai i permessi per accedere all'area amministratore.");
-
-            renderTemplate(response, "accesso-negato.ftl", data);
+            mostraAccessoNegato(
+                    request,
+                    response,
+                    "Non hai i permessi per accedere all'area amministratore."
+            );
             return;
         }
 
+        /*
+         * 3. Recupero il nome dell'utente dalla sessione.
+         */
         String nome = "Amministratore";
+
         Object nomeSessione = session.getAttribute("nome");
 
         if (nomeSessione != null) {
             nome = nomeSessione.toString();
         }
 
+        /*
+         * 4. Preparo i dati da passare al template admin.ftl.
+         */
         Map<String, Object> data = new HashMap<>();
 
+        data.put("contextPath", request.getContextPath());
+        data.put("pageTitle", "Area Amministratore");
         data.put("titolo", "Area Amministratore");
+
         data.put("nome", nome);
         data.put("ruolo", ruolo);
 
+        /*
+         * Per ora sono valori fissi.
+         * Dopo potrai sostituirli con query al database.
+         */
         data.put("richiesteAttive", 0);
         data.put("richiesteInCorso", 0);
         data.put("richiesteChiuse", 0);
@@ -91,6 +128,9 @@ public class AdminServlet extends HttpServlet {
         data.put("mezziDisponibili", 0);
         data.put("materialiDisponibili", 0);
 
+        /*
+         * 5. Mostro la dashboard admin.
+         */
         renderTemplate(response, "admin.ftl", data);
     }
 
