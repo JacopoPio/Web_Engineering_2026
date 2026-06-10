@@ -119,8 +119,8 @@ public class AdminServlet extends HttpServlet {
 
         /*
          * Per ora sono valori fissi.
-         * Dopo potrai sostituirli con query al database.
-         */
+        */
+        
         data.put("richiesteAttive", 0);
         data.put("richiesteInCorso", 0);
         data.put("richiesteChiuse", 0);

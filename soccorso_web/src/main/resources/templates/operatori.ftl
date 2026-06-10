@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Reserved Area - SoccorsoWeb</title>
+    <title>Area Operatore - SoccorsoWeb</title>
 
     <style>
         * {
@@ -10,18 +10,17 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
             margin: 0;
-            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
             background: #f4f6f8;
             color: #222;
         }
 
         header {
-            background: linear-gradient(135deg, #b71c1c, #d32f2f);
+            background: linear-gradient(135deg, #1565c0, #1976d2);
             color: white;
-            padding: 35px 20px;
             text-align: center;
+            padding: 35px 20px;
         }
 
         header h1 {
@@ -34,15 +33,15 @@
         }
 
         nav {
-            background: #8e0000;
-            padding: 14px;
+            background: #0d47a1;
             text-align: center;
+            padding: 14px;
         }
 
         nav a {
             color: white;
-            margin: 0 10px;
             font-weight: bold;
+            margin: 0 10px;
             text-decoration: none;
             padding: 8px 12px;
             border-radius: 6px;
@@ -53,7 +52,7 @@
         }
 
         main {
-            max-width: 1100px;
+            max-width: 1000px;
             margin: 35px auto;
             padding: 0 20px;
         }
@@ -67,12 +66,16 @@
 
         .panel h2 {
             margin-top: 0;
-            color: #b71c1c;
+            color: #1565c0;
+        }
+
+        .panel p {
+            line-height: 1.5;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
             gap: 20px;
             margin-top: 25px;
         }
@@ -82,7 +85,7 @@
             background: #f7f7f7;
             padding: 22px;
             border-radius: 12px;
-            border-left: 6px solid #d32f2f;
+            border-left: 6px solid #1976d2;
             text-decoration: none;
             color: #222;
             transition: 0.2s;
@@ -91,17 +94,17 @@
         .card:hover {
             transform: translateY(-4px);
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-            background: #fff;
+            background: white;
         }
 
         .card h3 {
             margin-top: 0;
-            color: #b71c1c;
+            color: #1565c0;
         }
 
         .card p {
-            line-height: 1.5;
             margin-bottom: 0;
+            line-height: 1.5;
         }
 
         footer {
@@ -127,59 +130,51 @@
 <body>
 
 <header>
-    <h1>Pannello Amministratore</h1>
-    <p>Benvenuto ${nome!"Amministratore"}</p>
-    <p>Ruolo: ${ruolo!"ADMIN"}</p>
+    <h1>Area Operatore</h1>
+    <p>Benvenuto ${nome!"Operatore"} - Ruolo: ${ruolo!"OPERATORE"}</p>
 </header>
 
 <nav>
-    <a href="${contextPath}/admin">Dashboard</a>
-    <a href="${contextPath}/admin/richieste">Richieste</a>
-    <a href="${contextPath}/gestione-utenti">Gestione Utenti</a>
-    <a href="${contextPath}/mezzi">Mezzi</a>
-    <a href="${contextPath}/materiali">Materiali</a>
-    <a href="${contextPath}/operatori">Gestione Operatori</a>
+    <a href="${contextPath}/operatore">Dashboard</a>
+    <a href="${contextPath}/operatore/richieste">Richieste assegnate</a>
     <a href="${contextPath}/logout">Logout</a>
 </nav>
 
 <main>
     <section class="panel">
-        <h2>Area Riservata Amministratore</h2>
-        <p>Da qui puoi controllare le funzioni amministrative del sistema.</p>
+
+        <h2>Pannello Operatore</h2>
+
+        <p>
+            Da questa area l'operatore può visualizzare le richieste attive,
+            controllare gli interventi in corso e aggiornare lo stato delle attività operative.
+        </p>
 
         <div class="grid">
 
-            <a class="card" href="${contextPath}/admin/richieste">
-                <h3>Gestione Richieste</h3>
-                <p>Controlla le richieste inviate dagli utenti e il loro stato.</p>
+            <a class="card" href="${contextPath}/operatore/richieste">
+                <h3>Richieste assegnate</h3>
+                <p>
+                    Visualizza le richieste attive o in corso che devono essere gestite.
+                </p>
             </a>
 
-            <a class="card" href="${contextPath}/gestione-utenti">
-                <h3>Gestione Utenti</h3>
-                <p>Visualizza, modifica o elimina gli utenti registrati.</p>
+            <a class="card" href="${contextPath}/operatore/missioni">
+                <h3>Missioni operative</h3>
+                <p>
+                    Controlla le missioni operative e le attività collegate agli interventi.
+                </p>
             </a>
 
-            <a class="card" href="${contextPath}/missioni">
-                <h3>Missioni in corso</h3>
-                <p>Monitora missioni aperte, aggiornamenti e risorse impegnate.</p>
-            </a>
-
-            <a class="card" href="${contextPath}/operatori">
-                <h3>Gestione Operatori</h3>
-                <p>Gestisci gli operatori disponibili nel sistema.</p>
-            </a>
-
-            <a class="card" href="${contextPath}/mezzi">
-                <h3>Mezzi</h3>
-                <p>Gestisci ambulanze, veicoli e mezzi di soccorso.</p>
-            </a>
-
-            <a class="card" href="${contextPath}/materiali">
-                <h3>Materiali</h3>
-                <p>Gestisci materiali e risorse utilizzabili nelle missioni.</p>
+            <a class="card" href="${contextPath}/operatore/profilo">
+                <h3>Profilo operatore</h3>
+                <p>
+                    Visualizza le informazioni dell'operatore attualmente loggato.
+                </p>
             </a>
 
         </div>
+
     </section>
 </main>
 

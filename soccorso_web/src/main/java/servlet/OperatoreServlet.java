@@ -1,3 +1,7 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
 package servlet;
 
 import freemarker.template.Configuration;
@@ -14,8 +18,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
-public class LoginServlet extends HttpServlet {
+@WebServlet(name = "OperatoreServlet", urlPatterns = {"/operatori"})
+public class OperatoreServlet extends HttpServlet {
 
     private Configuration cfg;
 
@@ -36,51 +40,19 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        HttpSession session = request.getSession(false);
+
+        if (session == null || !"OPERATORE".equals(session.getAttribute("ruolo"))) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         Map<String, Object> data = new HashMap<>();
         data.put("contextPath", request.getContextPath());
+        data.put("nome", session.getAttribute("nome"));
+        data.put("ruolo", session.getAttribute("ruolo"));
 
-        if (request.getParameter("errore") != null) {
-            data.put("errore", true);
-        }
-
-        renderTemplate(response, "login.ftl", data);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        request.setCharacterEncoding("UTF-8");
-
-        String ruolo = request.getParameter("ruolo");
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-
-        if ("ADMIN".equals(ruolo)
-                && "admin".equals(username)
-                && "admin123".equals(password)) {
-
-            HttpSession session = request.getSession();
-            session.setAttribute("nome", "Amministratore");
-            session.setAttribute("ruolo", "ADMIN");
-
-            response.sendRedirect(request.getContextPath() + "/admin");
-            return;
-        }
-
-        if ("OPERATORE".equals(ruolo)
-                && "operatore".equals(username)
-                && "operatore123".equals(password)) {
-
-            HttpSession session = request.getSession();
-            session.setAttribute("nome", "Operatore");
-            session.setAttribute("ruolo", "OPERATORE");
-
-            response.sendRedirect(request.getContextPath() + "/operatori");
-            return;
-        }
-
-        response.sendRedirect(request.getContextPath() + "/login?errore=1");
+        renderTemplate(response, "operatori.ftl", data);
     }
 
     private void renderTemplate(HttpServletResponse response, String templateName, Map<String, Object> data)

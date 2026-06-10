@@ -121,6 +121,20 @@
             background-color: #8e0000;
         }
 
+        .btn-dettaglio {
+            display: inline-block;
+            background-color: #455a64;
+            color: white;
+            padding: 9px 14px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn-dettaglio:hover {
+            background-color: #263238;
+        }
+
         .msg-ok {
             background: #e8f5e9;
             color: #1b5e20;
@@ -216,6 +230,7 @@
                         <th>Indirizzo</th>
                         <th>Stato attuale</th>
                         <th>Cambia stato</th>
+                        <th>Dettagli</th>
                     </tr>
                 </thead>
 
@@ -248,6 +263,13 @@
 
                                     <button type="submit">Aggiorna</button>
                                 </form>
+                            </td>
+
+                            <td>
+                                <a class="btn-dettaglio"
+                                   href="${contextPath}/admin/dettaglio-richiesta?email=${r.email_segnalante?url('UTF-8')}">
+                                    Apri
+                                </a>
                             </td>
                         </tr>
                     </#list>
