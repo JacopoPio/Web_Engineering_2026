@@ -158,7 +158,7 @@
 
         <p>
             Stato iniziale della richiesta:
-            <span class="status">DA_CONFERMARE</span>
+            <span class="status">ATTIVA</span>
         </p>
 
         <a class="btn" href="home">Torna alla home</a>
