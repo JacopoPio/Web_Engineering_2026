@@ -1,16 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package dao;
 
-import java.util.*;
+import java.util.List;
 import model.Operatore;
 
-
 public interface DaoInterfaceOperatore {
-    public Operatore save(Operatore op);
+
+    public Operatore save(Operatore operatore);
+
     public List<Operatore> findAll();
-    public Operatore update(Operatore op);
+
+    public Operatore findByEmail(String email);
+
+    public Operatore update(Operatore operatore);
+
     public boolean delete(String emailOp);
 }

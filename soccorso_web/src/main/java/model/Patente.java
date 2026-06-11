@@ -1,71 +1,34 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
-import jakarta.persistence.*;
-import java.util.*;
 
-/**
- *
- * @author Jacopo Antonio
- */
+import jakarta.persistence.*;
+import java.util.Objects;
+
 @Entity
 @Table(name = "patente")
 public class Patente {
+
     @Id
-    private String tipo;
-    @ManyToMany
-    @JoinTable(
-            name = "amministratore_patente",
-            joinColumns = @JoinColumn(name = "tipo_patente"),
-            inverseJoinColumns = @JoinColumn(name = "email_amministratore")
-    )
-    private List<Amministratore> amministratori = new ArrayList<>();
-    public Patente(String tipo) {
-        this.tipo = tipo;
-    }
-    @ManyToMany
-    @JoinTable(
-            name = "operatore_patente",
-            joinColumns = @JoinColumn(name = "tipo_patente"),
-            inverseJoinColumns = @JoinColumn(name = "email_operatore")
-    )
-    private List<Operatore> operatori = new ArrayList<>();
-    public Patente()
-    {
-        super();
+    @Column(name = "tipo_patente", nullable = false, length = 50)
+    private String tipoPatente;
+
+    public Patente() {
     }
 
-    public List<Amministratore> getAmministratori() {
-        return this.amministratori;
+    public Patente(String tipoPatente) {
+        this.tipoPatente = tipoPatente;
     }
 
-    public void setAmministratori(List<Amministratore> amministratori) {
-        this.amministratori = amministratori;
+    public String getTipoPatente() {
+        return tipoPatente;
     }
 
-    public List<Operatore> getOperatori() {
-        return this.operatori;
-    }
-
-    public void setOperatori(List<Operatore> operatori) {
-        this.operatori = operatori;
-    }
-    
-    public String getTipo() {
-        return this.tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setTipoPatente(String tipoPatente) {
+        this.tipoPatente = tipoPatente;
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 37 * hash + this.tipo.hashCode();
-        return hash;
+        return Objects.hashCode(this.tipoPatente);
     }
 
     @Override
@@ -73,11 +36,17 @@ public class Patente {
         if (this == obj) {
             return true;
         }
+
         if (obj == null || !(obj instanceof Patente)) {
             return false;
         }
-        Patente p = (Patente)obj;
-        return p.tipo.equalsIgnoreCase(p.tipo);
+
+        Patente other = (Patente) obj;
+        return Objects.equals(this.tipoPatente, other.tipoPatente);
     }
-    
+
+    @Override
+    public String toString() {
+        return this.tipoPatente;
+    }
 }

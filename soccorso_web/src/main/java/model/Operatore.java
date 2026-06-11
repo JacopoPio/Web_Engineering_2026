@@ -1,104 +1,83 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
-import java.time.LocalDate;
-import java.util.*;
 import jakarta.persistence.*;
+import jakarta_configuration.resources.PasswordConverter;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
-/**
- *
- * @author Jacopo Antonio
- */
 @Entity
-@Table (name = "operatore")
+@Table(name = "operatore")
 public class Operatore {
+
     @Id
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
-    
-    @Column (name = "password")
-    private String password;
+
+    @Column(name = "nome", nullable = false, length = 50)
     private String nome;
+
+    @Column(name = "cognome", nullable = false, length = 50)
     private String cognome;
-    private String CF;
-    
+
     @Column(name = "data_nascita")
     private LocalDate data_nascita;
-    
-    @Column(name = "città_di_nascita")
-    private String città_di_nascita;
-    
+
+    @Column(name = "citta_nascita", length = 100)
+    private String citta_nascita;
+
+    @Column(name = "CF", length = 16)
+    private String CF;
+
+    @Column(name = "indirizzo", length = 150)
     private String indirizzo;
-    private boolean caposquadra;
-    
-    @ManyToOne
-    @JoinColumn(name = "id_squadra")
-    private Squadra squadra;
-    
-    @ManyToMany(mappedBy="operatori")
+
+    @Convert(converter = PasswordConverter.class)
+    @Column(name = "password", nullable = false, length = 100)
+    private String password;
+
+    @ManyToMany
+    @JoinTable(
+            name = "operatore_patente",
+            joinColumns = @JoinColumn(name = "email_operatore"),
+            inverseJoinColumns = @JoinColumn(name = "tipo_patente")
+    )
+    private List<Patente> patenti = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "operatore_abilita",
+            joinColumns = @JoinColumn(name = "email_operatore"),
+            inverseJoinColumns = @JoinColumn(name = "nome_abilita")
+    )
     private List<Abilita> abilita = new ArrayList<>();
-    @ManyToMany(mappedBy="operatori")
-    private List<Patente> patente = new ArrayList<>();
-    public Operatore()
-    {
-        super();
+
+    public Operatore() {
     }
+
     public String getEmail() {
-        return this.email;
+        return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public List<Abilita> getAbilita() {
-        return this.abilita;
-    }
-
-    public void setAbilita(List<Abilita> abilita) {
-        this.abilita = abilita;
-    }
-
-    public List<Patente> getPatente() {
-        return this.patente;
-    }
-
-    public void setPatente(List<Patente> patente) {
-        this.patente = patente;
-    }
-
-    public String getPassword() {
-        return this.password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    }   
 
     public String getNome() {
-        return this.nome;
+        return nome;
     }
 
     public void setNome(String nome) {
         this.nome = nome;
-    }
+    }   
 
     public String getCognome() {
-        return this.cognome;
+        return cognome;
     }
 
     public void setCognome(String cognome) {
         this.cognome = cognome;
-    }
-
-    public String getCF() {
-        return this.CF;
-    }
-
-    public void setCF(String CF) {
-        this.CF = CF;
     }
 
     public LocalDate getData_nascita() {
@@ -109,43 +88,57 @@ public class Operatore {
         this.data_nascita = data_nascita;
     }
 
-    public String getCittà_di_nascita() {
-        return città_di_nascita;
+    public String getCitta_nascita() {
+        return citta_nascita;
     }
 
-    public void setCittà_di_nascita(String città_di_nascita) {
-        this.città_di_nascita = città_di_nascita;
+    public void setCitta_nascita(String citta_nascita) {
+        this.citta_nascita = citta_nascita;
+    }
+
+    public String getCF() {
+        return CF;
+    }
+
+    public void setCF(String CF) {
+        this.CF = CF;
     }
 
     public String getIndirizzo() {
-        return this.indirizzo;
+        return indirizzo;
     }
 
     public void setIndirizzo(String indirizzo) {
         this.indirizzo = indirizzo;
     }
 
-    public boolean isCaposquadra() {
-        return this.caposquadra;
+    public String getPassword() {
+        return password;
     }
 
-    public void setCaposquadra(boolean caposquadra) {
-        this.caposquadra = caposquadra;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public Squadra getSquadra() {
-        return squadra;
+    public List<Patente> getPatenti() {
+        return patenti;
     }
 
-    public void setSquadra(Squadra squadra) {
-        this.squadra = squadra;
+    public void setPatenti(List<Patente> patenti) {
+        this.patenti = patenti;
     }
-    
+
+    public List<Abilita> getAbilita() {
+        return abilita;
+    }
+
+    public void setAbilita(List<Abilita> abilita) {
+        this.abilita = abilita;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + this.email.hashCode();
-        return hash;
+        return Objects.hashCode(this.email);
     }
 
     @Override
@@ -153,24 +146,24 @@ public class Operatore {
         if (this == obj) {
             return true;
         }
+
         if (obj == null || !(obj instanceof Operatore)) {
             return false;
         }
-        Operatore o = (Operatore) obj;
-        return this.email.equals(o.email);
+
+        Operatore other = (Operatore) obj;
+        return Objects.equals(this.email, other.email);
     }
+
     @Override
-    public String toString()
-    {
-        return "Email: " + this.email + 
+    public String toString() {
+        return "Email: " + this.email +
                 "\nNome: " + this.nome +
                 "\nCognome: " + this.cognome +
                 "\nCF: " + this.CF +
                 "\nData nascita: " + this.data_nascita +
-                "\nCittà nascita: " + this.città_di_nascita +
+                "\nCittà nascita: " + this.citta_nascita +
                 "\nIndirizzo: " + this.indirizzo +
-                "\nCaposquadra: " + this.caposquadra +
-                "\nid_squadra: " + this.squadra.getId()+ "\n";
+                "\n";
     }
-    
 }

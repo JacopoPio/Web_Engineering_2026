@@ -62,14 +62,6 @@ public class HomeServlet extends HttpServlet {
         } else {
             data.put("nome", "Ospite");
         }
-
-        int a = 1 + new Random().nextInt(9);
-        int b = 1 + new Random().nextInt(9);
-
-        data.put("captchaA", a);
-        data.put("captchaB", b);
-        data.put("captchaRisposta", a + b);
-
         renderTemplate(response, "home.ftl", data);
     }
 

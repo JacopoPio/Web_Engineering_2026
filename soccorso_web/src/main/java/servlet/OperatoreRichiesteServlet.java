@@ -4,6 +4,8 @@
  */
 package servlet;
 
+import dao.DaoInterfaceRichiesta;
+import dao.dao_impl.DaoInterfaceRichiestaImpl;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
@@ -18,8 +20,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Richiesta;
 
+
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 /**
@@ -54,26 +56,11 @@ public class OperatoreRichiesteServlet extends HttpServlet {
         }
 
         EntityManager em = emf.createEntityManager();
-         try {
-            List<Richiesta> richieste = em
-                    .createQuery(
-                            "SELECT r FROM Richiesta r WHERE r.stato <> :statoChiusa",
-                            Richiesta.class
-                    )
-                    .setParameter("statoChiusa", "chiusa")
-                    .getResultList();
+        DaoInterfaceRichiesta dao = new DaoInterfaceRichiestaImpl(em);
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("contextPath", request.getContextPath());
-            data.put("nome", session.getAttribute("nome"));
-            data.put("ruolo", session.getAttribute("ruolo"));
-            data.put("richieste", richieste);
+        List<Richiesta> richieste = dao.findAll();
 
-            renderTemplate(response, "operatore-richieste.ftl", data);
-
-        } finally {
-            em.close();
-        }
+em.close();
     }
      private void renderTemplate(HttpServletResponse response, String templateName, Map<String, Object> data)
             throws ServletException, IOException {

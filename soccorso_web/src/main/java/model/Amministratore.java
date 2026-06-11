@@ -1,41 +1,66 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
-import java.time.LocalDate;
 import jakarta.persistence.*;
-import java.util.*;
+import jakarta_configuration.resources.PasswordConverter;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
-/**
- *
- * @author Jacopo Antonio
- */
 @Entity
 @Table(name = "amministratore")
 public class Amministratore {
-    
+
     @Id
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
+
+    @Column(name = "nome", nullable = false, length = 50)
     private String nome;
+
+    @Column(name = "cognome", nullable = false, length = 50)
     private String cognome;
-    private LocalDate data_nascita; 
+
+    @Column(name = "data_nascita")
+    private LocalDate data_nascita;
+
+    @Column(name = "citta_nascita", length = 100)
     private String citta_nascita;
+
+    @Column(name = "CF", length = 16)
     private String CF;
+
+    @Column(name = "indirizzo", length = 150)
     private String indirizzo;
+
+    @Column(name = "password", nullable = false, length = 100)
+    @Convert(converter = PasswordConverter.class)
     private String password;
+
     @ManyToMany(mappedBy = "amministratori")
     private List<Patente> patenti = new ArrayList<>();
+
     @ManyToMany(mappedBy = "amministratori")
     private List<Abilita> abilita = new ArrayList<>();
-    public Amministratore()
-    {
-        super();
+
+    public Amministratore() {
+    }
+
+    public Amministratore(String email, String nome, String cognome,
+                          LocalDate data_nascita, String citta_nascita,
+                          String CF, String indirizzo, String password) {
+        this.email = email;
+        this.nome = nome;
+        this.cognome = cognome;
+        this.data_nascita = data_nascita;
+        this.citta_nascita = citta_nascita;
+        this.CF = CF;
+        this.indirizzo = indirizzo;
+        this.password = password;
     }
 
     public List<Patente> getPatenti() {
-        return this.patenti;
+        return patenti;
     }
 
     public void setPatenti(List<Patente> patenti) {
@@ -43,7 +68,7 @@ public class Amministratore {
     }
 
     public List<Abilita> getAbilita() {
-        return this.abilita;
+        return abilita;
     }
 
     public void setAbilita(List<Abilita> abilita) {
@@ -51,31 +76,31 @@ public class Amministratore {
     }
 
     public String getEmail() {
-        return this.email;
+        return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
-    }
+    }   
 
     public String getNome() {
-        return this.nome;
+        return nome;
     }
 
     public void setNome(String nome) {
         this.nome = nome;
-    }
+    }   
 
     public String getCognome() {
-        return this.cognome;
+        return cognome;
     }
 
     public void setCognome(String cognome) {
         this.cognome = cognome;
-    }
+    }   
 
     public LocalDate getData_nascita() {
-        return this.data_nascita;
+        return data_nascita;
     }
 
     public void setData_nascita(LocalDate data_nascita) {
@@ -91,7 +116,7 @@ public class Amministratore {
     }
 
     public String getCF() {
-        return this.CF;
+        return CF;
     }
 
     public void setCF(String CF) {
@@ -99,7 +124,7 @@ public class Amministratore {
     }
 
     public String getIndirizzo() {
-        return this.indirizzo;
+        return indirizzo;
     }
 
     public void setIndirizzo(String indirizzo) {
@@ -107,18 +132,19 @@ public class Amministratore {
     }
 
     public String getPassword() {
-        return this.password;
+        return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
+    /*
+     * equals e hashCode basati sulla chiave primaria email.
+     */
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 31 * hash + this.email.hashCode();
-        return hash;
+        return this.email.hashCode();
     }
 
     @Override
@@ -126,16 +152,19 @@ public class Amministratore {
         if (this == obj) {
             return true;
         }
+
         if (obj == null || !(obj instanceof Amministratore)) {
             return false;
         }
-        Amministratore f = (Amministratore) obj;
-        return this.email.equals(f.email);
+
+        Amministratore other = (Amministratore) obj;
+
+        return Objects.equals(this.email, other.email);
     }
+
     @Override
-    public String toString()
-    {
-        return "Email: " + this.email + 
+    public String toString() {
+        return "Email: " + this.email +
                 "\nNome: " + this.nome +
                 "\nCognome: " + this.cognome +
                 "\nCF: " + this.CF +
@@ -144,5 +173,4 @@ public class Amministratore {
                 "\nIndirizzo: " + this.indirizzo +
                 "\n";
     }
-    
 }
