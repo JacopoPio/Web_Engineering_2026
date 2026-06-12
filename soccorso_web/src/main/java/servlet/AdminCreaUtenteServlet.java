@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta_configuration.resources.JPAUtil;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class AdminCreaUtenteServlet extends HttpServlet {
         cfg.setDefaultEncoding("UTF-8");
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
 
-        emf = Persistence.createEntityManagerFactory("SoccorsoWebPU");
+        emf = Persistence.createEntityManagerFactory("Soccorso");
     }
 
     private boolean isAdmin(HttpServletRequest request) {
@@ -125,7 +126,7 @@ public class AdminCreaUtenteServlet extends HttpServlet {
          */
         String passwordTemporanea = PasswordGenerator.generaPassword(12);
 
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = JPAUtil.getEntityManager();
 
         try {
             DaoInterfaceAmministratore daoAdmin =

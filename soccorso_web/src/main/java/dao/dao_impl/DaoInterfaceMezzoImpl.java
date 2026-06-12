@@ -62,5 +62,15 @@ public class DaoInterfaceMezzoImpl implements DaoInterfaceMezzo {
             throw e;
         }
     }
+    @Override
+    public Mezzo findByTarga(String targa) {
+        if (targa == null || targa.isBlank()) {
+            return null;
+        }
+
+        this.entityManager.clear();
+
+        return this.entityManager.find(Mezzo.class, targa.trim().toUpperCase());
+    }
 }
 

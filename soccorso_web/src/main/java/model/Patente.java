@@ -1,6 +1,8 @@
 package model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -10,6 +12,20 @@ public class Patente {
     @Id
     @Column(name = "tipo_patente", nullable = false, length = 50)
     private String tipoPatente;
+     @ManyToMany
+    @JoinTable(
+            name = "amministratore_abilità",
+            joinColumns = @JoinColumn(name = "tipo_patente"),
+            inverseJoinColumns = @JoinColumn(name = "email_amministratore")
+    )
+    private List<Amministratore> amministratori = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "operatore_abilità",
+            joinColumns = @JoinColumn(name = "tipo_patente"),
+            inverseJoinColumns = @JoinColumn(name = "email_operatore")
+    )
+    private List<Operatore> operatori = new ArrayList<>();
 
     public Patente() {
     }

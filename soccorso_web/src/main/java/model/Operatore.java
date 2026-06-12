@@ -52,6 +52,10 @@ public class Operatore {
             inverseJoinColumns = @JoinColumn(name = "nome_abilita")
     )
     private List<Abilita> abilita = new ArrayList<>();
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_squadra")
+    private Squadra squadra;
 
     public Operatore() {
     }

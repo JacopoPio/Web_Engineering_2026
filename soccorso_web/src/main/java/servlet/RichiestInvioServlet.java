@@ -77,7 +77,6 @@ public class RichiestInvioServlet extends HttpServlet {
         DaoInterfaceRichiesta gestore_richiesta = new DaoInterfaceRichiestaImpl(this.emf);
         Richiesta richiesta_salvata = gestore_richiesta.save(richiesta);
         response.sendRedirect(request.getContextPath() + "/richiesta-inviata");
-        return;
     }
     
     
