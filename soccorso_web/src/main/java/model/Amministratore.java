@@ -37,18 +37,26 @@ public class Amministratore {
     @Convert(converter = PasswordConverter.class)
     private String password;
 
-    @ManyToMany(mappedBy = "amministratori")
-    private List<Patente> patenti = new ArrayList<>();
 
     @ManyToMany(mappedBy = "amministratori")
     private List<Abilita> abilita = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+        name = "amministratore_patente",
+        joinColumns = @JoinColumn(name = "email_amministratore"),
+        inverseJoinColumns = @JoinColumn(name = "tipo_patente")
+    )
+    private List<Patente> patenti = new ArrayList<>();
+    
     public Amministratore() {
+        this.patenti = new ArrayList<>();
     }
 
     public Amministratore(String email, String nome, String cognome,
                           LocalDate data_nascita, String citta_nascita,
                           String CF, String indirizzo, String password) {
+        this.patenti = new ArrayList<>();
         this.email = email;
         this.nome = nome;
         this.cognome = cognome;

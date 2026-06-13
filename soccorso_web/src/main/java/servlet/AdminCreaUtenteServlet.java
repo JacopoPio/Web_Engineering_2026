@@ -12,8 +12,6 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -21,8 +19,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta_configuration.resources.JPAUtil;
+import jakarta_configuration.resources.MailUtil;
+import jakarta_configuration.resources.PasswordGenerator;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,14 +32,11 @@ import model.Abilita;
 import model.Amministratore;
 import model.Operatore;
 import model.Patente;
-import jakarta_configuration.resources.MailUtil;
-import jakarta_configuration.resources.PasswordGenerator;
 
 @WebServlet(name = "AdminCreaUtenteServlet", urlPatterns = {"/admin/nuovo-utente"})
 public class AdminCreaUtenteServlet extends HttpServlet {
 
     private Configuration cfg;
-    private EntityManagerFactory emf;
 
     @Override
     public void init() throws ServletException {
@@ -51,8 +49,6 @@ public class AdminCreaUtenteServlet extends HttpServlet {
 
         cfg.setDefaultEncoding("UTF-8");
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-
-        emf = Persistence.createEntityManagerFactory("Soccorso");
     }
 
     private boolean isAdmin(HttpServletRequest request) {
@@ -76,8 +72,15 @@ public class AdminCreaUtenteServlet extends HttpServlet {
             return;
         }
 
+        HttpSession session = request.getSession(false);
+
         Map<String, Object> data = new HashMap<>();
         data.put("contextPath", request.getContextPath());
+
+        if (session != null) {
+            data.put("nomeAdmin", session.getAttribute("nome"));
+            data.put("ruoloSessione", session.getAttribute("ruolo"));
+        }
 
         if (request.getParameter("errore") != null) {
             data.put("errore", request.getParameter("errore"));
@@ -101,29 +104,55 @@ public class AdminCreaUtenteServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        String ruolo = request.getParameter("ruolo");
-        String email = request.getParameter("email");
-        String nome = request.getParameter("nome");
-        String cognome = request.getParameter("cognome");
-        String dataNascita = request.getParameter("data_nascita");
-        String cittaNascita = request.getParameter("citta_nascita");
-        String cf = request.getParameter("cf");
-        String indirizzo = request.getParameter("indirizzo");
+        String ruolo = normalizza(request.getParameter("ruolo")).toUpperCase();
+        String email = normalizza(request.getParameter("email")).toLowerCase();
+        String nome = normalizza(request.getParameter("nome"));
+        String cognome = normalizza(request.getParameter("cognome"));
+        String dataNascitaParam = normalizza(request.getParameter("data_nascita"));
+        String cittaNascita = normalizza(request.getParameter("citta_nascita"));
+        String cf = normalizza(request.getParameter("cf")).toUpperCase();
+        String indirizzo = normalizza(request.getParameter("indirizzo"));
 
-        if (ruolo == null || ruolo.isBlank()
-                || email == null || email.isBlank()
-                || nome == null || nome.isBlank()
-                || cognome == null || cognome.isBlank()) {
+        if (ruolo.isBlank()
+            || email.isBlank()
+            || nome.isBlank()
+            || cognome.isBlank()) {
 
-            response.sendRedirect(request.getContextPath() + "/admin/nuovo-utente?errore=campi");
+                response.sendRedirect(request.getContextPath()
+                + "/admin/nuovo-utente?errore=campi");
+                return;
+}
+
+        if (cf.isBlank()) {
+            response.sendRedirect(request.getContextPath()
+            + "/admin/nuovo-utente?errore=cf_mancante");
             return;
         }
 
-        /*
-         * Password temporanea in chiaro.
-         * Verrà inviata via mail/console.
-         * Nel DB verrà salvata hashata dal PasswordConverter.
-         */
+        if (!cf.matches("^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$")) {
+            response.sendRedirect(request.getContextPath()
+            + "/admin/nuovo-utente?errore=cf_non_valido");
+            return;
+        }
+
+        if (!"ADMIN".equals(ruolo) && !"OPERATORE".equals(ruolo)) {
+            response.sendRedirect(request.getContextPath()
+                    + "/admin/nuovo-utente?errore=ruolo");
+            return;
+        }
+
+        LocalDate dataNascita = null;
+
+        if (!dataNascitaParam.isBlank()) {
+            try {
+                dataNascita = LocalDate.parse(dataNascitaParam);
+            } catch (DateTimeParseException e) {
+                response.sendRedirect(request.getContextPath()
+                        + "/admin/nuovo-utente?errore=data");
+                return;
+            }
+        }
+
         String passwordTemporanea = PasswordGenerator.generaPassword(12);
 
         EntityManager em = JPAUtil.getEntityManager();
@@ -141,6 +170,15 @@ public class AdminCreaUtenteServlet extends HttpServlet {
             DaoInterfaceAbilita daoAbilita =
                     new DaoInterfaceImplAbilita(em);
 
+            Amministratore adminEsistente = daoAdmin.findByEmail(email);
+            Operatore operatoreEsistente = daoOperatore.findByEmail(email);
+
+            if (adminEsistente != null || operatoreEsistente != null) {
+                response.sendRedirect(request.getContextPath()
+                        + "/admin/nuovo-utente?errore=email");
+                return;
+            }
+
             List<Patente> listaPatenti =
                     costruisciListaPatenti(request, daoPatente);
 
@@ -148,31 +186,19 @@ public class AdminCreaUtenteServlet extends HttpServlet {
                     costruisciListaAbilita(request, daoAbilita);
 
             if ("ADMIN".equals(ruolo)) {
-
-                Amministratore esistente = daoAdmin.findByEmail(email);
-
-                if (esistente != null) {
-                    response.sendRedirect(request.getContextPath() + "/admin/nuovo-utente?errore=email");
-                    return;
-                }
-
                 Amministratore admin = new Amministratore();
 
                 admin.setEmail(email);
                 admin.setNome(nome);
                 admin.setCognome(cognome);
-
-                if (dataNascita != null && !dataNascita.isBlank()) {
-                    admin.setData_nascita(LocalDate.parse(dataNascita));
-                }
-
+                admin.setData_nascita(dataNascita);
                 admin.setCitta_nascita(cittaNascita);
                 admin.setCF(cf);
                 admin.setIndirizzo(indirizzo);
 
                 /*
-                 * Qui NON mettere hash manuale.
-                 * Il converter farà l'hash automaticamente.
+                 * Non fare hash manuale qui.
+                 * Il PasswordConverter dell'entity farà l'hash al salvataggio.
                  */
                 admin.setPassword(passwordTemporanea);
 
@@ -180,6 +206,9 @@ public class AdminCreaUtenteServlet extends HttpServlet {
                 admin.setAbilita(listaAbilita);
 
                 daoAdmin.save(admin);
+                
+                System.out.println("PASSWORD TEMPORANEA GENERATA = " + passwordTemporanea);
+                System.out.println("EMAIL DESTINATARIO = " + email);
 
                 MailUtil.inviaCredenziali(
                         email,
@@ -189,36 +218,25 @@ public class AdminCreaUtenteServlet extends HttpServlet {
                         "ADMIN"
                 );
 
-                response.sendRedirect(request.getContextPath() + "/admin/nuovo-utente?successo=1");
+                response.sendRedirect(request.getContextPath()
+                        + "/admin/nuovo-utente?successo=1");
                 return;
             }
 
             if ("OPERATORE".equals(ruolo)) {
-
-                Operatore esistente = daoOperatore.findByEmail(email);
-
-                if (esistente != null) {
-                    response.sendRedirect(request.getContextPath() + "/admin/nuovo-utente?errore=email");
-                    return;
-                }
-
                 Operatore operatore = new Operatore();
 
                 operatore.setEmail(email);
                 operatore.setNome(nome);
                 operatore.setCognome(cognome);
-
-                if (dataNascita != null && !dataNascita.isBlank()) {
-                    operatore.setData_nascita(LocalDate.parse(dataNascita));
-                }
-
+                operatore.setData_nascita(dataNascita);
                 operatore.setCitta_nascita(cittaNascita);
                 operatore.setCF(cf);
                 operatore.setIndirizzo(indirizzo);
 
                 /*
-                 * Qui NON mettere hash manuale.
-                 * Il converter farà l'hash automaticamente.
+                 * Non fare hash manuale qui.
+                 * Il PasswordConverter dell'entity farà l'hash al salvataggio.
                  */
                 operatore.setPassword(passwordTemporanea);
 
@@ -235,11 +253,9 @@ public class AdminCreaUtenteServlet extends HttpServlet {
                         "OPERATORE"
                 );
 
-                response.sendRedirect(request.getContextPath() + "/admin/nuovo-utente?successo=1");
-                return;
+                response.sendRedirect(request.getContextPath()
+                        + "/admin/nuovo-utente?successo=1");
             }
-
-            response.sendRedirect(request.getContextPath() + "/admin/nuovo-utente?errore=ruolo");
 
         } finally {
             em.close();
@@ -260,7 +276,7 @@ public class AdminCreaUtenteServlet extends HttpServlet {
         for (String p : patenti) {
             Patente patente = daoPatente.findOrCreate(p);
 
-            if (patente != null) {
+            if (patente != null && !lista.contains(patente)) {
                 lista.add(patente);
             }
         }
@@ -284,12 +300,20 @@ public class AdminCreaUtenteServlet extends HttpServlet {
         for (String a : abilitaArray) {
             Abilita abilita = daoAbilita.findOrCreate(a);
 
-            if (abilita != null) {
+            if (abilita != null && !lista.contains(abilita)) {
                 lista.add(abilita);
             }
         }
 
         return lista;
+    }
+
+    private String normalizza(String valore) {
+        if (valore == null) {
+            return "";
+        }
+
+        return valore.trim();
     }
 
     private void renderTemplate(HttpServletResponse response,
@@ -305,13 +329,6 @@ public class AdminCreaUtenteServlet extends HttpServlet {
 
         } catch (Exception e) {
             throw new ServletException("Errore nel caricamento del template " + templateName, e);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        if (emf != null && emf.isOpen()) {
-            emf.close();
         }
     }
 }

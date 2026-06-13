@@ -1,8 +1,9 @@
 package model;
 
-import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.util.Objects;
 
 @Entity
@@ -10,22 +11,8 @@ import java.util.Objects;
 public class Patente {
 
     @Id
-    @Column(name = "tipo_patente", nullable = false, length = 50)
+    @Column(name = "tipo", nullable = false, length = 10)
     private String tipoPatente;
-     @ManyToMany
-    @JoinTable(
-            name = "amministratore_abilità",
-            joinColumns = @JoinColumn(name = "tipo_patente"),
-            inverseJoinColumns = @JoinColumn(name = "email_amministratore")
-    )
-    private List<Amministratore> amministratori = new ArrayList<>();
-    @ManyToMany
-    @JoinTable(
-            name = "operatore_abilità",
-            joinColumns = @JoinColumn(name = "tipo_patente"),
-            inverseJoinColumns = @JoinColumn(name = "email_operatore")
-    )
-    private List<Operatore> operatori = new ArrayList<>();
 
     public Patente() {
     }
@@ -35,7 +22,7 @@ public class Patente {
     }
 
     public String getTipoPatente() {
-        return tipoPatente;
+        return this.tipoPatente;
     }
 
     public void setTipoPatente(String tipoPatente) {
@@ -58,6 +45,7 @@ public class Patente {
         }
 
         Patente other = (Patente) obj;
+
         return Objects.equals(this.tipoPatente, other.tipoPatente);
     }
 

@@ -41,7 +41,7 @@ public class Operatore {
     @JoinTable(
             name = "operatore_patente",
             joinColumns = @JoinColumn(name = "email_operatore"),
-            inverseJoinColumns = @JoinColumn(name = "tipo_patente")
+            inverseJoinColumns = @JoinColumn(name = "tipo_patente", referencedColumnName= "tipo")
     )
     private List<Patente> patenti = new ArrayList<>();
 

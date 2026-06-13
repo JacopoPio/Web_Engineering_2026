@@ -1,19 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dao.dao_impl;
 
 import dao.DaoInterfaceMateriale;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 import model.Materiale;
 
-
 public class DaoInterfaceMaterialeImpl implements DaoInterfaceMateriale {
+
     private final EntityManager entityManager;
+
     public DaoInterfaceMaterialeImpl(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
@@ -21,50 +19,87 @@ public class DaoInterfaceMaterialeImpl implements DaoInterfaceMateriale {
     @Override
     public Materiale save(Materiale materiale) {
         EntityTransaction tx = this.entityManager.getTransaction();
+
         try {
             tx.begin();
-            Materiale salvata = this.entityManager.merge(materiale);
+
+            Materiale salvato = this.entityManager.merge(materiale);
+
             tx.commit();
-            return salvata;
+
+            return salvato;
+
         } catch (Exception e) {
             if (tx != null && tx.isActive()) {
                 tx.rollback();
             }
+
             throw e;
         }
     }
 
     @Override
     public List<Materiale> findAll() {
-        String jpql = "SELECT m FROM Materiale m";
-        TypedQuery<Materiale> query = this.entityManager.createQuery(jpql, Materiale.class);
+        this.entityManager.clear();
+
+        String jpql = "SELECT m FROM Materiale m ORDER BY m.tipo";
+
+        TypedQuery<Materiale> query =
+                this.entityManager.createQuery(jpql, Materiale.class);
+
         return query.getResultList();
     }
 
     @Override
-    public Materiale update(Materiale abilita) {
-        return this.save(abilita); 
+    public Materiale findByTipo(String tipo) {
+        if (tipo == null || tipo.isBlank()) {
+            return null;
+        }
+
+        String jpql = "SELECT m FROM Materiale m WHERE m.tipo = :tipo";
+
+        TypedQuery<Materiale> query =
+                this.entityManager.createQuery(jpql, Materiale.class);
+
+        query.setParameter("tipo", tipo.trim());
+
+        try {
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
     @Override
-    public boolean delete(int idMateriale) {
+    public Materiale update(Materiale materiale) {
+        return this.save(materiale);
+    }
+
+    @Override
+    public boolean delete(String tipoMateriale) {
         EntityTransaction tx = this.entityManager.getTransaction();
+
         try {
             tx.begin();
-            Materiale materiale = entityManager.find(Materiale.class, idMateriale);
+
+            Materiale materiale = findByTipo(tipoMateriale);
+
             if (materiale != null) {
-                entityManager.remove(materiale);
+                this.entityManager.remove(materiale);
                 tx.commit();
                 return true;
             }
+
             tx.commit();
+
             return false;
+
         } catch (Exception e) {
             if (tx != null && tx.isActive()) {
                 tx.rollback();
             }
+
             throw e;
         }
     }
-    
 }

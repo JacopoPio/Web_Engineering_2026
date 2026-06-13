@@ -195,7 +195,7 @@
 <nav>
     <a href="${contextPath}/admin">Dashboard</a>
     <a href="${contextPath}/admin/richieste">Richieste</a>
-    <a href="${contextPath}/gestione-utenti">Gestione Utenti</a>
+    <a href="${contextPath}/admin/nuovo-utente">Gestione Utenti</a>
     <a href="${contextPath}/mezzi">Mezzi</a>
     <a href="${contextPath}/materiali">Materiali</a>
     <a href="${contextPath}/operatori">Operatori</a>
