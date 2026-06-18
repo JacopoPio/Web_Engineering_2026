@@ -90,6 +90,19 @@ public class AdminCreaUtenteServlet extends HttpServlet {
             data.put("successo", true);
         }
 
+        // --- INIZIO NUOVO CODICE ---
+        // Recuperiamo le patenti dal DB per passarle al template
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            DaoInterfacePatente daoPatente = new DaoInterfaceImplPatente(em);
+            List<Patente> listaPatenti = daoPatente.findAll();
+            data.put("listaPatenti", listaPatenti);
+            DaoInterfaceAbilita daoAbilita = new DaoInterfaceImplAbilita(em);
+            List<Abilita> abilita = daoAbilita.findAll();
+            data.put("listaAbilita",abilita);
+        } finally {
+            em.close();
+        }
         renderTemplate(response, "nuovo-utente.ftl", data);
     }
 
@@ -285,23 +298,25 @@ public class AdminCreaUtenteServlet extends HttpServlet {
     }
 
     private List<Abilita> costruisciListaAbilita(HttpServletRequest request,
-                                                  DaoInterfaceAbilita daoAbilita) {
+                                                 DaoInterfaceAbilita daoAbilita) {
 
         List<Abilita> lista = new ArrayList<>();
 
-        String abilitaTesto = request.getParameter("abilita");
+        // Cambiato da getParameter a getParameterValues perché ora sono checkbox
+        String[] abilitaArray = request.getParameterValues("abilita");
 
-        if (abilitaTesto == null || abilitaTesto.isBlank()) {
+        if (abilitaArray == null) {
             return lista;
         }
 
-        String[] abilitaArray = abilitaTesto.split(",");
-
         for (String a : abilitaArray) {
-            Abilita abilita = daoAbilita.findOrCreate(a);
+            // Usiamo il valore pulito se necessario, o lasciamo fare al DAO
+            if (a != null && !a.isBlank()) {
+                Abilita abilita = daoAbilita.findOrCreate(a.trim());
 
-            if (abilita != null && !lista.contains(abilita)) {
-                lista.add(abilita);
+                if (abilita != null && !lista.contains(abilita)) {
+                    lista.add(abilita);
+                }
             }
         }
 

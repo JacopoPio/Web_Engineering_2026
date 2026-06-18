@@ -16,19 +16,12 @@ import java.util.*;
 public class Abilita {
     @Id
     private String nome;
-    @ManyToMany
-    @JoinTable(
-            name = "amministratore_abilità",
-            joinColumns = @JoinColumn(name = "nome_abilita"),
-            inverseJoinColumns = @JoinColumn(name = "email_amministratore")
-    )
+    
+    @ManyToMany(mappedBy = "abilita")
     private List<Amministratore> amministratori = new ArrayList<>();
-    @ManyToMany
-    @JoinTable(
-            name = "operatore_abilità",
-            joinColumns = @JoinColumn(name = "nome_abilita"),
-            inverseJoinColumns = @JoinColumn(name = "email_operatore")
-    )
+
+    
+    @ManyToMany(mappedBy = "abilita")
     private List<Operatore> operatori = new ArrayList<>();
     public Abilita()
     {

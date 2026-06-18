@@ -38,7 +38,12 @@ public class Amministratore {
     private String password;
 
 
-    @ManyToMany(mappedBy = "amministratori")
+    @ManyToMany
+    @JoinTable(
+            name = "amministratore_abilita", // Nome tabella ponte sul DB
+            joinColumns = @JoinColumn(name = "email_amministratore"),
+            inverseJoinColumns = @JoinColumn(name = "nome_abilita")
+    )
     private List<Abilita> abilita = new ArrayList<>();
 
     @ManyToMany

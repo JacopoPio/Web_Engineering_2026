@@ -262,20 +262,35 @@
                     <label>Patenti</label>
 
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="patenti" value="A"> A</label>
-                        <label><input type="checkbox" name="patenti" value="B"> B</label>
-                        <label><input type="checkbox" name="patenti" value="C"> C</label>
-                        <label><input type="checkbox" name="patenti" value="D"> D</label>
-                        <label><input type="checkbox" name="patenti" value="NAUTICA"> Nautica</label>
+                        <#-- Controllo se la lista esiste e non è vuota -->
+                        <#if listaPatenti?? && (listaPatenti?size > 0)>
+                            <#list listaPatenti as patente>
+                                <label>
+                                    <input type="checkbox" name="patenti" value="${patente.tipoPatente}"> 
+                                    ${patente.tipoPatente}
+                                </label>
+                            </#list>
+                        <#else>
+                            <span style="color: #666; font-style: italic;">Nessuna patente presente nel database.</span>
+                        </#if>
                     </div>
                 </div>
 
                 <div class="form-group full">
-                    <label for="abilita">Abilità</label>
-                    <input type="text"
-                           id="abilita"
-                           name="abilita"
-                           placeholder="Esempio: infermiere, elettricista, autista">
+                    <label>Abilità (Caricate dal DB)</label>
+
+                    <div class="checkbox-group">
+                        <#if listaAbilita?? && (listaAbilita?size > 0)>
+                            <#list listaAbilita as abilita>
+                                <label>
+                                    <input type="checkbox" name="abilita" value="${abilita.nome}"> 
+                                    ${abilita.nome}
+                                </label>
+                            </#list>
+                        <#else>
+                            <span style="color: #666; font-style: italic;">Nessuna abilità presente nel database.</span>
+                        </#if>
+                    </div>
                 </div>
 
                 <div class="form-group full">
