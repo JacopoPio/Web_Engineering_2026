@@ -76,6 +76,10 @@ public class AdminCreaUtenteServlet extends HttpServlet {
 
         Map<String, Object> data = new HashMap<>();
         data.put("contextPath", request.getContextPath());
+        data.put("modalita", "creazione");
+        data.put("titoloPagina", "Crea Nuovo Utente");
+        data.put("azioneForm","creaUtente");
+        data.put("formAction",request.getContextPath() + "/admin/nuovo-utente");
 
         if (session != null) {
             data.put("nomeAdmin", session.getAttribute("nome"));

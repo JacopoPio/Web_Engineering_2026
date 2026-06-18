@@ -39,9 +39,9 @@ public class DaoInterfaceImplAbilita implements DaoInterfaceAbilita {
 
     @Override
     public List<Abilita> findAll() {
-        this.entityManager.clear();
+       // this.entityManager.clear();
 
-        String jpql = "SELECT a FROM Abilita a";
+        String jpql = "SELECT a FROM Abilita a ORDER BY a.nome";
 
         TypedQuery<Abilita> query =
                 this.entityManager.createQuery(jpql, Abilita.class);

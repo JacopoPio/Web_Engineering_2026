@@ -36,6 +36,9 @@ public class Amministratore {
     @Column(name = "password", nullable = false, length = 100)
     @Convert(converter = PasswordConverter.class)
     private String password;
+    
+    @Column(name = "attivo", nullable = false)
+    private boolean attivo = true;
 
 
     @ManyToMany
@@ -56,6 +59,14 @@ public class Amministratore {
     
     public Amministratore() {
         this.patenti = new ArrayList<>();
+    }
+    
+    public boolean isAttivo(){
+        return attivo;
+    }
+    
+    public void setAttivo(boolean attivo){
+        this.attivo = attivo;
     }
 
     public Amministratore(String email, String nome, String cognome,

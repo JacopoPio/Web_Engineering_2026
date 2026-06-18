@@ -39,9 +39,9 @@ public class DaoInterfaceImplPatente implements DaoInterfacePatente {
 
     @Override
     public List<Patente> findAll() {
-        this.entityManager.clear();
+        //this.entityManager.clear();
 
-        String jpql = "SELECT p FROM Patente p";
+        String jpql = "SELECT p FROM Patente p ORDER BY p.tipoPatente";
 
         TypedQuery<Patente> query =
                 this.entityManager.createQuery(jpql, Patente.class);

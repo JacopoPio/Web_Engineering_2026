@@ -1,11 +1,23 @@
+```ftl
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
-    <title>Nuovo Utente - SoccorsoWeb</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        ${(titoloPagina!"Gestione utente")?html}
+    </title>
 
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             margin: 0;
@@ -15,153 +27,225 @@
         }
 
         header {
-            background: linear-gradient(135deg, #b71c1c, #d32f2f);
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #1565c0, #1976d2);
             color: white;
-            padding: 35px 20px;
             text-align: center;
         }
 
         header h1 {
+            margin: 0 0 8px;
+        }
+
+        header p {
             margin: 0;
-            font-size: 38px;
         }
 
         nav {
-            background: #8e0000;
-            padding: 14px;
+            padding: 13px;
+            background: #0d47a1;
             text-align: center;
         }
 
         nav a {
+            display: inline-block;
+            margin: 4px 10px;
             color: white;
-            margin: 0 10px;
             font-weight: bold;
             text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 6px;
         }
 
         nav a:hover {
-            background: rgba(255,255,255,0.18);
+            text-decoration: underline;
         }
 
         main {
-            max-width: 1000px;
-            margin: 35px auto;
-            padding: 0 20px;
+            width: min(950px, 94%);
+            margin: 30px auto;
         }
 
-        .panel {
+        .contenitore {
+            padding: 25px;
             background: white;
-            padding: 30px;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0,0,0,.10);
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
         }
 
-        .panel h2 {
-            margin-top: 0;
-            color: #b71c1c;
+        .messaggio {
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            border-radius: 6px;
+            font-weight: bold;
         }
 
-        .form-grid {
+        .successo {
+            border: 1px solid #86c99a;
+            background: #dff3e5;
+            color: #166534;
+        }
+
+        .errore {
+            border: 1px solid #ef9a9a;
+            background: #fde2e2;
+            color: #991b1b;
+        }
+
+        .griglia {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 18px;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
+        .campo {
+            margin-bottom: 18px;
         }
 
-        .form-group.full {
+        .campo-intero {
             grid-column: 1 / -1;
         }
 
         label {
+            display: block;
+            margin-bottom: 7px;
             font-weight: bold;
-            margin-bottom: 6px;
-            color: #444;
         }
 
-        input, select, textarea {
-            padding: 10px;
-            border: 1px solid #bbb;
+        input,
+        select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #b8c2cc;
             border-radius: 6px;
-            font-size: 14px;
+            font: inherit;
+            background: white;
         }
 
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #b71c1c;
-            box-shadow: 0 0 0 2px rgba(183,28,28,.15);
+        input:focus,
+        select:focus {
+            outline: 2px solid #90caf9;
+            border-color: #1565c0;
         }
 
-        .checkbox-group {
+        input[readonly] {
+            background: #edf1f5;
+            color: #555;
+        }
+
+        fieldset {
+            margin: 22px 0;
+            padding: 18px;
+            border: 1px solid #c7d1da;
+            border-radius: 8px;
+        }
+
+        legend {
+            padding: 0 8px;
+            color: #0d47a1;
+            font-weight: bold;
+        }
+
+        .lista-checkbox {
             display: flex;
-            gap: 14px;
             flex-wrap: wrap;
-            margin-top: 5px;
+            gap: 10px;
         }
 
-        .checkbox-group label {
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin: 0;
+            padding: 9px 13px;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            background: #f8fafc;
             font-weight: normal;
+            cursor: pointer;
         }
 
-        .btn {
+        .checkbox-label:hover {
+            background: #eaf2fb;
+        }
+
+        .checkbox-label input {
+            width: auto;
+            margin: 0;
+        }
+
+        .nessun-elemento {
+            margin: 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        .azioni {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        button,
+        .pulsante {
             display: inline-block;
-            padding: 11px 18px;
+            padding: 11px 20px;
             border: none;
             border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: #b71c1c;
+            background: #1565c0;
             color: white;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
         }
 
-        .btn-primary:hover {
-            background: #8e0000;
+        button:hover,
+        .pulsante:hover {
+            background: #0d47a1;
         }
 
-        .msg-ok {
-            background: #e8f5e9;
-            color: #1b5e20;
-            border-left: 6px solid #2e7d32;
-            padding: 14px;
-            margin-bottom: 20px;
-            border-radius: 6px;
+        .pulsante-secondario {
+            background: #607d8b;
         }
 
-        .msg-errore {
-            background: #ffebee;
-            color: #b71c1c;
-            border-left: 6px solid #b71c1c;
-            padding: 14px;
-            margin-bottom: 20px;
-            border-radius: 6px;
+        .pulsante-secondario:hover {
+            background: #455a64;
+        }
+
+        .obbligatorio {
+            color: #c62828;
+        }
+
+        small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
         }
 
         footer {
+            margin-top: 35px;
+            padding: 20px;
+            background: #263238;
+            color: white;
             text-align: center;
-            padding: 25px;
-            color: #666;
-            font-size: 14px;
         }
 
         @media (max-width: 700px) {
-            .form-grid {
+            .griglia {
                 grid-template-columns: 1fr;
             }
 
-            nav a {
-                display: block;
-                margin: 6px 0;
+            .campo-intero {
+                grid-column: auto;
+            }
+
+            .azioni {
+                flex-direction: column;
+            }
+
+            button,
+            .pulsante {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -170,145 +254,441 @@
 <body>
 
 <header>
-    <h1>Crea nuovo utente</h1>
-    <p>Area Amministratore - SoccorsoWeb</p>
+    <h1>
+        ${(titoloPagina!"Gestione utente")?html}
+    </h1>
+
+    <#if nomeAdmin??>
+        <p>
+            Amministratore: ${nomeAdmin?html}
+        </p>
+    </#if>
 </header>
 
 <nav>
-    <a href="${contextPath}/admin">Dashboard</a>
-    <a href="${contextPath}/admin/richieste">Richieste</a>
-    <a href="${contextPath}/admin/nuovo-utente">Nuovo Utente</a>
-    <a href="${contextPath}/mezzi">Mezzi</a>
-    <a href="${contextPath}/materiali">Materiali</a>
-    <a href="${contextPath}/logout">Logout</a>
+    <a href="${contextPath}/admin">
+        Dashboard
+    </a>
+
+    <a href="${contextPath}/admin/utenti">
+        Gestione utenti
+    </a>
+
+    <a href="${contextPath}/admin/nuovo-utente">
+        Nuovo utente
+    </a>
+
+    <a href="${contextPath}/logout">
+        Logout
+    </a>
 </nav>
 
 <main>
 
-    <#if successo??>
-        <div class="msg-ok">
-            Utente creato correttamente. Le credenziali sono state generate e stampate/inviate.
+    <#-- Messaggio di successo passato con data.put("successo", true) -->
+    <#if successo?? && successo>
+        <div class="messaggio successo">
+            Utente creato correttamente.
+            Le credenziali temporanee sono state generate.
         </div>
     </#if>
 
+    <#-- Messaggi di errore -->
     <#if errore??>
-        <div class="msg-errore">
+        <div class="messaggio errore">
+
             <#if errore == "campi">
-                Compila almeno ruolo, email, nome e cognome.
-            <#elseif errore == "email">
-                Esiste già un utente con questa email.
+                Compila tutti i campi obbligatori.
+
+            <#elseif errore == "cf_mancante">
+                Il codice fiscale è obbligatorio.
+
+            <#elseif errore == "cf_non_valido">
+                Il codice fiscale inserito non rispetta il formato previsto.
+
             <#elseif errore == "ruolo">
-                Ruolo non valido.
+                Il ruolo selezionato non è valido.
+
             <#elseif errore == "data">
-                Data di nascita non valida.
+                La data di nascita inserita non è valida.
+
+            <#elseif errore == "email">
+                Esiste già un amministratore o un operatore con questa email.
+
+            <#elseif errore == "selezione_non_valida">
+                È stata selezionata una patente o un'abilità non valida.
+
+            <#elseif errore == "utente_non_trovato">
+                L'utente richiesto non è stato trovato.
+
             <#else>
-                Errore durante la creazione dell'utente.
+                Si è verificato un errore durante l'operazione.
             </#if>
+
         </div>
     </#if>
 
-    <section class="panel">
-        <h2>Dati nuovo utente</h2>
+    <section class="contenitore">
 
-        <form action="${contextPath}/admin/nuovo-utente" method="post">
+        <h2>
+            <#if (modalita!"creazione") == "modifica">
+                Modifica i dati dell'utente
+            <#else>
+                Inserisci i dati del nuovo utente
+            </#if>
+        </h2>
 
-            <div class="form-grid">
+        <form
+            method="post"
+            action="${formAction?html}"
+        >
 
-                <div class="form-group">
-                    <label for="ruolo">Ruolo</label>
-                    <select id="ruolo" name="ruolo" required>
-                        <option value="">Seleziona ruolo</option>
-                        <option value="ADMIN">Amministratore</option>
-                        <option value="OPERATORE">Operatore</option>
-                    </select>
+            <input
+                type="hidden"
+                name="azione"
+                value="${azioneForm?html}"
+            >
+
+            <div class="griglia">
+
+                <#-- Ruolo -->
+                <div class="campo">
+
+                    <#if (modalita!"creazione") == "modifica">
+
+                        <label for="ruolo_visualizzato">
+                            Ruolo
+                        </label>
+
+                        <input
+                            type="text"
+                            id="ruolo_visualizzato"
+                            value="${(ruoloUtente!"")?html}"
+                            readonly
+                        >
+
+                        <input
+                            type="hidden"
+                            name="ruolo"
+                            value="${(ruoloUtente!"")?html}"
+                        >
+
+                    <#else>
+
+                        <label for="ruolo">
+                            Ruolo
+                            <span class="obbligatorio">*</span>
+                        </label>
+
+                        <select
+                            id="ruolo"
+                            name="ruolo"
+                            required
+                        >
+                            <option value="">
+                                Seleziona un ruolo
+                            </option>
+
+                            <option
+                                value="ADMIN"
+                                <#if (ruoloUtente!"") == "ADMIN">
+                                    selected
+                                </#if>
+                            >
+                                Amministratore
+                            </option>
+
+                            <option
+                                value="OPERATORE"
+                                <#if (ruoloUtente!"") == "OPERATORE">
+                                    selected
+                                </#if>
+                            >
+                                Operatore
+                            </option>
+                        </select>
+
+                    </#if>
+
                 </div>
 
-                <div class="form-group">
-                    <label for="email">Email / Username</label>
-                    <input type="email" id="email" name="email" required>
+                <#-- Email -->
+                <div class="campo">
+
+                    <label for="email">
+                        Email
+                        <span class="obbligatorio">*</span>
+                    </label>
+
+                    <#if (modalita!"creazione") == "modifica">
+
+                        <input
+                            type="email"
+                            id="email"
+                            value="${(emailUtente!"")?html}"
+                            readonly
+                        >
+
+                        <input
+                            type="hidden"
+                            name="email"
+                            value="${(emailUtente!"")?html}"
+                        >
+
+                        <small>
+                            L'email non può essere modificata.
+                        </small>
+
+                    <#else>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="${(emailUtente!"")?html}"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </#if>
+
                 </div>
 
-                <div class="form-group">
-                    <label for="nome">Nome</label>
-                    <input type="text" id="nome" name="nome" required>
+                <#-- Nome -->
+                <div class="campo">
+                    <label for="nome">
+                        Nome
+                        <span class="obbligatorio">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        value="${(nomeUtente!"")?html}"
+                        maxlength="100"
+                        autocomplete="given-name"
+                        required
+                    >
                 </div>
 
-                <div class="form-group">
-                    <label for="cognome">Cognome</label>
-                    <input type="text" id="cognome" name="cognome" required>
+                <#-- Cognome -->
+                <div class="campo">
+                    <label for="cognome">
+                        Cognome
+                        <span class="obbligatorio">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="cognome"
+                        name="cognome"
+                        value="${(cognomeUtente!"")?html}"
+                        maxlength="100"
+                        autocomplete="family-name"
+                        required
+                    >
                 </div>
 
-                <div class="form-group">
-                    <label for="data_nascita">Data di nascita</label>
-                    <input type="date" id="data_nascita" name="data_nascita">
+                <#-- Codice fiscale -->
+                <div class="campo">
+                    <label for="cf">
+                        Codice fiscale
+                        <span class="obbligatorio">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="cf"
+                        name="cf"
+                        value="${(cfUtente!"")?html}"
+                        minlength="16"
+                        maxlength="16"
+                        pattern="[A-Za-z]{6}[0-9]{2}[A-Za-z][0-9]{2}[A-Za-z][0-9]{3}[A-Za-z]"
+                        title="Inserire un codice fiscale di 16 caratteri"
+                        required
+                    >
                 </div>
 
-                <div class="form-group">
-                    <label for="citta_nascita">Città di nascita</label>
-                    <input type="text" id="citta_nascita" name="citta_nascita">
+                <#-- Data di nascita -->
+                <div class="campo">
+                    <label for="data_nascita">
+                        Data di nascita
+                    </label>
+
+                    <input
+                        type="date"
+                        id="data_nascita"
+                        name="data_nascita"
+                        value="${(dataNascitaUtente!"")?html}"
+                    >
                 </div>
 
-                <div class="form-group">
-                    <label for="cf">Codice fiscale</label>
-                    <input type="text" id="cf" name="cf" maxlength="16">
+                <#-- Città di nascita -->
+                <div class="campo">
+                    <label for="citta_nascita">
+                        Città di nascita
+                    </label>
+
+                    <input
+                        type="text"
+                        id="citta_nascita"
+                        name="citta_nascita"
+                        value="${(cittaNascitaUtente!"")?html}"
+                        maxlength="100"
+                    >
                 </div>
 
-                <div class="form-group">
-                    <label for="indirizzo">Indirizzo</label>
-                    <input type="text" id="indirizzo" name="indirizzo">
-                </div>
+                <#-- Indirizzo -->
+                <div class="campo">
+                    <label for="indirizzo">
+                        Indirizzo
+                    </label>
 
-                <div class="form-group full">
-                    <label>Patenti</label>
-
-                    <div class="checkbox-group">
-                        <#-- Controllo se la lista esiste e non è vuota -->
-                        <#if listaPatenti?? && (listaPatenti?size > 0)>
-                            <#list listaPatenti as patente>
-                                <label>
-                                    <input type="checkbox" name="patenti" value="${patente.tipoPatente}"> 
-                                    ${patente.tipoPatente}
-                                </label>
-                            </#list>
-                        <#else>
-                            <span style="color: #666; font-style: italic;">Nessuna patente presente nel database.</span>
-                        </#if>
-                    </div>
-                </div>
-
-                <div class="form-group full">
-                    <label>Abilità (Caricate dal DB)</label>
-
-                    <div class="checkbox-group">
-                        <#if listaAbilita?? && (listaAbilita?size > 0)>
-                            <#list listaAbilita as abilita>
-                                <label>
-                                    <input type="checkbox" name="abilita" value="${abilita.nome}"> 
-                                    ${abilita.nome}
-                                </label>
-                            </#list>
-                        <#else>
-                            <span style="color: #666; font-style: italic;">Nessuna abilità presente nel database.</span>
-                        </#if>
-                    </div>
-                </div>
-
-                <div class="form-group full">
-                    <button type="submit" class="btn btn-primary">
-                        Crea utente
-                    </button>
+                    <input
+                        type="text"
+                        id="indirizzo"
+                        name="indirizzo"
+                        value="${(indirizzoUtente!"")?html}"
+                        maxlength="255"
+                        autocomplete="street-address"
+                    >
                 </div>
 
             </div>
 
+            <#-- PATENTI: la servlet usa data.put("listaPatenti", listaPatenti) -->
+            <fieldset>
+                <legend>
+                    Patenti possedute
+                </legend>
+
+                <#if listaPatenti?? && listaPatenti?size gt 0>
+
+                    <div class="lista-checkbox">
+
+                        <#list listaPatenti as patente>
+
+                            <label class="checkbox-label">
+
+                                <input
+                                    type="checkbox"
+                                    name="patenti"
+                                    value="${patente.tipoPatente?html}"
+
+                                    <#if patentiSelezionate??
+                                        && patentiSelezionate?seq_contains(
+                                            patente.tipoPatente
+                                        )>
+                                        checked
+                                    </#if>
+                                >
+
+                                ${patente.tipoPatente?html}
+
+                            </label>
+
+                        </#list>
+
+                    </div>
+
+                <#else>
+
+                    <p class="nessun-elemento">
+                        Nessuna patente presente nel database.
+                    </p>
+
+                </#if>
+            </fieldset>
+
+            <#-- ABILITÀ: la servlet usa data.put("listaAbilita", abilita) -->
+            <fieldset>
+                <legend>
+                    Abilità possedute
+                </legend>
+
+                <#if listaAbilita?? && listaAbilita?size gt 0>
+
+                    <div class="lista-checkbox">
+
+                        <#list listaAbilita as abilita>
+
+                            <label class="checkbox-label">
+
+                                <input
+                                    type="checkbox"
+                                    name="abilita"
+                                    value="${abilita.nome?html}"
+
+                                    <#if abilitaSelezionate??
+                                        && abilitaSelezionate?seq_contains(
+                                            abilita.nome
+                                        )>
+                                        checked
+                                    </#if>
+                                >
+
+                                ${abilita.nome?html}
+
+                            </label>
+
+                        </#list>
+
+                    </div>
+
+                <#else>
+
+                    <p class="nessun-elemento">
+                        Nessuna abilità presente nel database.
+                    </p>
+
+                </#if>
+            </fieldset>
+
+            <div class="azioni">
+
+                <button type="submit">
+
+                    <#if (modalita!"creazione") == "modifica">
+                        Salva modifiche
+                    <#else>
+                        Crea utente
+                    </#if>
+
+                </button>
+
+                <#if (modalita!"creazione") == "modifica">
+
+                    <a
+                        class="pulsante pulsante-secondario"
+                        href="${contextPath}/admin/utenti"
+                    >
+                        Annulla
+                    </a>
+
+                <#else>
+
+                    <a
+                        class="pulsante pulsante-secondario"
+                        href="${contextPath}/admin"
+                    >
+                        Torna alla dashboard
+                    </a>
+
+                </#if>
+
+            </div>
+
         </form>
+
     </section>
 
 </main>
 
 <footer>
-    <p>&copy; 2026 SoccorsoWeb - Progetto Web Engineering</p>
+    SoccorsoWeb – Area amministratore
 </footer>
 
 </body>
 </html>
+```

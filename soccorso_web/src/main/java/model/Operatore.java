@@ -36,6 +36,9 @@ public class Operatore {
     @Convert(converter = PasswordConverter.class)
     @Column(name = "password", nullable = false, length = 100)
     private String password;
+    
+    @Column(name = "attivo", nullable = false)
+    private boolean attivo = true;
 
     @ManyToMany
     @JoinTable(
@@ -58,6 +61,18 @@ public class Operatore {
     private Squadra squadra;
 
     public Operatore() {
+    }
+    
+    public boolean isAttivo() {
+        return attivo;
+    }
+
+    public boolean getAttivo() {
+        return attivo;
+    }
+    
+    public void setAttivo(boolean attivo){
+        this.attivo = attivo;
     }
 
     public String getEmail() {
