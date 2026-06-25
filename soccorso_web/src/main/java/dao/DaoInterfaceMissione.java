@@ -13,4 +13,5 @@ public interface DaoInterfaceMissione {
     public List<Missione> findAll();
     public Missione update(Missione missione);
     public boolean delete(int idMissione);
+    public boolean existsByRichiesta(Richiesta richiesta);
 }

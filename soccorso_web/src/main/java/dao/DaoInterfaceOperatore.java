@@ -14,4 +14,8 @@ public interface DaoInterfaceOperatore {
     public Operatore update(Operatore operatore);
 
     public boolean delete(String emailOp);
+    
+    public List<Operatore> findDisponibili();
+    
+    public boolean isCaposquadra(String email);
 }

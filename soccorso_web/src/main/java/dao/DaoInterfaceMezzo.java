@@ -14,4 +14,5 @@ public interface DaoInterfaceMezzo {
     public Mezzo update(Mezzo mezzo);
     public boolean delete(String targaMezzo);
     public Mezzo findByTarga(String targa);
+    public List<Mezzo> findDisponibili();
 }

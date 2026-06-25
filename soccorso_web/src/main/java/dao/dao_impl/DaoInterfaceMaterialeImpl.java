@@ -102,4 +102,11 @@ public class DaoInterfaceMaterialeImpl implements DaoInterfaceMateriale {
             throw e;
         }
     }
+
+    @Override
+    public List<Materiale> findDisponibili() {
+        return entityManager.createQuery(
+                "SELECT m FROM Materiale m WHERE m.missioni IS EMPTY", Materiale.class)
+            .getResultList();
+        }
 }

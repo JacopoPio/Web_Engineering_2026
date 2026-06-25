@@ -72,5 +72,11 @@ public class DaoInterfaceMezzoImpl implements DaoInterfaceMezzo {
 
         return this.entityManager.find(Mezzo.class, targa.trim().toUpperCase());
     }
+    @Override
+    public List<Mezzo> findDisponibili() {
+        return entityManager.createQuery(
+                "SELECT m FROM Mezzo m WHERE m.missioni IS EMPTY", Mezzo.class)
+            .getResultList();
+        }
 }
 

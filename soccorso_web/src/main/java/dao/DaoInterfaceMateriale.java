@@ -14,4 +14,5 @@ public interface DaoInterfaceMateriale {
     public Materiale update(Materiale materiale);
 
     public boolean delete(String tipoMateriale);
+    public List<Materiale> findDisponibili();
 }

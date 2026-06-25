@@ -89,4 +89,20 @@ public class DaoInterfaceOperatoreImpl implements DaoInterfaceOperatore {
             throw e;
         }
     }
+
+    @Override
+    public List<Operatore> findDisponibili() {
+        return entityManager.createQuery(
+                "SELECT o FROM Operatore o WHERE o.squadra IS NULL", Operatore.class)
+            .getResultList();
+        }
+
+    @Override
+    public boolean isCaposquadra(String email) { // Evita di caricare record inutili
+        Long count = entityManager.createQuery(
+                "SELECT COUNT(o) FROM Operatore o WHERE o.email = :email AND o.caposquadra = true", Long.class)
+            .setParameter("email", email)
+            .getSingleResult();
+            return count > 0;
+    }
 }

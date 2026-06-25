@@ -39,6 +39,9 @@ public class Operatore {
     
     @Column(name = "attivo", nullable = false)
     private boolean attivo = true;
+    
+    @Column(name = "caposquadra")
+    private boolean caposquadra = false;
 
     @ManyToMany
     @JoinTable(
