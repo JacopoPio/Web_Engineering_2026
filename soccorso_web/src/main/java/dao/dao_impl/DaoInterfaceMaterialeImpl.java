@@ -109,4 +109,24 @@ public class DaoInterfaceMaterialeImpl implements DaoInterfaceMateriale {
                 "SELECT m FROM Materiale m WHERE m.missioni IS EMPTY", Materiale.class)
             .getResultList();
         }
+     @Override
+    public boolean isDisponibile(Long id) {
+        String jpql = "SELECT CASE WHEN mat.missioni IS EMPTY THEN true ELSE false END " +
+                      "FROM Materiale mat WHERE mat.id = :id";
+
+        return entityManager.createQuery(jpql, Boolean.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+    public Materiale findById(Long id) {
+    String jpql = "SELECT m FROM Materiale m WHERE m.id = :id";
+
+    try {
+        return entityManager.createQuery(jpql, Materiale.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    } catch (NoResultException e) {
+        return null;
+        }
+    }
 }

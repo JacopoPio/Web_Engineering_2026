@@ -5,12 +5,14 @@ import dao.DaoInterfaceMezzo;
 import dao.DaoInterfaceMissione;
 import dao.DaoInterfaceOperatore;
 import dao.DaoInterfaceRichiesta;
+import dao.DaoInterfaceSquadra; // NB: da creare se non esiste già
 
 import dao.dao_impl.DaoInterfaceMaterialeImpl;
 import dao.dao_impl.DaoInterfaceMezzoImpl;
 import dao.dao_impl.DaoInterfaceMissioneImpl;
 import dao.dao_impl.DaoInterfaceRichiestaImpl;
 import dao.dao_impl.DaoInterfaceOperatoreImpl;
+import dao.dao_impl.DaoInterfaceSquadraImpl; // NB: da creare se non esiste già
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -32,9 +34,9 @@ import model.Mezzo;
 import model.Missione;
 import model.Operatore;
 import model.Richiesta;
+import model.Squadra;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -137,10 +139,6 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             DaoInterfaceMateriale daoMateriale =
                     new DaoInterfaceMaterialeImpl(em);
 
-            /*
-             * Nel tuo progetto l'email del segnalante
-             * viene usata come identificativo della richiesta.
-             */
             Richiesta richiesta =
                     daoRichiesta.findByEmail(richiestaId);
 
@@ -245,7 +243,7 @@ public class AdminCreaMissioneServlet extends HttpServlet {
     }
 
     /*
-     * Crea la missione usando solamente i DAO.
+     * Crea la missione e la squadra usando solamente i DAO.
      */
     @Override
     protected void doPost(
@@ -322,6 +320,9 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             DaoInterfaceMateriale daoMateriale =
                     new DaoInterfaceMaterialeImpl(em);
 
+            DaoInterfaceSquadra daoSquadra =
+                    new DaoInterfaceSquadraImpl(em);
+
             Richiesta richiesta =
                     daoRichiesta.findByEmail(richiestaId);
 
@@ -386,16 +387,16 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             }
 
             /*
-             * Altri operatori.
+             * Altri operatori (non includono ancora il caposquadra).
              */
-            List<Operatore> operatori =
+            List<Operatore> altriOperatori =
                     costruisciListaOperatori(
                             request,
                             emailCaposquadra,
                             daoOperatore
                     );
 
-            if (operatori == null) {
+            if (altriOperatori == null) {
 
                 redirectErrore(
                         request,
@@ -405,6 +406,14 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 );
                 return;
             }
+
+            // Squadra.operatori è una lista unica: ci metto dentro
+            // sia il caposquadra che gli altri operatori.
+            List<Operatore> tuttiOperatori =
+                    new ArrayList<>();
+
+            tuttiOperatori.add(caposquadra);
+            tuttiOperatori.addAll(altriOperatori);
 
             /*
              * Mezzi.
@@ -446,41 +455,33 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 return;
             }
 
+            // Creo la Squadra (nome generato automaticamente,
+            // dato che il form non raccoglie ancora questo dato).
+            Squadra squadra = new Squadra();
+            squadra.setNome("Squadra - " + obiettivo);
+            squadra.setOperatori(tuttiOperatori);
+
             Missione missione =
                     new Missione();
 
             missione.setRichiesta(richiesta);
-            missione.setObiettivo(obiettivo);
-            missione.setPosizione(posizione);
 
-            missione.setDataInizio(
-                    LocalDateTime.now()
+            missione.setDescrizione(
+                    obiettivo + " — " + posizione
             );
 
-            missione.setCaposquadra(
-                    caposquadra
-            );
+            missione.setMezzi(mezzi);
+            missione.setMateriali(materiali);
 
-            missione.setOperatori(
-                    operatori
-            );
+            missione.setSquadra(squadra);
+            squadra.setMissione(missione);
 
-            missione.setMezzi(
-                    mezzi
-            );
-
-            missione.setMateriali(
-                    materiali
-            );
-
-            /*
-             * Missione non possiede il campo stato.
-             */
+            // Missione è il lato owner della relazione con Squadra
+            // (ha la @JoinColumn "missione"), quindi salvo Squadra
+            // prima, per avere già il suo id pronto per il join.
+            daoSquadra.save(squadra);
             daoMissione.save(missione);
 
-            /*
-             * Lo stato appartiene solamente alla richiesta.
-             */
             daoRichiesta.updateStato(
                     richiestaId,
                     "IN_CORSO"
@@ -528,10 +529,6 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 continue;
             }
 
-            /*
-             * Evita di inserire il caposquadra
-             * anche tra gli altri operatori.
-             */
             if (email.equals(emailCaposquadra)) {
                 continue;
             }

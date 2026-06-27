@@ -19,8 +19,17 @@ public class Missione {
     private int id;
     private String descrizione;
     private int id_squadra;
-    @Column(name = "email_richiesta")
-    private String email_segnalante;
+    @OneToOne
+    @JoinColumn(name = "email_richiesta", referencedColumnName = "email_segnalante")
+    private Richiesta richiesta;
+
+    public Richiesta getRichiesta() {
+        return this.richiesta;
+    }
+
+    public void setRichiesta(Richiesta richiesta) {
+        this.richiesta = richiesta;
+    }
     @ManyToMany
     @JoinTable(
             name = "missione_mezzo",
@@ -45,7 +54,12 @@ public class Missione {
     @OneToOne
     @JoinColumn(name = "missione")
     private Squadra squadra;
-
+    public Missione(int id, String descrizione, int id_squadra, Richiesta richiesta) {
+    this.id = id;
+    this.descrizione = descrizione;
+    this.id_squadra = id_squadra;
+    this.richiesta = richiesta;
+}
     public List<Mezzo> getMezzi() {
         return this.mezzi;
     }
@@ -83,13 +97,6 @@ public class Missione {
     {
         super();
     }
-
-    public Missione(int id, String descrizione, int id_squadra, String email_segnalante) {
-        this.id = id;
-        this.descrizione = descrizione;
-        this.id_squadra = id_squadra;
-        this.email_segnalante = email_segnalante;
-    }
     public int getId() {
         return this.id;
     }
@@ -113,15 +120,6 @@ public class Missione {
     public void setId_squadra(int id_squadra) {
         this.id_squadra = id_squadra;
     }
-
-    public String getEmail_segnalante() {
-        return this.email_segnalante;
-    }
-
-    public void setEmail_segnalante(String email_segnalante) {
-        this.email_segnalante = email_segnalante;
-    }
-
     @Override
     public int hashCode() {
         int hash = 5;
@@ -144,7 +142,7 @@ public class Missione {
     @Override
     public String toString() {
         return "Missione: " + " id= " + id + "\ndescrizione= " + descrizione + "\nid_squadra= " + id_squadra + 
-                "\nemail_segnalante= " + email_segnalante + '\n';
+                "\nemail_segnalante= " + this.richiesta.getEmail_segnalante() + '\n';
     }
     
     

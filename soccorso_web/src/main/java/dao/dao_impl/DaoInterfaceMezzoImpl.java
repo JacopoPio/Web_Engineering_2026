@@ -78,5 +78,28 @@ public class DaoInterfaceMezzoImpl implements DaoInterfaceMezzo {
                 "SELECT m FROM Mezzo m WHERE m.missioni IS EMPTY", Mezzo.class)
             .getResultList();
         }
+    @Override
+public boolean isDisponibile(String targa) { // Usiamo count per evitare il blocco try catch
+
+    if (targa == null || targa.isBlank()) {
+        return false;
+    }
+
+    String jpql =
+            "SELECT COUNT(m) "
+            + "FROM Mezzo m "
+            + "WHERE m.targa = :targa "
+            + "AND m.missioni IS EMPTY";
+
+    Long risultato = entityManager
+            .createQuery(jpql, Long.class)
+            .setParameter(
+                    "targa",
+                    targa.trim().toUpperCase()
+            )
+            .getSingleResult();
+
+    return risultato > 0;
+}
 }
 

@@ -95,12 +95,12 @@ public class DaoInterfaceMissioneImpl implements DaoInterfaceMissione {
     }
 
     @Override
-    public boolean existsByRichiesta(Richiesta richiesta) {
-        Long count = entityManager.createQuery(
-                "SELECT COUNT(m) FROM Missione m WHERE m.email_segnalante = :email", Long.class)
-            .setParameter("email", richiesta.getEmail_segnalante())
-            .getSingleResult();
-        return count > 0;
-    }
+public boolean existsByRichiesta(Richiesta richiesta) {
+    Long count = entityManager.createQuery(
+            "SELECT COUNT(m) FROM Missione m WHERE m.richiesta = :richiesta", Long.class)
+        .setParameter("richiesta", richiesta)
+        .getSingleResult();
+    return count > 0;
+}
     
 }

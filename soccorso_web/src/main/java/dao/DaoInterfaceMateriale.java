@@ -15,4 +15,7 @@ public interface DaoInterfaceMateriale {
 
     public boolean delete(String tipoMateriale);
     public List<Materiale> findDisponibili();
+    boolean isDisponibile(Long id);
+    public Materiale findById(Long id);
+    
 }

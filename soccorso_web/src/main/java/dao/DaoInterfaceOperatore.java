@@ -18,4 +18,5 @@ public interface DaoInterfaceOperatore {
     public List<Operatore> findDisponibili();
     
     public boolean isCaposquadra(String email);
+    boolean isDisponibile(String email);
 }

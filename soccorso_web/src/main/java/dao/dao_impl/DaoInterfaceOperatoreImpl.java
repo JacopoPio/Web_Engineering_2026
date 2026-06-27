@@ -3,6 +3,7 @@ package dao.dao_impl;
 import dao.DaoInterfaceOperatore;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 import model.Operatore;
@@ -104,5 +105,29 @@ public class DaoInterfaceOperatoreImpl implements DaoInterfaceOperatore {
             .setParameter("email", email)
             .getSingleResult();
             return count > 0;
+    }
+    @Override
+public boolean isDisponibile(String email) {
+
+    if (email == null || email.isBlank()) {
+        return false;
+    }
+
+    String jpql =
+            "SELECT COUNT(op) "
+            + "FROM Operatore op "
+            + "WHERE op.email = :email "
+            + "AND op.attivo = true "
+            + "AND op.squadra IS NULL";
+
+    Long risultato = entityManager
+            .createQuery(jpql, Long.class)
+            .setParameter(
+                    "email",
+                    email.trim().toLowerCase()
+            )
+            .getSingleResult();
+
+    return risultato > 0; 
     }
 }
