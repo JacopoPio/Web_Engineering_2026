@@ -1,3 +1,4 @@
+
 package servlet;
 
 import dao.DaoInterfaceMateriale;
@@ -5,14 +6,14 @@ import dao.DaoInterfaceMezzo;
 import dao.DaoInterfaceMissione;
 import dao.DaoInterfaceOperatore;
 import dao.DaoInterfaceRichiesta;
-import dao.DaoInterfaceSquadra; // NB: da creare se non esiste già
+import dao.DaoInterfaceSquadra;
 
 import dao.dao_impl.DaoInterfaceMaterialeImpl;
 import dao.dao_impl.DaoInterfaceMezzoImpl;
 import dao.dao_impl.DaoInterfaceMissioneImpl;
-import dao.dao_impl.DaoInterfaceRichiestaImpl;
 import dao.dao_impl.DaoInterfaceOperatoreImpl;
-import dao.dao_impl.DaoInterfaceSquadraImpl; // NB: da creare se non esiste già
+import dao.dao_impl.DaoInterfaceRichiestaImpl;
+import dao.dao_impl.DaoInterfaceSquadraImpl;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -37,6 +38,8 @@ import model.Richiesta;
 import model.Squadra;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,12 +90,9 @@ public class AdminCreaMissioneServlet extends HttpServlet {
         String ruolo =
                 (String) session.getAttribute("ruolo");
 
-        return "ADMIN".equals(ruolo);
+        return "ADMIN".equalsIgnoreCase(ruolo);
     }
 
-    /*
-     * Mostra il form nuova-missione.ftl.
-     */
     @Override
     protected void doGet(
             HttpServletRequest request,
@@ -100,58 +100,79 @@ public class AdminCreaMissioneServlet extends HttpServlet {
     ) throws ServletException, IOException {
 
         if (!isAdmin(request)) {
+
             response.sendRedirect(
                     request.getContextPath() + "/login"
             );
+
             return;
         }
 
-        String richiestaId = normalizza(
-                request.getParameter("richiestaId")
-        );
+        String richiestaId =
+                normalizza(
+                        request.getParameter(
+                                "richiestaId"
+                        )
+                );
 
         if (richiestaId.isBlank()) {
+
             response.sendRedirect(
                     request.getContextPath()
                             + "/admin/richieste"
                             + "?errore=richiesta_non_valida"
             );
+
             return;
         }
 
-        EntityManager em =
+        EntityManager entityManager =
                 JPAUtil.getEntityManager();
 
         try {
 
             DaoInterfaceRichiesta daoRichiesta =
-                    new DaoInterfaceRichiestaImpl(em);
+                    new DaoInterfaceRichiestaImpl(
+                            entityManager
+                    );
 
             DaoInterfaceMissione daoMissione =
-                    new DaoInterfaceMissioneImpl(em);
+                    new DaoInterfaceMissioneImpl(
+                            entityManager
+                    );
 
             DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(em);
+                    new DaoInterfaceOperatoreImpl(
+                            entityManager
+                    );
 
             DaoInterfaceMezzo daoMezzo =
-                    new DaoInterfaceMezzoImpl(em);
+                    new DaoInterfaceMezzoImpl(
+                            entityManager
+                    );
 
             DaoInterfaceMateriale daoMateriale =
-                    new DaoInterfaceMaterialeImpl(em);
+                    new DaoInterfaceMaterialeImpl(
+                            entityManager
+                    );
 
             Richiesta richiesta =
-                    daoRichiesta.findByEmail(richiestaId);
+                    daoRichiesta.findByEmail(
+                            richiestaId
+                    );
 
             if (richiesta == null) {
+
                 response.sendRedirect(
                         request.getContextPath()
                                 + "/admin/richieste"
                                 + "?errore=richiesta_non_trovata"
                 );
+
                 return;
             }
 
-            if (!"attiva".equalsIgnoreCase(
+            if (!"ATTIVA".equalsIgnoreCase(
                     String.valueOf(
                             richiesta.getStato()
                     )
@@ -162,17 +183,47 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                                 + "/admin/richieste"
                                 + "?errore=richiesta_non_attiva"
                 );
+
                 return;
             }
 
-            if (daoMissione.existsByRichiesta(richiesta)) {
+            if (daoMissione.existsByRichiesta(
+                    richiesta
+            )) {
 
                 response.sendRedirect(
                         request.getContextPath()
                                 + "/admin/richieste"
                                 + "?errore=missione_esistente"
                 );
+
                 return;
+            }
+
+            /*
+             * Recupera tutti gli operatori disponibili.
+             */
+            List<Operatore> operatoriDisponibili =
+                    daoOperatore.findDisponibili();
+
+            /*
+             * Tra gli operatori disponibili mantiene solamente
+             * quelli abilitati come caposquadra.
+             */
+            List<Operatore> capisquadraDisponibili =
+                    new ArrayList<>();
+
+            for (Operatore operatore
+                    : operatoriDisponibili) {
+
+                if (daoOperatore.isCaposquadra(
+                        operatore.getEmail()
+                )) {
+
+                    capisquadraDisponibili.add(
+                            operatore
+                    );
+                }
             }
 
             Map<String, Object> data =
@@ -210,7 +261,12 @@ public class AdminCreaMissioneServlet extends HttpServlet {
 
             data.put(
                     "operatoriDisponibili",
-                    daoOperatore.findDisponibili()
+                    operatoriDisponibili
+            );
+
+            data.put(
+                    "capisquadraDisponibili",
+                    capisquadraDisponibili
             );
 
             data.put(
@@ -223,28 +279,35 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                     daoMateriale.findDisponibili()
             );
 
-            String errore = normalizza(
-                    request.getParameter("errore")
-            );
+            String errore =
+                    normalizza(
+                            request.getParameter(
+                                    "errore"
+                            )
+                    );
 
             if (!errore.isBlank()) {
-                data.put("errore", errore);
+
+                data.put(
+                        "errore",
+                        errore
+                );
             }
 
             renderTemplate(
                     response,
-                    "nuova-missione.ftl",
+                    "missione.ftl",
                     data
             );
 
         } finally {
-            em.close();
+
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
         }
     }
 
-    /*
-     * Crea la missione e la squadra usando solamente i DAO.
-     */
     @Override
     protected void doPost(
             HttpServletRequest request,
@@ -252,29 +315,47 @@ public class AdminCreaMissioneServlet extends HttpServlet {
     ) throws ServletException, IOException {
 
         if (!isAdmin(request)) {
+
             response.sendRedirect(
                     request.getContextPath() + "/login"
             );
+
             return;
         }
 
         request.setCharacterEncoding("UTF-8");
 
-        String richiestaId = normalizza(
-                request.getParameter("richiestaId")
-        );
+        String richiestaId =
+                normalizza(
+                        request.getParameter(
+                                "richiestaId"
+                        )
+                );
 
-        String obiettivo = normalizza(
-                request.getParameter("obiettivo")
-        );
+        String obiettivo =
+                normalizza(
+                        request.getParameter(
+                                "obiettivo"
+                        )
+                );
 
-        String posizione = normalizza(
-                request.getParameter("posizione")
-        );
+        String posizione =
+                normalizza(
+                        request.getParameter(
+                                "posizione"
+                        )
+                );
 
-        String emailCaposquadra = normalizza(
-                request.getParameter("caposquadra")
-        ).toLowerCase();
+        /*
+         * Non trasformare l'email in minuscolo.
+         * Viene usato esattamente il valore ricevuto dal form.
+         */
+        String emailCaposquadra =
+                normalizza(
+                        request.getParameter(
+                                "caposquadra"
+                        )
+                );
 
         if (richiestaId.isBlank()
                 || obiettivo.isBlank()
@@ -286,6 +367,7 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                     richiestaId,
                     "campi"
             );
+
             return;
         }
 
@@ -297,34 +379,49 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                     richiestaId,
                     "caposquadra"
             );
+
             return;
         }
 
-        EntityManager em =
+        EntityManager entityManager =
                 JPAUtil.getEntityManager();
 
         try {
 
             DaoInterfaceRichiesta daoRichiesta =
-                    new DaoInterfaceRichiestaImpl(em);
+                    new DaoInterfaceRichiestaImpl(
+                            entityManager
+                    );
 
             DaoInterfaceMissione daoMissione =
-                    new DaoInterfaceMissioneImpl(em);
+                    new DaoInterfaceMissioneImpl(
+                            entityManager
+                    );
 
             DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(em);
+                    new DaoInterfaceOperatoreImpl(
+                            entityManager
+                    );
 
             DaoInterfaceMezzo daoMezzo =
-                    new DaoInterfaceMezzoImpl(em);
+                    new DaoInterfaceMezzoImpl(
+                            entityManager
+                    );
 
             DaoInterfaceMateriale daoMateriale =
-                    new DaoInterfaceMaterialeImpl(em);
+                    new DaoInterfaceMaterialeImpl(
+                            entityManager
+                    );
 
             DaoInterfaceSquadra daoSquadra =
-                    new DaoInterfaceSquadraImpl(em);
+                    new DaoInterfaceSquadraImpl(
+                            entityManager
+                    );
 
             Richiesta richiesta =
-                    daoRichiesta.findByEmail(richiestaId);
+                    daoRichiesta.findByEmail(
+                            richiestaId
+                    );
 
             if (richiesta == null) {
 
@@ -334,6 +431,7 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                         richiestaId,
                         "richiesta_non_trovata"
                 );
+
                 return;
             }
 
@@ -349,10 +447,13 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                         richiestaId,
                         "richiesta_non_attiva"
                 );
+
                 return;
             }
 
-            if (daoMissione.existsByRichiesta(richiesta)) {
+            if (daoMissione.existsByRichiesta(
+                    richiesta
+            )) {
 
                 redirectErrore(
                         request,
@@ -360,34 +461,72 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                         richiestaId,
                         "missione_esistente"
                 );
+
                 return;
             }
 
             /*
-             * Caposquadra.
+             * Recupera il caposquadra.
              */
             Operatore caposquadra =
                     daoOperatore.findByEmail(
                             emailCaposquadra
                     );
 
-            if (caposquadra == null
-                    || !caposquadra.isAttivo()
-                    || !daoOperatore.isCaposquadra(
-                            emailCaposquadra
-                    )) {
+            if (caposquadra == null) {
 
                 redirectErrore(
                         request,
                         response,
                         richiestaId,
-                        "operatore_non_disponibile"
+                        "caposquadra_non_trovato"
                 );
+
+                return;
+            }
+
+            if (!caposquadra.isAttivo()) {
+
+                redirectErrore(
+                        request,
+                        response,
+                        richiestaId,
+                        "caposquadra_non_attivo"
+                );
+
+                return;
+            }
+
+            if (!daoOperatore.isDisponibile(
+                    emailCaposquadra
+            )) {
+
+                redirectErrore(
+                        request,
+                        response,
+                        richiestaId,
+                        "caposquadra_occupato"
+                );
+
+                return;
+            }
+
+            if (!daoOperatore.isCaposquadra(
+                    emailCaposquadra
+            )) {
+
+                redirectErrore(
+                        request,
+                        response,
+                        richiestaId,
+                        "operatore_non_caposquadra"
+                );
+
                 return;
             }
 
             /*
-             * Altri operatori (non includono ancora il caposquadra).
+             * Recupera gli altri operatori.
              */
             List<Operatore> altriOperatori =
                     costruisciListaOperatori(
@@ -404,19 +543,23 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                         richiestaId,
                         "operatore_non_disponibile"
                 );
+
                 return;
             }
 
-            // Squadra.operatori è una lista unica: ci metto dentro
-            // sia il caposquadra che gli altri operatori.
             List<Operatore> tuttiOperatori =
                     new ArrayList<>();
 
-            tuttiOperatori.add(caposquadra);
-            tuttiOperatori.addAll(altriOperatori);
+            tuttiOperatori.add(
+                    caposquadra
+            );
+
+            tuttiOperatori.addAll(
+                    altriOperatori
+            );
 
             /*
-             * Mezzi.
+             * Recupera i mezzi.
              */
             List<Mezzo> mezzi =
                     costruisciListaMezzi(
@@ -432,11 +575,12 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                         richiestaId,
                         "mezzo_non_disponibile"
                 );
+
                 return;
             }
 
             /*
-             * Materiali.
+             * Recupera i materiali.
              */
             List<Materiale> materiali =
                     costruisciListaMateriali(
@@ -452,36 +596,84 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                         richiestaId,
                         "materiale_non_disponibile"
                 );
+
                 return;
             }
 
-            // Creo la Squadra (nome generato automaticamente,
-            // dato che il form non raccoglie ancora questo dato).
-            Squadra squadra = new Squadra();
-            squadra.setNome("Squadra - " + obiettivo);
-            squadra.setOperatori(tuttiOperatori);
+            /*
+             * Crea la squadra.
+             */
+            Squadra squadra =
+                    new Squadra();
 
+            squadra.setNome(
+                    "Squadra - " + obiettivo
+            );
+
+            squadra.setOperatori(
+                    tuttiOperatori
+            );
+
+            /*
+             * Imposta la squadra in ogni operatore.
+             * Il metodo isDisponibile controlla infatti
+             * che op.squadra sia null.
+             */
+            for (Operatore operatore
+                    : tuttiOperatori) {
+
+                operatore.setSquadra(
+                        squadra
+                );
+            }
+
+            /*
+             * Crea la missione.
+             */
             Missione missione =
                     new Missione();
 
-            missione.setRichiesta(richiesta);
-
-            missione.setDescrizione(
-                    obiettivo + " — " + posizione
+            missione.setRichiesta(
+                    richiesta
             );
 
-            missione.setMezzi(mezzi);
-            missione.setMateriali(materiali);
+            missione.setDescrizione(
+                    obiettivo + " - " + posizione
+            );
 
-            missione.setSquadra(squadra);
-            squadra.setMissione(missione);
+            missione.setMezzi(
+                    mezzi
+            );
 
-            // Missione è il lato owner della relazione con Squadra
-            // (ha la @JoinColumn "missione"), quindi salvo Squadra
-            // prima, per avere già il suo id pronto per il join.
-            daoSquadra.save(squadra);
-            daoMissione.save(missione);
+            missione.setMateriali(
+                    materiali
+            );
 
+            /*
+             * Imposta entrambi i lati della relazione.
+             */
+            missione.setSquadra(
+                    squadra
+            );
+
+            squadra.setMissione(
+                    missione
+            );
+
+            /*
+             * Salva prima la squadra e poi la missione.
+             */
+            daoSquadra.save(
+                    squadra
+            );
+
+            daoMissione.save(
+                    missione
+            );
+
+            /*
+             * La richiesta passa allo stato IN_CORSO.
+             */
             daoRichiesta.updateStato(
                     richiestaId,
                     "IN_CORSO"
@@ -494,7 +686,10 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             );
 
         } finally {
-            em.close();
+
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
         }
     }
 
@@ -522,23 +717,38 @@ public class AdminCreaMissioneServlet extends HttpServlet {
         for (String valore : valori) {
 
             String email =
-                    normalizza(valore)
-                            .toLowerCase();
+                    normalizza(valore);
 
             if (email.isBlank()) {
                 continue;
             }
 
-            if (email.equals(emailCaposquadra)) {
+            /*
+             * Evita di inserire nuovamente il caposquadra.
+             */
+            if (email.equalsIgnoreCase(
+                    emailCaposquadra
+            )) {
                 continue;
             }
 
-            if (!emailInserite.add(email)) {
+            /*
+             * Usa il minuscolo solamente per controllare
+             * eventuali duplicati.
+             */
+            String emailConfronto =
+                    email.toLowerCase();
+
+            if (!emailInserite.add(
+                    emailConfronto
+            )) {
                 continue;
             }
 
             Operatore operatore =
-                    daoOperatore.findByEmail(email);
+                    daoOperatore.findByEmail(
+                            email
+                    );
 
             if (operatore == null
                     || !operatore.isAttivo()
@@ -549,7 +759,9 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 return null;
             }
 
-            risultato.add(operatore);
+            risultato.add(
+                    operatore
+            );
         }
 
         return risultato;
@@ -567,7 +779,9 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 new LinkedHashSet<>();
 
         String[] valori =
-                request.getParameterValues("mezzi");
+                request.getParameterValues(
+                        "mezzi"
+                );
 
         if (valori == null) {
             return risultato;
@@ -587,15 +801,21 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             }
 
             Mezzo mezzo =
-                    daoMezzo.findByTarga(targa);
+                    daoMezzo.findByTarga(
+                            targa
+                    );
 
             if (mezzo == null
-                    || !daoMezzo.isDisponibile(targa)) {
+                    || !daoMezzo.isDisponibile(
+                            targa
+                    )) {
 
                 return null;
             }
 
-            risultato.add(mezzo);
+            risultato.add(
+                    mezzo
+            );
         }
 
         return risultato;
@@ -633,8 +853,13 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             Long id;
 
             try {
-                id = Long.valueOf(idTesto);
+
+                id = Long.valueOf(
+                        idTesto
+                );
+
             } catch (NumberFormatException e) {
+
                 return null;
             }
 
@@ -643,15 +868,21 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             }
 
             Materiale materiale =
-                    daoMateriale.findById(id);
+                    daoMateriale.findById(
+                            id
+                    );
 
             if (materiale == null
-                    || !daoMateriale.isDisponibile(id)) {
+                    || !daoMateriale.isDisponibile(
+                            id
+                    )) {
 
                 return null;
             }
 
-            risultato.add(materiale);
+            risultato.add(
+                    materiale
+            );
         }
 
         return risultato;
@@ -664,17 +895,31 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             String errore
     ) throws IOException {
 
+        String richiestaCodificata =
+                URLEncoder.encode(
+                        richiestaId,
+                        StandardCharsets.UTF_8
+                );
+
+        String erroreCodificato =
+                URLEncoder.encode(
+                        errore,
+                        StandardCharsets.UTF_8
+                );
+
         response.sendRedirect(
                 request.getContextPath()
                         + "/admin/missioni/nuova"
                         + "?richiestaId="
-                        + richiestaId
+                        + richiestaCodificata
                         + "&errore="
-                        + errore
+                        + erroreCodificato
         );
     }
 
-    private String normalizza(String valore) {
+    private String normalizza(
+            String valore
+    ) {
 
         if (valore == null) {
             return "";
@@ -696,7 +941,9 @@ public class AdminCreaMissioneServlet extends HttpServlet {
         try {
 
             Template template =
-                    cfg.getTemplate(templateName);
+                    cfg.getTemplate(
+                            templateName
+                    );
 
             template.process(
                     data,

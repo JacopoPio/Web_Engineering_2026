@@ -1,15 +1,19 @@
+
 <!DOCTYPE html>
 <html lang="it">
 
 <head>
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Creazione missione - SoccorsoWeb</title>
 
     <style>
-        {
+        * {
             box-sizing: border-box;
         }
 
@@ -22,7 +26,11 @@
 
         header {
             padding: 32px 20px;
-            background: linear-gradient(135deg, #1565c0, #1976d2);
+            background: linear-gradient(
+                135deg,
+                #1565c0,
+                #1976d2
+            );
             color: white;
             text-align: center;
         }
@@ -84,15 +92,12 @@
             color: #991b1b;
         }
 
-        .successo {
-            border: 1px solid #86c99a;
-            background: #dff3e5;
-            color: #166534;
-        }
-
         .dettagli-richiesta {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(
+                2,
+                minmax(0, 1fr)
+            );
             gap: 18px;
         }
 
@@ -181,6 +186,7 @@
             display: flex;
             align-items: flex-start;
             gap: 9px;
+            margin: 0;
             padding: 12px;
             border: 1px solid #d6dee5;
             border-radius: 7px;
@@ -249,6 +255,11 @@
         button:hover,
         .pulsante:hover {
             background: #0d47a1;
+        }
+
+        button:disabled {
+            background: #9e9e9e;
+            cursor: not-allowed;
         }
 
         .pulsante-secondario {
@@ -320,43 +331,73 @@
 <main>
 
     <#if errore??>
+
         <div class="messaggio errore">
 
             <#if errore == "richiesta_non_trovata">
+
                 La richiesta selezionata non esiste.
 
             <#elseif errore == "richiesta_non_attiva">
-                La richiesta non è più attiva oppure è già stata assegnata.
+
+                La richiesta non è più attiva oppure è già stata
+                assegnata a una missione.
+
+            <#elseif errore == "missione_esistente">
+
+                Per questa richiesta esiste già una missione.
 
             <#elseif errore == "campi">
+
                 Inserisci l'obiettivo e la posizione della missione.
 
             <#elseif errore == "caposquadra">
+
                 Devi selezionare un caposquadra.
 
+            <#elseif errore == "caposquadra_non_trovato">
+
+                L'operatore selezionato come caposquadra
+                non è stato trovato.
+
+            <#elseif errore == "caposquadra_non_attivo">
+
+                L'operatore selezionato come caposquadra
+                non è attivo.
+
+            <#elseif errore == "caposquadra_occupato">
+
+                L'operatore selezionato come caposquadra
+                appartiene già a una squadra.
+
+            <#elseif errore == "operatore_non_caposquadra">
+
+                L'operatore selezionato non possiede
+                l'abilitazione di caposquadra.
+
             <#elseif errore == "operatore_non_disponibile">
-                Uno degli operatori selezionati non è più disponibile.
+
+                Uno degli operatori selezionati
+                non è più disponibile.
 
             <#elseif errore == "mezzo_non_disponibile">
-                Uno dei mezzi selezionati non è più disponibile.
+
+                Uno dei mezzi selezionati
+                non è più disponibile.
 
             <#elseif errore == "materiale_non_disponibile">
-                Uno dei materiali selezionati non è più disponibile.
 
-            <#elseif errore == "risorsa_non_valida">
-                È stata selezionata una risorsa non valida.
+                Uno dei materiali selezionati
+                non è più disponibile.
 
             <#else>
+
                 Non è stato possibile creare la missione.
+
             </#if>
 
         </div>
-    </#if>
 
-    <#if successo??>
-        <div class="messaggio successo">
-            Missione creata correttamente.
-        </div>
     </#if>
 
     <section>
@@ -366,6 +407,7 @@
         <div class="dettagli-richiesta">
 
             <div class="dettaglio">
+
                 <span class="etichetta">
                     Identificativo richiesta
                 </span>
@@ -373,29 +415,23 @@
                 <p class="valore">
                     ${(richiestaId!"Non disponibile")?html}
                 </p>
+
             </div>
 
             <div class="dettaglio">
+
                 <span class="etichetta">
                     Stato
                 </span>
 
                 <p class="valore">
-                    ${(richiestaStato!"ATTIVA")?html}
+                    ${(richiestaStato!"Non disponibile")?html}
                 </p>
+
             </div>
 
-            <div class="dettaglio">
-                <span class="etichetta">
-                    Segnalante
-                </span>
+            <div class="dettaglio dettaglio-intero">
 
-                <p class="valore">
-                    ${(nomeSegnalante!"Non indicato")?html}
-                </p>
-            </div>
-
-            <div class="dettaglio">
                 <span class="etichetta">
                     Email segnalante
                 </span>
@@ -403,9 +439,11 @@
                 <p class="valore">
                     ${(emailSegnalante!"Non indicata")?html}
                 </p>
+
             </div>
 
             <div class="dettaglio dettaglio-intero">
+
                 <span class="etichetta">
                     Descrizione
                 </span>
@@ -413,9 +451,11 @@
                 <p class="valore">
                     ${(richiestaDescrizione!"Nessuna descrizione")?html}
                 </p>
+
             </div>
 
             <div class="dettaglio dettaglio-intero">
+
                 <span class="etichetta">
                     Posizione segnalata
                 </span>
@@ -423,6 +463,7 @@
                 <p class="valore">
                     ${(richiestaPosizione!"Non indicata")?html}
                 </p>
+
             </div>
 
         </div>
@@ -447,8 +488,13 @@
             <div class="campo">
 
                 <label for="obiettivo">
+
                     Obiettivo
-                    <span class="obbligatorio">*</span>
+
+                    <span class="obbligatorio">
+                        *
+                    </span>
+
                 </label>
 
                 <textarea
@@ -457,15 +503,20 @@
                     maxlength="500"
                     placeholder="Descrivi l'obiettivo operativo della missione"
                     required
-                >${(obiettivoInserito!"")?html}</textarea>
+                ></textarea>
 
             </div>
 
             <div class="campo">
 
                 <label for="posizione">
+
                     Posizione della missione
-                    <span class="obbligatorio">*</span>
+
+                    <span class="obbligatorio">
+                        *
+                    </span>
+
                 </label>
 
                 <input
@@ -473,7 +524,7 @@
                     id="posizione"
                     name="posizione"
                     maxlength="255"
-                    value="${(posizioneInserita!richiestaPosizione!"")?html}"
+                    value="${(richiestaPosizione!"")?html}"
                     required
                 >
 
@@ -482,20 +533,26 @@
             <fieldset>
 
                 <legend>
+
                     Caposquadra
-                    <span class="obbligatorio">*</span>
+
+                    <span class="obbligatorio">
+                        *
+                    </span>
+
                 </legend>
 
                 <p class="spiegazione">
-                    Seleziona esattamente un operatore come caposquadra.
+                    Seleziona un operatore disponibile
+                    e abilitato come caposquadra.
                 </p>
 
-                <#if operatoriDisponibili??
-                    && operatoriDisponibili?size gt 0>
+                <#if capisquadraDisponibili??
+                    && capisquadraDisponibili?has_content>
 
                     <div class="lista-risorse">
 
-                        <#list operatoriDisponibili as operatore>
+                        <#list capisquadraDisponibili as operatore>
 
                             <label class="risorsa">
 
@@ -504,19 +561,16 @@
                                     name="caposquadra"
                                     value="${(operatore.email!"")?html}"
                                     required
-
-                                    <#if caposquadraSelezionato??
-                                        && caposquadraSelezionato
-                                            == operatore.email>
-                                        checked
-                                    </#if>
                                 >
 
                                 <span class="risorsa-contenuto">
 
                                     <span class="risorsa-nome">
+
                                         ${(operatore.nome!"")?html}
+
                                         ${(operatore.cognome!"")?html}
+
                                     </span>
 
                                     <span class="risorsa-dettaglio">
@@ -534,8 +588,10 @@
                 <#else>
 
                     <p class="nessun-elemento">
-                        Non sono disponibili operatori da assegnare
-                        come caposquadra.
+
+                        Non sono presenti operatori disponibili
+                        con l'abilitazione di caposquadra.
+
                     </p>
 
                 </#if>
@@ -553,7 +609,7 @@
                 </p>
 
                 <#if operatoriDisponibili??
-                    && operatoriDisponibili?size gt 0>
+                    && operatoriDisponibili?has_content>
 
                     <div class="lista-risorse">
 
@@ -565,21 +621,16 @@
                                     type="checkbox"
                                     name="operatori"
                                     value="${(operatore.email!"")?html}"
-
-                                    <#if operatoriSelezionati??
-                                        && operatoriSelezionati
-                                            ?seq_contains(
-                                                operatore.email
-                                            )>
-                                        checked
-                                    </#if>
                                 >
 
                                 <span class="risorsa-contenuto">
 
                                     <span class="risorsa-nome">
+
                                         ${(operatore.nome!"")?html}
+
                                         ${(operatore.cognome!"")?html}
+
                                     </span>
 
                                     <span class="risorsa-dettaglio">
@@ -615,7 +666,7 @@
                 </p>
 
                 <#if mezziDisponibili??
-                    && mezziDisponibili?size gt 0>
+                    && mezziDisponibili?has_content>
 
                     <div class="lista-risorse">
 
@@ -627,30 +678,20 @@
                                     type="checkbox"
                                     name="mezzi"
                                     value="${(mezzo.targa!"")?html}"
-
-                                    <#if mezziSelezionati??
-                                        && mezziSelezionati
-                                            ?seq_contains(mezzo.targa)>
-                                        checked
-                                    </#if>
                                 >
 
                                 <span class="risorsa-contenuto">
 
                                     <span class="risorsa-nome">
-                                        ${(mezzo.nome!"Mezzo")?html}
+                                        Mezzo
                                     </span>
 
                                     <span class="risorsa-dettaglio">
+
                                         Targa:
                                         ${(mezzo.targa!"Non indicata")?html}
-                                    </span>
 
-                                    <#if mezzo.descrizione??>
-                                        <span class="risorsa-dettaglio">
-                                            ${mezzo.descrizione?html}
-                                        </span>
-                                    </#if>
+                                    </span>
 
                                 </span>
 
@@ -681,7 +722,7 @@
                 </p>
 
                 <#if materialiDisponibili??
-                    && materialiDisponibili?size gt 0>
+                    && materialiDisponibili?has_content>
 
                     <div class="lista-risorse">
 
@@ -692,15 +733,7 @@
                                 <input
                                     type="checkbox"
                                     name="materiali"
-                                    value="${(materiale.id!"")?html}"
-
-                                    <#if materialiSelezionati??
-                                        && materialiSelezionati
-                                            ?seq_contains(
-                                                materiale.id?string
-                                            )>
-                                        checked
-                                    </#if>
+                                    value="${materiale.id!""}"
                                 >
 
                                 <span class="risorsa-contenuto">
@@ -709,11 +742,12 @@
                                         ${(materiale.tipo!"Materiale")?html}
                                     </span>
 
-                                    <#if materiale.descrizione??>
-                                        <span class="risorsa-dettaglio">
-                                            ${materiale.descrizione?html}
-                                        </span>
-                                    </#if>
+                                    <span class="risorsa-dettaglio">
+
+                                        Identificativo:
+                                        ${materiale.id!"Non disponibile"}
+
+                                    </span>
 
                                 </span>
 
@@ -737,8 +771,8 @@
 
                 <button
                     type="submit"
-                    <#if !operatoriDisponibili??
-                        || operatoriDisponibili?size == 0>
+                    <#if !capisquadraDisponibili??
+                        || !capisquadraDisponibili?has_content>
                         disabled
                     </#if>
                 >
@@ -765,4 +799,5 @@
 </footer>
 
 </body>
+
 </html>

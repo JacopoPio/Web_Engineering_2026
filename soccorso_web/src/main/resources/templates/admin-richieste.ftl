@@ -1,289 +1,553 @@
 <!DOCTYPE html>
+
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
-    <title>Gestione Richieste - SoccorsoWeb</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+```
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f4f6f8;
-            color: #222;
-        }
+<title>Gestione Richieste - SoccorsoWeb</title>
 
-        header {
-            background: linear-gradient(135deg, #b71c1c, #d32f2f);
-            color: white;
-            padding: 35px 20px;
-            text-align: center;
-        }
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 38px;
-        }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f6f8;
+        color: #222;
+    }
 
-        nav {
-            background: #8e0000;
-            padding: 14px;
-            text-align: center;
+    header {
+        padding: 35px 20px;
+        background: linear-gradient(
+            135deg,
+            #b71c1c,
+            #d32f2f
+        );
+        color: white;
+        text-align: center;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 38px;
+    }
+
+    header p {
+        margin: 10px 0 0;
+    }
+
+    nav {
+        padding: 14px;
+        background: #8e0000;
+        text-align: center;
+    }
+
+    nav a {
+        display: inline-block;
+        margin: 4px 10px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    nav a:hover {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    main {
+        max-width: 1250px;
+        margin: 35px auto;
+        padding: 0 20px;
+    }
+
+    .panel {
+        padding: 30px;
+        border-radius: 14px;
+        background: white;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
+    }
+
+    .panel h2 {
+        margin-top: 0;
+        color: #b71c1c;
+    }
+
+    .tabella-contenitore {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        min-width: 1050px;
+        margin-top: 25px;
+        border-collapse: collapse;
+    }
+
+    th {
+        padding: 12px;
+        background: #b71c1c;
+        color: white;
+        text-align: left;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        vertical-align: top;
+    }
+
+    tr:hover {
+        background: #fafafa;
+    }
+
+    .stato {
+        font-weight: bold;
+    }
+
+    .stato-attiva {
+        color: #2e7d32;
+    }
+
+    .stato-in-corso {
+        color: #ef6c00;
+    }
+
+    .stato-chiusa {
+        color: #616161;
+    }
+
+    .stato-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .stato-form select {
+        padding: 8px;
+        border: 1px solid #aaa;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .stato-form button {
+        padding: 9px 14px;
+        border: none;
+        border-radius: 5px;
+        background: #b71c1c;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .stato-form button:hover {
+        background: #8e0000;
+    }
+
+    .azioni {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .btn {
+        display: inline-block;
+        min-width: 125px;
+        padding: 9px 14px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-dettaglio {
+        background: #455a64;
+    }
+
+    .btn-dettaglio:hover {
+        background: #263238;
+    }
+
+    .btn-missione {
+        background: #1565c0;
+    }
+
+    .btn-missione:hover {
+        background: #0d47a1;
+    }
+
+    .missione-non-disponibile {
+        color: #777;
+        font-size: 14px;
+        font-style: italic;
+    }
+
+    .msg-ok {
+        margin-bottom: 20px;
+        padding: 14px;
+        border-left: 6px solid #2e7d32;
+        border-radius: 6px;
+        background: #e8f5e9;
+        color: #1b5e20;
+    }
+
+    .msg-errore {
+        margin-bottom: 20px;
+        padding: 14px;
+        border-left: 6px solid #b71c1c;
+        border-radius: 6px;
+        background: #ffebee;
+        color: #b71c1c;
+    }
+
+    .vuoto {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        background: #f7f7f7;
+    }
+
+    footer {
+        padding: 25px;
+        color: #666;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    @media screen and (max-width: 850px) {
+        .stato-form {
+            flex-direction: column;
+            align-items: stretch;
         }
 
         nav a {
-            color: white;
-            margin: 0 10px;
-            font-weight: bold;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 6px;
+            display: block;
+            margin: 6px 0;
         }
+    }
+</style>
+```
 
-        nav a:hover {
-            background: rgba(255, 255, 255, 0.18);
-        }
-
-        main {
-            max-width: 1200px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
-
-        .panel {
-            background: white;
-            padding: 30px;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
-        }
-
-        .panel h2 {
-            margin-top: 0;
-            color: #b71c1c;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 25px;
-        }
-
-        th {
-            background: #b71c1c;
-            color: white;
-            padding: 12px;
-            text-align: left;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            vertical-align: top;
-        }
-
-        tr:hover {
-            background: #fafafa;
-        }
-
-        .stato {
-            font-weight: bold;
-            color: #b71c1c;
-        }
-
-        .stato-form {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .stato-form select {
-            padding: 8px;
-            border: 1px solid #aaa;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .stato-form button {
-            background-color: #b71c1c;
-            color: white;
-            border: none;
-            padding: 9px 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .stato-form button:hover {
-            background-color: #8e0000;
-        }
-
-        .btn-dettaglio {
-            display: inline-block;
-            background-color: #455a64;
-            color: white;
-            padding: 9px 14px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .btn-dettaglio:hover {
-            background-color: #263238;
-        }
-
-        .msg-ok {
-            background: #e8f5e9;
-            color: #1b5e20;
-            border-left: 6px solid #2e7d32;
-            padding: 14px;
-            margin-bottom: 20px;
-            border-radius: 6px;
-        }
-
-        .msg-errore {
-            background: #ffebee;
-            color: #b71c1c;
-            border-left: 6px solid #b71c1c;
-            padding: 14px;
-            margin-bottom: 20px;
-            border-radius: 6px;
-        }
-
-        .vuoto {
-            padding: 20px;
-            background: #f7f7f7;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        footer {
-            text-align: center;
-            padding: 25px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        @media screen and (max-width: 850px) {
-            table {
-                font-size: 14px;
-            }
-
-            .stato-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            nav a {
-                display: block;
-                margin: 6px 0;
-            }
-        }
-    </style>
 </head>
 
 <body>
 
 <header>
     <h1>Gestione Richieste</h1>
-    <p>Benvenuto ${nome!"Amministratore"} - Ruolo: ${ruolo!"ADMIN"}</p>
+
+```
+<p>
+    Benvenuto
+    ${(nome!"Amministratore")?html}
+    - Ruolo:
+    ${(ruolo!"ADMIN")?html}
+</p>
+```
+
 </header>
 
 <nav>
-    <a href="${contextPath}/admin">Dashboard</a>
-    <a href="${contextPath}/admin/richieste">Richieste</a>
-    <a href="${contextPath}/admin/nuovo-utente">Gestione Utenti</a>
-    <a href="${contextPath}/mezzi">Mezzi</a>
-    <a href="${contextPath}/materiali">Materiali</a>
-    <a href="${contextPath}/operatori">Operatori</a>
-    <a href="${contextPath}/logout">Logout</a>
+    <a href="${contextPath}/admin">
+        Dashboard
+    </a>
+
+```
+<a href="${contextPath}/admin/richieste">
+    Richieste
+</a>
+
+<a href="${contextPath}/admin/missioni">
+    Missioni
+</a>
+
+<a href="${contextPath}/admin/nuovo-utente">
+    Gestione Utenti
+</a>
+
+<a href="${contextPath}/mezzi">
+    Mezzi
+</a>
+
+<a href="${contextPath}/materiali">
+    Materiali
+</a>
+
+<a href="${contextPath}/operatori">
+    Operatori
+</a>
+
+<a href="${contextPath}/logout">
+    Logout
+</a>
+```
+
 </nav>
 
 <main>
-    <section class="panel">
 
-        <h2>Richieste ricevute</h2>
-        <p>Da questa pagina puoi controllare le richieste inviate dagli utenti e modificarne lo stato.</p>
+```
+<section class="panel">
 
-        <#if ok??>
-            <div class="msg-ok">Stato aggiornato correttamente.</div>
-        </#if>
+    <h2>Richieste ricevute</h2>
 
-        <#if errore??>
-            <div class="msg-errore">Errore durante l'aggiornamento dello stato.</div>
-        </#if>
+    <p>
+        Da questa pagina puoi controllare le richieste,
+        modificarne lo stato e creare una missione per
+        quelle attive.
+    </p>
 
-        <#if richieste?size == 0>
-            <div class="vuoto">
-                Nessuna richiesta presente nel database.
-            </div>
-        <#else>
+    <#if ok??>
+
+        <div class="msg-ok">
+            Stato aggiornato correttamente.
+        </div>
+
+    </#if>
+
+    <#if successo??>
+
+        <div class="msg-ok">
+
+            <#if successo == "missione_creata">
+                Missione creata correttamente.
+            <#else>
+                Operazione completata correttamente.
+            </#if>
+
+        </div>
+
+    </#if>
+
+    <#if errore??>
+
+        <div class="msg-errore">
+
+            <#if errore == "richiesta_non_valida">
+
+                La richiesta selezionata non è valida.
+
+            <#elseif errore == "richiesta_non_trovata">
+
+                La richiesta selezionata non esiste.
+
+            <#elseif errore == "richiesta_non_attiva">
+
+                La missione può essere creata solo per una
+                richiesta attiva.
+
+            <#elseif errore == "missione_esistente">
+
+                Per questa richiesta esiste già una missione.
+
+            <#else>
+
+                Si è verificato un errore durante l'operazione.
+
+            </#if>
+
+        </div>
+
+    </#if>
+
+    <#if richieste?? && richieste?has_content>
+
+        <div class="tabella-contenitore">
 
             <table>
+
                 <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Descrizione</th>
-                        <th>Indirizzo</th>
-                        <th>Stato attuale</th>
-                        <th>Cambia stato</th>
-                        <th>Dettagli</th>
-                    </tr>
+                <tr>
+                    <th>Email</th>
+                    <th>Descrizione</th>
+                    <th>Indirizzo</th>
+                    <th>Stato attuale</th>
+                    <th>Cambia stato</th>
+                    <th>Azioni</th>
+                </tr>
                 </thead>
 
                 <tbody>
-                    <#list richieste as r>
-                        <tr>
-                            <td>${r.email_segnalante}</td>
-                            <td>${r.descrizione}</td>
-                            <td>${r.indirizzo}</td>
-                            <td class="stato">${r.stato}</td>
 
-                            <td>
-                                <form action="${contextPath}/admin/cambia-stato" method="post" class="stato-form">
+                <#list richieste as r>
 
-                                    <input type="hidden" name="email_segnalante" value="${r.email_segnalante}">
+                    <#assign statoRichiesta =
+                        (r.stato!"")?string?upper_case
+                    >
 
-                                    <select name="stato">
-                                        <option value="attiva" <#if (r.stato!"") == "attiva">selected</#if>>
-                                            Attiva
-                                        </option>
+                    <tr>
 
-                                        <option value="in corso" <#if (r.stato!"") == "in corso">selected</#if>>
-                                            In corso
-                                        </option>
+                        <td>
+                            ${(r.email_segnalante!"Non disponibile")?html}
+                        </td>
 
-                                        <option value="chiusa" <#if (r.stato!"") == "chiusa">selected</#if>>
-                                            Chiusa
-                                        </option>
-                                    </select>
+                        <td>
+                            ${(r.descrizione!"Nessuna descrizione")?html}
+                        </td>
 
-                                    <button type="submit">Aggiorna</button>
-                                </form>
-                            </td>
+                        <td>
+                            ${(r.indirizzo!"Non indicato")?html}
+                        </td>
 
-                            <td>
-                                <a class="btn-dettaglio"
-                                   href="${contextPath}/admin/dettaglio-richiesta?email=${r.email_segnalante?url('UTF-8')}">
+                        <td>
+
+                            <#if statoRichiesta == "ATTIVA">
+
+                                <span class="stato stato-attiva">
+                                    ATTIVA
+                                </span>
+
+                            <#elseif statoRichiesta == "IN_CORSO"
+                                || statoRichiesta == "IN CORSO">
+
+                                <span class="stato stato-in-corso">
+                                    IN CORSO
+                                </span>
+
+                            <#elseif statoRichiesta == "CHIUSA">
+
+                                <span class="stato stato-chiusa">
+                                    CHIUSA
+                                </span>
+
+                            <#else>
+
+                                <span class="stato">
+                                    ${statoRichiesta?html}
+                                </span>
+
+                            </#if>
+
+                        </td>
+
+                        <td>
+
+                            <form
+                                action="${contextPath}/admin/cambia-stato"
+                                method="post"
+                                class="stato-form"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="email_segnalante"
+                                    value="${(r.email_segnalante!"")?html}"
+                                >
+
+                                <select name="stato">
+
+                                    <option
+                                        value="ATTIVA"
+                                        <#if statoRichiesta == "ATTIVA">
+                                            selected
+                                        </#if>
+                                    >
+                                        Attiva
+                                    </option>
+
+                                    <option
+                                        value="IN_CORSO"
+                                        <#if statoRichiesta == "IN_CORSO"
+                                            || statoRichiesta == "IN CORSO">
+                                            selected
+                                        </#if>
+                                    >
+                                        In corso
+                                    </option>
+
+                                    <option
+                                        value="CHIUSA"
+                                        <#if statoRichiesta == "CHIUSA">
+                                            selected
+                                        </#if>
+                                    >
+                                        Chiusa
+                                    </option>
+
+                                </select>
+
+                                <button type="submit">
+                                    Aggiorna
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                        <td>
+
+                            <div class="azioni">
+
+                                <a
+                                    class="btn btn-dettaglio"
+                                    href="${contextPath}/admin/dettaglio-richiesta?email=${(r.email_segnalante!"")?url('UTF-8')}"
+                                >
                                     Apri
                                 </a>
-                            </td>
-                        </tr>
-                    </#list>
+
+                                <#if statoRichiesta == "ATTIVA">
+
+                                    <a
+                                        class="btn btn-missione"
+                                        href="${contextPath}/admin/missioni/nuova?richiestaId=${(r.email_segnalante!"")?url('UTF-8')}"
+                                    >
+                                        Crea missione
+                                    </a>
+
+                                <#else>
+
+                                    <span class="missione-non-disponibile">
+                                        Missione non creabile
+                                    </span>
+
+                                </#if>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                </#list>
+
                 </tbody>
+
             </table>
 
-        </#if>
+        </div>
 
-    </section>
+    <#else>
+
+        <div class="vuoto">
+            Nessuna richiesta presente nel database.
+        </div>
+
+    </#if>
+
+</section>
+```
+
 </main>
 
 <footer>
-    <p>&copy; 2026 SoccorsoWeb - Progetto Web Engineering</p>
+    <p>
+        &copy; 2026 SoccorsoWeb - Progetto Web Engineering
+    </p>
 </footer>
 
 </body>
+
 </html>
