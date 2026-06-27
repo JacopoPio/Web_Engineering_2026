@@ -6,6 +6,7 @@ package dao;
 
 import java.util.List;
 import model.Missione;
+import model.Richiesta;
 
 
 public interface DaoInterfaceMissione {
