@@ -1,84 +1,211 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package servlet;
 
 import dao.DaoInterfaceRichiesta;
 import dao.dao_impl.DaoInterfaceRichiestaImpl;
+
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import jakarta_configuration.resources.JPAUtil;
-import model.Richiesta;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-/**
- *
- * @author alesp
- */
-@WebServlet(name = "AdminRichiesteServlet", urlPatterns = {"/admin/richieste"})
+
+@WebServlet(
+        name = "AdminRichiesteServlet",
+        urlPatterns = {"/admin/richieste"}
+)
 public class AdminRichiesteServlet extends HttpServlet {
 
     private Configuration cfg;
 
     @Override
     public void init() throws ServletException {
-        cfg = new Configuration(Configuration.VERSION_2_3_32);
+
+        cfg = new Configuration(
+                Configuration.VERSION_2_3_32
+        );
 
         cfg.setClassLoaderForTemplateLoading(
-                Thread.currentThread().getContextClassLoader(),
+                Thread.currentThread()
+                        .getContextClassLoader(),
                 "/templates"
         );
 
         cfg.setDefaultEncoding("UTF-8");
-        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+        cfg.setOutputEncoding("UTF-8");
+        cfg.setURLEscapingCharset("UTF-8");
+
+        cfg.setTemplateExceptionHandler(
+                TemplateExceptionHandler.HTML_DEBUG_HANDLER
+        );
+    }
+
+    private boolean isAdmin(
+            HttpServletRequest request
+    ) {
+
+        HttpSession session =
+                request.getSession(false);
+
+        if (session == null) {
+            return false;
+        }
+
+        String ruolo =
+                String.valueOf(
+                        session.getAttribute("ruolo")
+                );
+
+        return "ADMIN".equalsIgnoreCase(ruolo);
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        HttpSession session = request.getSession(false);
+    protected void doGet(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws ServletException, IOException {
 
-        if (session == null || session.getAttribute("ruolo") == null
-                || !"ADMIN".equals(session.getAttribute("ruolo"))) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        if (!isAdmin(request)) {
+
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+
             return;
         }
 
-        EntityManager entityManager = JPAUtil.getEntityManager();
+        HttpSession session =
+                request.getSession(false);
+
+        EntityManager entityManager =
+                JPAUtil.getEntityManager();
 
         try {
-            DaoInterfaceRichiesta richiestaDao =
-                    new DaoInterfaceRichiestaImpl(entityManager);
 
-            List<Richiesta> richieste = richiestaDao.findAll();
+            DaoInterfaceRichiesta daoRichiesta =
+                    new DaoInterfaceRichiestaImpl(
+                            entityManager
+                    );
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("contextPath", request.getContextPath());
-            data.put("pageTitle", "Gestione richieste");
-            data.put("richieste", richieste);
+            Map<String, Object> data =
+                    new HashMap<>();
 
-            response.setContentType("text/html;charset=UTF-8");
+            data.put(
+                    "contextPath",
+                    request.getContextPath()
+            );
 
-            Template template = cfg.getTemplate("admin-richieste.ftl");
-            template.process(data, response.getWriter());
+            data.put(
+                    "nome",
+                    session.getAttribute("nome")
+            );
 
-        } catch (Exception e) {
-            throw new ServletException("Errore durante il caricamento delle richieste", e);
+            data.put(
+                    "ruolo",
+                    session.getAttribute("ruolo")
+            );
+
+            data.put(
+                    "richieste",
+                    daoRichiesta.findAll()
+            );
+
+            /*
+             * Recupera i parametri presenti nell'URL
+             * dopo i redirect delle altre servlet.
+             */
+            String ok =
+                    normalizza(
+                            request.getParameter("ok")
+                    );
+
+            String errore =
+                    normalizza(
+                            request.getParameter("errore")
+                    );
+
+            String successo =
+                    normalizza(
+                            request.getParameter("successo")
+                    );
+
+            if (!ok.isBlank()) {
+                data.put("ok", ok);
+            }
+
+            if (!errore.isBlank()) {
+                data.put("errore", errore);
+            }
+
+            if (!successo.isBlank()) {
+                data.put("successo", successo);
+            }
+
+            /*
+             * Il nome è al plurale:
+             * admin-richieste.ftl
+             */
+            renderTemplate(
+                    response,
+                    "admin-richieste.ftl",
+                    data
+            );
 
         } finally {
-            if (entityManager != null && entityManager.isOpen()) {
+
+            if (entityManager.isOpen()) {
                 entityManager.close();
             }
+        }
+    }
+
+    private String normalizza(String valore) {
+
+        if (valore == null) {
+            return "";
+        }
+
+        return valore.trim();
+    }
+
+    private void renderTemplate(
+            HttpServletResponse response,
+            String templateName,
+            Map<String, Object> data
+    ) throws ServletException, IOException {
+
+        response.setContentType(
+                "text/html;charset=UTF-8"
+        );
+
+        try {
+
+            Template template =
+                    cfg.getTemplate(templateName);
+
+            template.process(
+                    data,
+                    response.getWriter()
+            );
+
+        } catch (Exception e) {
+
+            throw new ServletException(
+                    "Errore nel caricamento del template "
+                    + templateName,
+                    e
+            );
         }
     }
 }

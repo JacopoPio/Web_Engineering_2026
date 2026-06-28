@@ -136,9 +136,11 @@
     }
 
     .stato-form select {
+        min-width: 115px;
         padding: 8px;
         border: 1px solid #aaa;
         border-radius: 5px;
+        background: white;
         font-size: 14px;
     }
 
@@ -251,10 +253,8 @@
 
 ```
 <p>
-    Benvenuto
-    ${(nome!"Amministratore")?html}
-    - Ruolo:
-    ${(ruolo!"ADMIN")?html}
+    Benvenuto ${(nome!"Amministratore")?html}
+    - Ruolo: ${(ruolo!"ADMIN")?html}
 </p>
 ```
 
@@ -310,7 +310,7 @@
         quelle attive.
     </p>
 
-    <#if ok??>
+    <#if ok?? && ok?has_content>
 
         <div class="msg-ok">
             Stato aggiornato correttamente.
@@ -318,25 +318,43 @@
 
     </#if>
 
-    <#if successo??>
+    <#if successo?? && successo?has_content>
 
         <div class="msg-ok">
 
-            <#if successo == "missione_creata">
+            <#if successo == "missione_creata"
+                || successo == "creata">
+
                 Missione creata correttamente.
+
+            <#elseif successo == "stato_aggiornato">
+
+                Stato aggiornato correttamente.
+
             <#else>
+
                 Operazione completata correttamente.
+
             </#if>
 
         </div>
 
     </#if>
 
-    <#if errore??>
+    <#if errore?? && errore?has_content>
 
         <div class="msg-errore">
 
-            <#if errore == "richiesta_non_valida">
+            <#if errore == "stato_non_valido">
+
+                Lo stato selezionato non è valido.
+
+            <#elseif errore == "aggiornamento_fallito">
+
+                Non è stato possibile aggiornare lo stato
+                della richiesta.
+
+            <#elseif errore == "richiesta_non_valida">
 
                 La richiesta selezionata non è valida.
 
@@ -346,16 +364,57 @@
 
             <#elseif errore == "richiesta_non_attiva">
 
-                La missione può essere creata solo per una
-                richiesta attiva.
+                La missione può essere creata solamente
+                per una richiesta attiva.
 
             <#elseif errore == "missione_esistente">
 
                 Per questa richiesta esiste già una missione.
 
+            <#elseif errore == "campi">
+
+                Compila tutti i campi obbligatori.
+
+            <#elseif errore == "caposquadra">
+
+                Seleziona un caposquadra.
+
+            <#elseif errore == "caposquadra_non_trovato">
+
+                Il caposquadra selezionato non esiste.
+
+            <#elseif errore == "caposquadra_non_attivo">
+
+                Il caposquadra selezionato non è attivo.
+
+            <#elseif errore == "caposquadra_occupato">
+
+                Il caposquadra selezionato è già assegnato
+                a un'altra squadra.
+
+            <#elseif errore == "operatore_non_caposquadra">
+
+                L'operatore selezionato non può essere
+                utilizzato come caposquadra.
+
+            <#elseif errore == "operatore_non_disponibile">
+
+                Uno degli operatori selezionati non è
+                disponibile.
+
+            <#elseif errore == "mezzo_non_disponibile">
+
+                Uno dei mezzi selezionati non è disponibile.
+
+            <#elseif errore == "materiale_non_disponibile">
+
+                Uno dei materiali selezionati non è
+                disponibile.
+
             <#else>
 
-                Si è verificato un errore durante l'operazione.
+                Si è verificato un errore durante
+                l'operazione.
 
             </#if>
 
@@ -385,7 +444,10 @@
                 <#list richieste as r>
 
                     <#assign statoRichiesta =
-                        (r.stato!"")?string?upper_case
+                        (r.stato!"")
+                        ?string
+                        ?upper_case
+                        ?replace(" ", "_")
                     >
 
                     <tr>
@@ -410,8 +472,7 @@
                                     ATTIVA
                                 </span>
 
-                            <#elseif statoRichiesta == "IN_CORSO"
-                                || statoRichiesta == "IN CORSO">
+                            <#elseif statoRichiesta == "IN_CORSO">
 
                                 <span class="stato stato-in-corso">
                                     IN CORSO
@@ -426,7 +487,7 @@
                             <#else>
 
                                 <span class="stato">
-                                    ${statoRichiesta?html}
+                                    ${(statoRichiesta!"NON DEFINITO")?html}
                                 </span>
 
                             </#if>
@@ -447,7 +508,11 @@
                                     value="${(r.email_segnalante!"")?html}"
                                 >
 
-                                <select name="stato">
+                                <select
+                                    name="stato"
+                                    required
+                                    aria-label="Nuovo stato richiesta"
+                                >
 
                                     <option
                                         value="ATTIVA"
@@ -460,8 +525,7 @@
 
                                     <option
                                         value="IN_CORSO"
-                                        <#if statoRichiesta == "IN_CORSO"
-                                            || statoRichiesta == "IN CORSO">
+                                        <#if statoRichiesta == "IN_CORSO">
                                             selected
                                         </#if>
                                     >
@@ -538,7 +602,7 @@
     </#if>
 
 </section>
-```
+
 
 </main>
 
@@ -549,5 +613,4 @@
 </footer>
 
 </body>
-
 </html>

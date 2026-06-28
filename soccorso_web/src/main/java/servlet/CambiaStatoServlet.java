@@ -1,97 +1,180 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package servlet;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.EntityTransaction;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta_configuration.resources.JPAUtil;
 import model.Richiesta;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Set;
 
-@WebServlet(name = "CambiaStatoServlet", urlPatterns = {"/admin/cambia-stato"})
+@WebServlet(
+        name = "CambiaStatoServlet",
+        urlPatterns = {"/admin/cambia-stato"}
+)
 public class CambiaStatoServlet extends HttpServlet {
 
-    private EntityManagerFactory emf;
-
     @Override
-    public void init() throws ServletException {
-        emf = Persistence.createEntityManagerFactory("Soccorso");
-    }
+    protected void doPost(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws ServletException, IOException {
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+        HttpSession session =
+                request.getSession(false);
 
-        HttpSession session = request.getSession(false);
+        /*
+         * Controllo accesso amministratore.
+         */
+        if (session == null
+                || !"ADMIN".equalsIgnoreCase(
+                        String.valueOf(
+                                session.getAttribute("ruolo")
+                        )
+                )) {
 
-        if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
-            response.sendRedirect(request.getContextPath() + "/login");
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+
             return;
         }
 
         request.setCharacterEncoding("UTF-8");
 
-        String emailSegnalante = request.getParameter("email_segnalante");
-        String nuovoStato = request.getParameter("stato");
+        String emailSegnalante =
+                normalizza(
+                        request.getParameter(
+                                "email_segnalante"
+                        )
+                );
 
+        String nuovoStato =
+                normalizza(
+                        request.getParameter("stato")
+                )
+                .toUpperCase(Locale.ROOT)
+                .replace(" ", "_");
+
+        /*
+         * Gli stati devono essere identici a quelli usati
+         * nel template e nel resto dell'applicazione.
+         */
         Set<String> statiValidi = Set.of(
-                "attiva",
-                "in corso",
-                "chiusa"
+                "ATTIVA",
+                "IN_CORSO",
+                "CHIUSA"
         );
 
-        if (emailSegnalante == null || emailSegnalante.isBlank()
-                || nuovoStato == null || !statiValidi.contains(nuovoStato)) {
+        if (emailSegnalante.isBlank()) {
 
-            response.sendRedirect(request.getContextPath() + "/admin/richieste?errore=1");
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/richieste"
+                    + "?errore=richiesta_non_valida"
+            );
+
             return;
         }
 
-        EntityManager em = emf.createEntityManager();
+        if (!statiValidi.contains(nuovoStato)) {
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/richieste"
+                    + "?errore=stato_non_valido"
+            );
+
+            return;
+        }
+
+        EntityManager entityManager =
+                JPAUtil.getEntityManager();
+
+        EntityTransaction transaction =
+                entityManager.getTransaction();
 
         try {
-            em.getTransaction().begin();
 
-            Richiesta richiesta = em.find(Richiesta.class, emailSegnalante);
+            transaction.begin();
+
+            /*
+             * email_segnalante è la chiave primaria
+             * dell'entità Richiesta.
+             */
+            Richiesta richiesta =
+                    entityManager.find(
+                            Richiesta.class,
+                            emailSegnalante
+                    );
 
             if (richiesta == null) {
-                em.getTransaction().rollback();
-                response.sendRedirect(request.getContextPath() + "/admin/richieste?errore=1");
+
+                transaction.rollback();
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/admin/richieste"
+                        + "?errore=richiesta_non_trovata"
+                );
+
                 return;
             }
 
             richiesta.setStato(nuovoStato);
 
-            em.getTransaction().commit();
+            /*
+             * richiesta è gestita dall'EntityManager:
+             * non è necessario chiamare merge().
+             */
+            entityManager.flush();
 
-            response.sendRedirect(request.getContextPath() + "/admin/richieste?ok=1");
+            transaction.commit();
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/richieste"
+                    + "?ok=1"
+            );
 
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
+
+            if (transaction.isActive()) {
+                transaction.rollback();
             }
 
-            response.sendRedirect(request.getContextPath() + "/admin/richieste?errore=1");
+            /*
+             * Mostra l'errore reale nella console di Tomcat.
+             */
+            e.printStackTrace();
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/richieste"
+                    + "?errore=aggiornamento_fallito"
+            );
 
         } finally {
-            em.close();
+
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
         }
     }
 
-    @Override
-    public void destroy() {
-        if (emf != null && emf.isOpen()) {
-            emf.close();
+    private String normalizza(String valore) {
+
+        if (valore == null) {
+            return "";
         }
+
+        return valore.trim();
     }
 }

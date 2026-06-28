@@ -15,7 +15,7 @@ import jakarta.persistence.*;
 public class Squadra {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
     private String nome;
     
     @OneToMany(mappedBy = "squadra")
@@ -50,11 +50,11 @@ public class Squadra {
         this.nome = nome;
     }
 
-    public int getId() {
-        return this.id;
+    public Integer getId() {
+        return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

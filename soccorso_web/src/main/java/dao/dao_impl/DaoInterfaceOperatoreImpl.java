@@ -130,4 +130,93 @@ public boolean isDisponibile(String email) {
 
     return risultato > 0; 
     }
+@Override
+public boolean rimuoviDaSquadra(String email) {
+
+    EntityTransaction tx =
+            entityManager.getTransaction();
+
+    try {
+        tx.begin();
+
+        Operatore operatore =
+                entityManager.find(
+                        Operatore.class,
+                        email
+                );
+
+        if (operatore == null) {
+            tx.commit();
+            return false;
+        }
+
+        if (operatore.getSquadra() == null) {
+            tx.commit();
+            return false;
+        }
+
+        /*
+         * Operatore è il lato proprietario della relazione.
+         * Impostando squadra a null viene aggiornato
+         * il campo id_squadra nel database.
+         */
+        operatore.setSquadra(null);
+
+        entityManager.flush();
+
+        tx.commit();
+
+        return true;
+
+    } catch (Exception e) {
+
+        if (tx.isActive()) {
+            tx.rollback();
+        }
+
+        throw e;
+    }
+}
+
+@Override
+public int rimuoviTuttiDaSquadra(int idSquadra) {
+
+    EntityTransaction tx =
+            entityManager.getTransaction();
+
+    try {
+        tx.begin();
+
+        int operatoriAggiornati =
+                entityManager.createQuery(
+                        "UPDATE Operatore o "
+                        + "SET o.squadra = null "
+                        + "WHERE o.squadra.id = :idSquadra"
+                )
+                .setParameter(
+                        "idSquadra",
+                        idSquadra
+                )
+                .executeUpdate();
+
+        /*
+         * Una query UPDATE JPQL non aggiorna automaticamente
+         * gli oggetti già presenti nella cache.
+         */
+        entityManager.clear();
+
+        tx.commit();
+
+        return operatoriAggiornati;
+
+    } catch (Exception e) {
+
+        if (tx.isActive()) {
+            tx.rollback();
+        }
+
+        throw e;
+    }
+}
+
 }

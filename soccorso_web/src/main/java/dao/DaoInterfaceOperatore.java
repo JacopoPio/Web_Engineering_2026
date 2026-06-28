@@ -5,6 +5,8 @@ import model.Operatore;
 
 public interface DaoInterfaceOperatore {
 
+    boolean rimuoviDaSquadra(String email);
+    int rimuoviTuttiDaSquadra(int idSquadra);
     public Operatore save(Operatore operatore);
 
     public List<Operatore> findAll();
