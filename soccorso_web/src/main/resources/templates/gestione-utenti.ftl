@@ -1,4 +1,3 @@
-```ftl
 <!DOCTYPE html>
 <html lang="it">
 
@@ -112,6 +111,15 @@
             font-weight: bold;
         }
 
+        .caposquadra {
+            color: #0d47a1;
+            font-weight: bold;
+        }
+
+        .ruolo-semplice {
+            color: #666;
+        }
+
         .azioni {
             display: flex;
             gap: 7px;
@@ -164,6 +172,14 @@
 
         .secondario:hover {
             background: #455a64;
+        }
+
+        .promuovi {
+            background: #6a1b9a;
+        }
+
+        .promuovi:hover {
+            background: #4a148c;
         }
 
         .messaggio {
@@ -241,14 +257,14 @@
 
     <div class="barra-superiore">
 
-        <a
+        
             class="pulsante"
             href="${contextPath}/admin/nuovo-utente"
         >
             Crea nuovo utente
         </a>
 
-        <a
+        
             class="pulsante secondario"
             href="${contextPath}/admin"
         >
@@ -270,6 +286,12 @@
 
             <#elseif successo == "riattivato">
                 Utente riattivato correttamente.
+
+            <#elseif successo == "caposquadra_assegnato">
+                Operatore promosso a caposquadra correttamente.
+
+            <#elseif successo == "caposquadra_rimosso">
+                Ruolo di caposquadra rimosso correttamente.
 
             <#else>
                 Operazione completata correttamente.
@@ -489,6 +511,7 @@
                     <th>Nome</th>
                     <th>Cognome</th>
                     <th>Stato</th>
+                    <th>Ruolo</th>
                     <th>Operazioni</th>
                 </tr>
             </thead>
@@ -520,6 +543,18 @@
                                 <#else>
                                     <span class="disattivato">
                                         Disattivato
+                                    </span>
+                                </#if>
+                            </td>
+
+                            <td>
+                                <#if utente.caposquadra>
+                                    <span class="caposquadra">
+                                        Caposquadra
+                                    </span>
+                                <#else>
+                                    <span class="ruolo-semplice">
+                                        Operatore semplice
                                     </span>
                                 </#if>
                             </td>
@@ -557,6 +592,77 @@
                                             Modifica
                                         </button>
                                     </form>
+
+                                    <#--
+                                        Toggle per il ruolo di caposquadra.
+                                    -->
+                                    <#if utente.caposquadra>
+
+                                        <form
+                                            method="post"
+                                            action="${contextPath}/admin/utenti"
+                                            onsubmit="return confirm('Rimuovere il ruolo di caposquadra a questo operatore?');"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="azione"
+                                                value="rimuovi_caposquadra"
+                                            >
+
+                                            <input
+                                                type="hidden"
+                                                name="ruolo"
+                                                value="OPERATORE"
+                                            >
+
+                                            <input
+                                                type="hidden"
+                                                name="email"
+                                                value="${(utente.email!"")?html}"
+                                            >
+
+                                            <button
+                                                class="secondario"
+                                                type="submit"
+                                            >
+                                                Rimuovi caposquadra
+                                            </button>
+                                        </form>
+
+                                    <#else>
+
+                                        <form
+                                            method="post"
+                                            action="${contextPath}/admin/utenti"
+                                            onsubmit="return confirm('Rendere questo operatore caposquadra?');"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="azione"
+                                                value="rendi_caposquadra"
+                                            >
+
+                                            <input
+                                                type="hidden"
+                                                name="ruolo"
+                                                value="OPERATORE"
+                                            >
+
+                                            <input
+                                                type="hidden"
+                                                name="email"
+                                                value="${(utente.email!"")?html}"
+                                            >
+
+                                            <button
+                                                class="promuovi"
+                                                type="submit"
+                                            >
+                                                Rendi caposquadra
+                                            </button>
+                                        </form>
+
+                                    </#if>
 
                                     <#if utente.attivo>
 
@@ -636,7 +742,7 @@
                     <tr>
                         <td
                             class="vuoto"
-                            colspan="5"
+                            colspan="6"
                         >
                             Nessun operatore presente.
                         </td>
@@ -657,4 +763,3 @@
 
 </body>
 </html>
-```

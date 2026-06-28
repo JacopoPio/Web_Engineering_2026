@@ -1,4 +1,3 @@
-
 package servlet;
 
 import dao.DaoInterfaceMateriale;
@@ -602,6 +601,13 @@ public class AdminCreaMissioneServlet extends HttpServlet {
 
             /*
              * Crea la squadra.
+             *
+             * IMPORTANTE: non collegarla ancora alla missione.
+             * La missione non esiste ancora nel database
+             * (è "transient"), quindi se la squadra la
+             * referenziasse già, Hibernate lancerebbe
+             * TransientPropertyValueException al momento
+             * del salvataggio.
              */
             Squadra squadra =
                     new Squadra();
@@ -615,9 +621,21 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             );
 
             /*
-             * Imposta la squadra in ogni operatore.
-             * Il metodo isDisponibile controlla infatti
-             * che op.squadra sia null.
+             * IMPORTANTE: entityManager.merge() non modifica
+             * l'oggetto passato, ma restituisce una NUOVA
+             * istanza gestita con l'id generato già impostato.
+             * Bisogna quindi ricatturare il valore di ritorno,
+             * altrimenti la variabile "squadra" continuerebbe
+             * a puntare a un oggetto con id=0, che Hibernate
+             * considera ancora "non salvato".
+             */
+            squadra = daoSquadra.save(
+                    squadra
+            );
+
+            /*
+             * Ora che la squadra ha un id valido, possiamo
+             * assegnarla agli operatori e salvare la modifica.
              */
             for (Operatore operatore
                     : tuttiOperatori) {
@@ -625,10 +643,16 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 operatore.setSquadra(
                         squadra
                 );
+
+                daoOperatore.update(
+                        operatore
+                );
             }
 
             /*
-             * Crea la missione.
+             * Crea la missione e collegala alla squadra,
+             * che a questo punto è già persistita
+             * e ha un id valido.
              */
             Missione missione =
                     new Missione();
@@ -649,25 +673,25 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                     materiali
             );
 
-            /*
-             * Imposta entrambi i lati della relazione.
-             */
             missione.setSquadra(
                     squadra
             );
 
-            squadra.setMissione(
+            /*
+             * Stesso discorso fatto per la squadra:
+             * cattura il valore di ritorno di save().
+             */
+            missione = daoMissione.save(
                     missione
             );
 
             /*
-             * Salva prima la squadra e poi la missione.
+             * Aggiorna anche il lato inverso in memoria.
+             * Non scrive nulla nel database (il campo
+             * Squadra.missione è mappedBy), serve solo
+             * per la consistenza dell'oggetto squadra.
              */
-            daoSquadra.save(
-                    squadra
-            );
-
-            daoMissione.save(
+            squadra.setMissione(
                     missione
             );
 

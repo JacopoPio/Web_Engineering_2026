@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package servlet;
 
 import dao.DaoInterfaceAbilita;
@@ -131,6 +127,22 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                         request,
                         response,
                         true
+                );
+                break;
+
+            case "rendi_caposquadra":
+                cambiaCaposquadraOperatore(
+                        request,
+                        response,
+                        true
+                );
+                break;
+
+            case "rimuovi_caposquadra":
+                cambiaCaposquadraOperatore(
+                        request,
+                        response,
+                        false
                 );
                 break;
 
@@ -622,6 +634,64 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
         } catch (RuntimeException e) {
             throw new ServletException(
                     "Errore durante il cambio di stato",
+                    e
+            );
+
+        } finally {
+            em.close();
+        }
+    }
+
+    private void cambiaCaposquadraOperatore(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            boolean nuovoStatoCaposquadra
+    ) throws ServletException, IOException {
+
+        String email =
+                normalizza(request.getParameter("email"))
+                        .toLowerCase();
+
+        if (email.isBlank()) {
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/utenti?errore=parametri"
+            );
+            return;
+        }
+
+        EntityManager em = JPAUtil.getEntityManager();
+
+        try {
+            DaoInterfaceOperatore daoOperatore =
+                    new DaoInterfaceOperatoreImpl(em);
+
+            Operatore operatore =
+                    daoOperatore.findByEmail(email);
+
+            if (operatore == null) {
+                redirectUtenteNonTrovato(
+                        request,
+                        response
+                );
+                return;
+            }
+
+            operatore.setCaposquadra(nuovoStatoCaposquadra);
+            daoOperatore.update(operatore);
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/utenti"
+                    + "?successo="
+                    + (nuovoStatoCaposquadra
+                        ? "caposquadra_assegnato"
+                        : "caposquadra_rimosso")
+            );
+
+        } catch (RuntimeException e) {
+            throw new ServletException(
+                    "Errore durante il cambio di ruolo caposquadra",
                     e
             );
 

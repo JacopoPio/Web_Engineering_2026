@@ -78,6 +78,18 @@ public class Operatore {
         this.attivo = attivo;
     }
 
+    public boolean isCaposquadra() {
+        return caposquadra;
+    }
+
+    public boolean getCaposquadra() {
+        return caposquadra;
+    }
+
+    public void setCaposquadra(boolean caposquadra) {
+        this.caposquadra = caposquadra;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -158,6 +170,14 @@ public class Operatore {
         this.abilita = abilita;
     }
 
+    public Squadra getSquadra() {
+        return squadra;
+    }
+
+    public void setSquadra(Squadra squadra) {
+        this.squadra = squadra;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(this.email);
@@ -187,9 +207,5 @@ public class Operatore {
                 "\nCittà nascita: " + this.citta_nascita +
                 "\nIndirizzo: " + this.indirizzo +
                 "\n";
-    }
-
-    public void setSquadra(Squadra squadra) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
