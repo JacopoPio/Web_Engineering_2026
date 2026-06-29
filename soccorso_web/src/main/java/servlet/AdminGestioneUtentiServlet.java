@@ -45,26 +45,37 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        cfg = new Configuration(Configuration.VERSION_2_3_32);
+
+        cfg = new Configuration(
+                Configuration.VERSION_2_3_32
+        );
 
         cfg.setClassLoaderForTemplateLoading(
-                Thread.currentThread().getContextClassLoader(),
+                Thread.currentThread()
+                        .getContextClassLoader(),
                 "/templates"
         );
 
         cfg.setDefaultEncoding("UTF-8");
         cfg.setOutputEncoding("UTF-8");
         cfg.setURLEscapingCharset("UTF-8");
+
         cfg.setTemplateExceptionHandler(
                 TemplateExceptionHandler.HTML_DEBUG_HANDLER
         );
     }
 
-    private boolean isAdmin(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
+    private boolean isAdmin(
+            HttpServletRequest request
+    ) {
+
+        HttpSession session =
+                request.getSession(false);
 
         return session != null
-                && "ADMIN".equals(session.getAttribute("ruolo"));
+                && "ADMIN".equals(
+                        session.getAttribute("ruolo")
+                );
     }
 
     @Override
@@ -74,21 +85,33 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
     ) throws ServletException, IOException {
 
         if (!isAdmin(request)) {
+
             response.sendRedirect(
                     request.getContextPath() + "/login"
             );
+
             return;
         }
 
         String azione =
-                normalizza(request.getParameter("azione"));
+                normalizza(
+                        request.getParameter("azione")
+                );
 
         if ("modifica".equals(azione)) {
-            mostraFormModifica(request, response);
+
+            mostraFormModifica(
+                    request,
+                    response
+            );
+
             return;
         }
 
-        mostraElenco(request, response);
+        mostraElenco(
+                request,
+                response
+        );
     }
 
     @Override
@@ -98,58 +121,87 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
     ) throws ServletException, IOException {
 
         if (!isAdmin(request)) {
+
             response.sendRedirect(
                     request.getContextPath() + "/login"
             );
+
             return;
         }
 
         request.setCharacterEncoding("UTF-8");
 
         String azione =
-                normalizza(request.getParameter("azione"));
+                normalizza(
+                        request.getParameter("azione")
+                );
 
         switch (azione) {
+
             case "modificaUtente":
-                modificaUtente(request, response);
+
+                modificaUtente(
+                        request,
+                        response
+                );
+
                 break;
 
             case "disattiva":
+
                 cambiaStatoUtente(
                         request,
                         response,
                         false
                 );
+
                 break;
 
             case "riattiva":
+
                 cambiaStatoUtente(
                         request,
                         response,
                         true
                 );
+
                 break;
 
             case "rendi_caposquadra":
+
                 cambiaCaposquadraOperatore(
                         request,
                         response,
                         true
                 );
+
                 break;
 
             case "rimuovi_caposquadra":
+
                 cambiaCaposquadraOperatore(
                         request,
                         response,
                         false
                 );
+
+                break;
+
+            case "rimuovi_da_squadra":
+
+                rimuoviOperatoreDaSquadra(
+                        request,
+                        response
+                );
+
                 break;
 
             default:
+
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/admin/utenti?errore=azione"
+                        + "/admin/utenti"
+                        + "?errore=azione"
                 );
         }
     }
@@ -159,14 +211,20 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             HttpServletResponse response
     ) throws ServletException, IOException {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        EntityManager em =
+                JPAUtil.getEntityManager();
 
         try {
+
             DaoInterfaceAmministratore daoAdmin =
-                    new DaoInterfaceAmministratoreImpl(em);
+                    new DaoInterfaceAmministratoreImpl(
+                            em
+                    );
 
             DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(em);
+                    new DaoInterfaceOperatoreImpl(
+                            em
+                    );
 
             Map<String, Object> data =
                     creaDatiBase(request);
@@ -187,12 +245,22 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             String successo =
                     request.getParameter("successo");
 
-            if (errore != null) {
-                data.put("errore", errore);
+            if (errore != null
+                    && !errore.isBlank()) {
+
+                data.put(
+                        "errore",
+                        errore
+                );
             }
 
-            if (successo != null) {
-                data.put("successo", successo);
+            if (successo != null
+                    && !successo.isBlank()) {
+
+                data.put(
+                        "successo",
+                        successo
+                );
             }
 
             renderTemplate(
@@ -202,13 +270,17 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             );
 
         } catch (RuntimeException e) {
+
             throw new ServletException(
                     "Errore nel caricamento degli utenti",
                     e
             );
 
         } finally {
-            em.close();
+
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
     }
 
@@ -218,49 +290,80 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
     ) throws ServletException, IOException {
 
         String ruolo =
-                normalizza(request.getParameter("ruolo"))
-                        .toUpperCase();
+                normalizza(
+                        request.getParameter("ruolo")
+                ).toUpperCase();
 
         String email =
-                normalizza(request.getParameter("email"))
-                        .toLowerCase();
+                normalizza(
+                        request.getParameter("email")
+                ).toLowerCase();
 
-        if (!ruoloValido(ruolo) || email.isBlank()) {
+        if (!ruoloValido(ruolo)
+                || email.isBlank()) {
+
             response.sendRedirect(
                     request.getContextPath()
-                    + "/admin/utenti?errore=parametri"
+                    + "/admin/utenti"
+                    + "?errore=parametri"
             );
+
             return;
         }
 
-        EntityManager em = JPAUtil.getEntityManager();
+        EntityManager em =
+                JPAUtil.getEntityManager();
 
         try {
+
             DaoInterfaceAmministratore daoAdmin =
-                    new DaoInterfaceAmministratoreImpl(em);
+                    new DaoInterfaceAmministratoreImpl(
+                            em
+                    );
 
             DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(em);
+                    new DaoInterfaceOperatoreImpl(
+                            em
+                    );
 
             DaoInterfacePatente daoPatente =
-                    new DaoInterfaceImplPatente(em);
+                    new DaoInterfaceImplPatente(
+                            em
+                    );
 
             DaoInterfaceAbilita daoAbilita =
-                    new DaoInterfaceImplAbilita(em);
+                    new DaoInterfaceImplAbilita(
+                            em
+                    );
 
             Map<String, Object> data =
                     creaDatiBase(request);
 
-            data.put("modalita", "modifica");
-            data.put("titoloPagina", "Modifica utente");
-            data.put("azioneForm", "modificaUtente");
+            data.put(
+                    "modalita",
+                    "modifica"
+            );
+
+            data.put(
+                    "titoloPagina",
+                    "Modifica utente"
+            );
+
+            data.put(
+                    "azioneForm",
+                    "modificaUtente"
+            );
+
             data.put(
                     "formAction",
                     request.getContextPath()
                     + "/admin/utenti"
             );
 
-            data.put("ruoloUtente", ruolo);
+            data.put(
+                    "ruoloUtente",
+                    ruolo
+            );
 
             data.put(
                     "listaPatenti",
@@ -275,19 +378,27 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             String errore =
                     request.getParameter("errore");
 
-            if (errore != null) {
-                data.put("errore", errore);
+            if (errore != null
+                    && !errore.isBlank()) {
+
+                data.put(
+                        "errore",
+                        errore
+                );
             }
 
             if ("ADMIN".equals(ruolo)) {
+
                 Amministratore amministratore =
                         daoAdmin.findByEmail(email);
 
                 if (amministratore == null) {
+
                     redirectUtenteNonTrovato(
                             request,
                             response
                     );
+
                     return;
                 }
 
@@ -297,14 +408,17 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                 );
 
             } else {
+
                 Operatore operatore =
                         daoOperatore.findByEmail(email);
 
                 if (operatore == null) {
+
                     redirectUtenteNonTrovato(
                             request,
                             response
                     );
+
                     return;
                 }
 
@@ -321,13 +435,17 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             );
 
         } catch (RuntimeException e) {
+
             throw new ServletException(
                     "Errore nel caricamento dell'utente",
                     e
             );
 
         } finally {
-            em.close();
+
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
     }
 
@@ -337,36 +455,49 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
     ) throws ServletException, IOException {
 
         String ruolo =
-                normalizza(request.getParameter("ruolo"))
-                        .toUpperCase();
+                normalizza(
+                        request.getParameter("ruolo")
+                ).toUpperCase();
 
         String email =
-                normalizza(request.getParameter("email"))
-                        .toLowerCase();
+                normalizza(
+                        request.getParameter("email")
+                ).toLowerCase();
 
         String nome =
-                normalizza(request.getParameter("nome"));
+                normalizza(
+                        request.getParameter("nome")
+                );
 
         String cognome =
-                normalizza(request.getParameter("cognome"));
+                normalizza(
+                        request.getParameter("cognome")
+                );
 
         String cf =
-                normalizza(request.getParameter("cf"))
-                        .toUpperCase();
+                normalizza(
+                        request.getParameter("cf")
+                ).toUpperCase();
 
         String dataNascitaParam =
                 normalizza(
-                        request.getParameter("data_nascita")
+                        request.getParameter(
+                                "data_nascita"
+                        )
                 );
 
         String cittaNascita =
                 normalizza(
-                        request.getParameter("citta_nascita")
+                        request.getParameter(
+                                "citta_nascita"
+                        )
                 );
 
         String indirizzo =
                 normalizza(
-                        request.getParameter("indirizzo")
+                        request.getParameter(
+                                "indirizzo"
+                        )
                 );
 
         if (!ruoloValido(ruolo)
@@ -382,13 +513,15 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                     email,
                     "campi"
             );
+
             return;
         }
 
         if (!cf.matches(
-                "^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}"
-                + "[A-Z][0-9]{3}[A-Z]$"
+                "^[A-Z]{6}[0-9]{2}[A-Z]"
+                + "[0-9]{2}[A-Z][0-9]{3}[A-Z]$"
         )) {
+
             redirectErroreModifica(
                     request,
                     response,
@@ -396,11 +529,14 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                     email,
                     "cf_non_valido"
             );
+
             return;
         }
 
         LocalDate dataNascita =
-                parseDataNascita(dataNascitaParam);
+                parseDataNascita(
+                        dataNascitaParam
+                );
 
         if (!dataNascitaParam.isBlank()
                 && dataNascita == null) {
@@ -412,40 +548,54 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                     email,
                     "data"
             );
+
             return;
         }
 
-        EntityManager em = JPAUtil.getEntityManager();
+        EntityManager em =
+                JPAUtil.getEntityManager();
 
         try {
+
             DaoInterfaceAmministratore daoAdmin =
-                    new DaoInterfaceAmministratoreImpl(em);
+                    new DaoInterfaceAmministratoreImpl(
+                            em
+                    );
 
             DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(em);
+                    new DaoInterfaceOperatoreImpl(
+                            em
+                    );
 
             DaoInterfacePatente daoPatente =
-                    new DaoInterfaceImplPatente(em);
+                    new DaoInterfaceImplPatente(
+                            em
+                    );
 
             DaoInterfaceAbilita daoAbilita =
-                    new DaoInterfaceImplAbilita(em);
+                    new DaoInterfaceImplAbilita(
+                            em
+                    );
 
             List<Patente> patenti;
-
             List<Abilita> abilita;
 
             try {
-                patenti = costruisciListaPatenti(
-                        request,
-                        daoPatente
-                );
 
-                abilita = costruisciListaAbilita(
-                        request,
-                        daoAbilita
-                );
+                patenti =
+                        costruisciListaPatenti(
+                                request,
+                                daoPatente
+                        );
+
+                abilita =
+                        costruisciListaAbilita(
+                                request,
+                                daoAbilita
+                        );
 
             } catch (IllegalArgumentException e) {
+
                 redirectErroreModifica(
                         request,
                         response,
@@ -453,54 +603,85 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                         email,
                         "selezione_non_valida"
                 );
+
                 return;
             }
 
             if ("ADMIN".equals(ruolo)) {
+
                 Amministratore amministratore =
                         daoAdmin.findByEmail(email);
 
                 if (amministratore == null) {
+
                     redirectUtenteNonTrovato(
                             request,
                             response
                     );
+
                     return;
                 }
 
                 amministratore.setNome(nome);
                 amministratore.setCognome(cognome);
                 amministratore.setCF(cf);
-                amministratore.setData_nascita(dataNascita);
-                amministratore.setCitta_nascita(cittaNascita);
-                amministratore.setIndirizzo(indirizzo);
-                amministratore.setPatenti(patenti);
-                amministratore.setAbilita(abilita);
+                amministratore.setData_nascita(
+                        dataNascita
+                );
+                amministratore.setCitta_nascita(
+                        cittaNascita
+                );
+                amministratore.setIndirizzo(
+                        indirizzo
+                );
+                amministratore.setPatenti(
+                        patenti
+                );
+                amministratore.setAbilita(
+                        abilita
+                );
 
-                daoAdmin.update(amministratore);
+                daoAdmin.update(
+                        amministratore
+                );
 
             } else {
+
                 Operatore operatore =
                         daoOperatore.findByEmail(email);
 
                 if (operatore == null) {
+
                     redirectUtenteNonTrovato(
                             request,
                             response
                     );
+
                     return;
                 }
 
                 operatore.setNome(nome);
                 operatore.setCognome(cognome);
                 operatore.setCF(cf);
-                operatore.setData_nascita(dataNascita);
-                operatore.setCitta_nascita(cittaNascita);
-                operatore.setIndirizzo(indirizzo);
-                operatore.setPatenti(patenti);
-                operatore.setAbilita(abilita);
+                operatore.setData_nascita(
+                        dataNascita
+                );
+                operatore.setCitta_nascita(
+                        cittaNascita
+                );
+                operatore.setIndirizzo(
+                        indirizzo
+                );
+                operatore.setPatenti(
+                        patenti
+                );
+                operatore.setAbilita(
+                        abilita
+                );
 
-                daoOperatore.update(operatore);
+                daoOperatore.update(
+                        operatore
+                );
             }
 
             response.sendRedirect(
@@ -510,13 +691,17 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             );
 
         } catch (RuntimeException e) {
+
             throw new ServletException(
                     "Errore durante la modifica dell'utente",
                     e
             );
 
         } finally {
-            em.close();
+
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
     }
 
@@ -527,58 +712,79 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
     ) throws ServletException, IOException {
 
         String ruolo =
-                normalizza(request.getParameter("ruolo"))
-                        .toUpperCase();
+                normalizza(
+                        request.getParameter("ruolo")
+                ).toUpperCase();
 
         String email =
-                normalizza(request.getParameter("email"))
-                        .toLowerCase();
+                normalizza(
+                        request.getParameter("email")
+                ).toLowerCase();
 
-        if (!ruoloValido(ruolo) || email.isBlank()) {
+        if (!ruoloValido(ruolo)
+                || email.isBlank()) {
+
             response.sendRedirect(
                     request.getContextPath()
-                    + "/admin/utenti?errore=parametri"
+                    + "/admin/utenti"
+                    + "?errore=parametri"
             );
+
             return;
         }
 
         HttpSession session =
                 request.getSession(false);
 
-        String emailSession = session == null
-                ? null
-                : (String) session.getAttribute("email");
+        String emailSession =
+                session == null
+                        ? null
+                        : (String) session.getAttribute(
+                                "email"
+                        );
 
         if (!nuovoStato
                 && emailSession != null
-                && email.equalsIgnoreCase(emailSession)) {
+                && email.equalsIgnoreCase(
+                        emailSession
+                )) {
 
             response.sendRedirect(
                     request.getContextPath()
                     + "/admin/utenti"
                     + "?errore=autodisattivazione"
             );
+
             return;
         }
 
-        EntityManager em = JPAUtil.getEntityManager();
+        EntityManager em =
+                JPAUtil.getEntityManager();
 
         try {
+
             DaoInterfaceAmministratore daoAdmin =
-                    new DaoInterfaceAmministratoreImpl(em);
+                    new DaoInterfaceAmministratoreImpl(
+                            em
+                    );
 
             DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(em);
+                    new DaoInterfaceOperatoreImpl(
+                            em
+                    );
 
             if ("ADMIN".equals(ruolo)) {
+
                 Amministratore amministratore =
                         daoAdmin.findByEmail(email);
 
                 if (amministratore == null) {
+
                     redirectUtenteNonTrovato(
                             request,
                             response
                     );
+
                     return;
                 }
 
@@ -594,51 +800,80 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                             ).getSingleResult();
 
                     if (amministratoriAttivi <= 1) {
+
                         response.sendRedirect(
                                 request.getContextPath()
                                 + "/admin/utenti"
                                 + "?errore=ultimo_admin"
                         );
+
                         return;
                     }
                 }
 
-                amministratore.setAttivo(nuovoStato);
-                daoAdmin.update(amministratore);
+                amministratore.setAttivo(
+                        nuovoStato
+                );
+
+                daoAdmin.update(
+                        amministratore
+                );
 
             } else {
+
                 Operatore operatore =
                         daoOperatore.findByEmail(email);
 
                 if (operatore == null) {
+
                     redirectUtenteNonTrovato(
                             request,
                             response
                     );
+
                     return;
                 }
 
-                operatore.setAttivo(nuovoStato);
-                daoOperatore.update(operatore);
+                operatore.setAttivo(
+                        nuovoStato
+                );
+
+                /*
+                 * Un operatore disattivato non può
+                 * continuare a essere caposquadra.
+                 */
+                if (!nuovoStato) {
+                    operatore.setCaposquadra(false);
+                }
+
+                daoOperatore.update(
+                        operatore
+                );
             }
 
             response.sendRedirect(
                     request.getContextPath()
                     + "/admin/utenti"
                     + "?successo="
-                    + (nuovoStato
-                        ? "riattivato"
-                        : "disattivato")
+                    + (
+                        nuovoStato
+                                ? "riattivato"
+                                : "disattivato"
+                    )
             );
 
         } catch (RuntimeException e) {
+
             throw new ServletException(
                     "Errore durante il cambio di stato",
                     e
             );
 
         } finally {
-            em.close();
+
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
     }
 
@@ -649,54 +884,165 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
     ) throws ServletException, IOException {
 
         String email =
-                normalizza(request.getParameter("email"))
-                        .toLowerCase();
+                normalizza(
+                        request.getParameter("email")
+                ).toLowerCase();
 
         if (email.isBlank()) {
+
             response.sendRedirect(
                     request.getContextPath()
-                    + "/admin/utenti?errore=parametri"
+                    + "/admin/utenti"
+                    + "?errore=parametri"
             );
+
             return;
         }
 
-        EntityManager em = JPAUtil.getEntityManager();
+        EntityManager em =
+                JPAUtil.getEntityManager();
 
         try {
+
             DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(em);
+                    new DaoInterfaceOperatoreImpl(
+                            em
+                    );
 
             Operatore operatore =
                     daoOperatore.findByEmail(email);
 
             if (operatore == null) {
+
                 redirectUtenteNonTrovato(
                         request,
                         response
                 );
+
                 return;
             }
 
-            operatore.setCaposquadra(nuovoStatoCaposquadra);
-            daoOperatore.update(operatore);
+            /*
+             * Per rendere un operatore caposquadra
+             * è sufficiente che sia attivo.
+             *
+             * Non deve appartenere già a una squadra,
+             * perché il caposquadra viene scelto prima
+             * della creazione della squadra.
+             */
+            if (nuovoStatoCaposquadra
+                    && !operatore.isAttivo()) {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/admin/utenti"
+                        + "?errore=caposquadra_non_attivo"
+                );
+
+                return;
+            }
+
+            operatore.setCaposquadra(
+                    nuovoStatoCaposquadra
+            );
+
+            daoOperatore.update(
+                    operatore
+            );
 
             response.sendRedirect(
                     request.getContextPath()
                     + "/admin/utenti"
                     + "?successo="
-                    + (nuovoStatoCaposquadra
-                        ? "caposquadra_assegnato"
-                        : "caposquadra_rimosso")
+                    + (
+                        nuovoStatoCaposquadra
+                                ? "caposquadra_assegnato"
+                                : "caposquadra_rimosso"
+                    )
             );
 
         } catch (RuntimeException e) {
+
             throw new ServletException(
-                    "Errore durante il cambio di ruolo caposquadra",
+                    "Errore durante il cambio "
+                    + "di ruolo caposquadra",
                     e
             );
 
         } finally {
-            em.close();
+
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
+    }
+
+    private void rimuoviOperatoreDaSquadra(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws ServletException, IOException {
+
+        String email =
+                normalizza(
+                        request.getParameter("email")
+                ).toLowerCase();
+
+        if (email.isBlank()) {
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/utenti"
+                    + "?errore=parametri"
+            );
+
+            return;
+        }
+
+        EntityManager em =
+                JPAUtil.getEntityManager();
+
+        try {
+
+            DaoInterfaceOperatore daoOperatore =
+                    new DaoInterfaceOperatoreImpl(
+                            em
+                    );
+
+            boolean rimosso =
+                    daoOperatore.rimuoviDaSquadra(
+                            email
+                    );
+
+            if (rimosso) {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/admin/utenti"
+                        + "?successo=rimosso_da_squadra"
+                );
+
+            } else {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/admin/utenti"
+                        + "?errore=operatore_non_assegnato"
+                );
+            }
+
+        } catch (RuntimeException e) {
+
+            throw new ServletException(
+                    "Errore durante la rimozione "
+                    + "dell'operatore dalla squadra",
+                    e
+            );
+
+        } finally {
+
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
     }
 
@@ -738,10 +1084,10 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
         data.put(
                 "dataNascitaUtente",
                 amministratore.getData_nascita() == null
-                    ? ""
-                    : amministratore
-                        .getData_nascita()
-                        .toString()
+                        ? ""
+                        : amministratore
+                                .getData_nascita()
+                                .toString()
         );
 
         data.put(
@@ -797,10 +1143,10 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
         data.put(
                 "dataNascitaUtente",
                 operatore.getData_nascita() == null
-                    ? ""
-                    : operatore
-                        .getData_nascita()
-                        .toString()
+                        ? ""
+                        : operatore
+                                .getData_nascita()
+                                .toString()
         );
 
         data.put(
@@ -830,6 +1176,7 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
         }
 
         for (Patente patente : patenti) {
+
             risultato.add(
                     patente.getTipoPatente()
             );
@@ -850,7 +1197,10 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
         }
 
         for (Abilita elemento : abilita) {
-            risultato.add(elemento.getNome());
+
+            risultato.add(
+                    elemento.getNome()
+            );
         }
 
         return risultato;
@@ -865,7 +1215,9 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                 new ArrayList<>();
 
         String[] valori =
-                request.getParameterValues("patenti");
+                request.getParameterValues(
+                        "patenti"
+                );
 
         if (valori == null) {
             return risultato;
@@ -875,11 +1227,15 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                 new HashSet<>();
 
         for (String valore : valori) {
+
             String tipo =
-                    normalizza(valore).toUpperCase();
+                    normalizza(
+                            valore
+                    ).toUpperCase();
 
             if (tipo.isBlank()
                     || !inseriti.add(tipo)) {
+
                 continue;
             }
 
@@ -887,8 +1243,10 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                     daoPatente.findByTipo(tipo);
 
             if (patente == null) {
+
                 throw new IllegalArgumentException(
-                        "Patente inesistente: " + tipo
+                        "Patente inesistente: "
+                        + tipo
                 );
             }
 
@@ -907,7 +1265,9 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                 new ArrayList<>();
 
         String[] valori =
-                request.getParameterValues("abilita");
+                request.getParameterValues(
+                        "abilita"
+                );
 
         if (valori == null) {
             return risultato;
@@ -917,13 +1277,16 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                 new HashSet<>();
 
         for (String valore : valori) {
-            String nome = normalizza(valore);
+
+            String nome =
+                    normalizza(valore);
 
             if (nome.isBlank()) {
                 continue;
             }
 
-            String chiave = nome.toLowerCase();
+            String chiave =
+                    nome.toLowerCase();
 
             if (!inserite.add(chiave)) {
                 continue;
@@ -933,8 +1296,10 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                     daoAbilita.findByNome(nome);
 
             if (abilita == null) {
+
                 throw new IllegalArgumentException(
-                        "Abilità inesistente: " + nome
+                        "Abilità inesistente: "
+                        + nome
                 );
             }
 
@@ -948,12 +1313,16 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             String valore
     ) {
 
-        if (valore == null || valore.isBlank()) {
+        if (valore == null
+                || valore.isBlank()) {
+
             return null;
         }
 
         try {
-            LocalDate data = LocalDate.parse(valore);
+
+            LocalDate data =
+                    LocalDate.parse(valore);
 
             if (data.isAfter(LocalDate.now())) {
                 return null;
@@ -962,6 +1331,7 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             return data;
 
         } catch (DateTimeParseException e) {
+
             return null;
         }
     }
@@ -1018,6 +1388,7 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
                 request.getSession(false);
 
         if (session != null) {
+
             data.put(
                     "nomeAdmin",
                     session.getAttribute("nome")
@@ -1027,12 +1398,18 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
         return data;
     }
 
-    private boolean ruoloValido(String ruolo) {
+    private boolean ruoloValido(
+            String ruolo
+    ) {
+
         return "ADMIN".equals(ruolo)
                 || "OPERATORE".equals(ruolo);
     }
 
-    private String normalizza(String valore) {
+    private String normalizza(
+            String valore
+    ) {
+
         return valore == null
                 ? ""
                 : valore.trim();
@@ -1049,6 +1426,7 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
         );
 
         try {
+
             Template template =
                     cfg.getTemplate(templateName);
 
@@ -1058,8 +1436,10 @@ public class AdminGestioneUtentiServlet extends HttpServlet {
             );
 
         } catch (Exception e) {
+
             throw new ServletException(
-                    "Errore nel template " + templateName,
+                    "Errore nel template "
+                    + templateName,
                     e
             );
         }

@@ -1,52 +1,48 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
-import java.util.*;
-import jakarta.persistence.*;
 
-/**
- *
- * @author Jacopo Antonio
- */
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 @Entity
 @Table(name = "squadra")
 public class Squadra {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private Integer id;
+
+    @Column(name = "nome", nullable = false, length = 100)
     private String nome;
-    
+
+    /*
+     * Il lato proprietario è Operatore.squadra,
+     * perché contiene la @JoinColumn id_squadra.
+     */
     @OneToMany(mappedBy = "squadra")
     private List<Operatore> operatori = new ArrayList<>();
-    
+
+    /*
+     * Il lato proprietario è Missione.squadra,
+     * perché contiene la @JoinColumn id_squadra.
+     */
     @OneToOne(mappedBy = "squadra")
     private Missione missione;
-    
-    public Squadra()
-    {
-        super();
+
+    public Squadra() {
     }
 
-    public List<Operatore> getOperatori() {
-        return this.operatori;
-    }
-
-    public void setOperatori(List<Operatore> operatori) {
-        this.operatori = operatori;
-    }
-
-    public Missione getMissione() {
-        return this.missione;
-    }
-
-    public void setMissione(Missione missione) {
-        this.missione = missione;
-    }
-
-    public Squadra(int id, String nome) {
-        this.id = id;
+    public Squadra(String nome) {
         this.nome = nome;
     }
 
@@ -54,39 +50,70 @@ public class Squadra {
         return id;
     }
 
+    /*
+     * Normalmente non devi chiamare questo setter
+     * quando crei una nuova squadra, perché l'ID
+     * viene generato da MySQL.
+     */
     public void setId(Integer id) {
         this.id = id;
     }
 
     public String getNome() {
-        return this.nome;
+        return nome;
     }
 
     public void setNome(String nome) {
         this.nome = nome;
     }
- 
+
+    public List<Operatore> getOperatori() {
+        return operatori;
+    }
+
+    public void setOperatori(List<Operatore> operatori) {
+        this.operatori = operatori != null
+                ? operatori
+                : new ArrayList<>();
+    }
+
+    public Missione getMissione() {
+        return missione;
+    }
+
+    public void setMissione(Missione missione) {
+        this.missione = missione;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 43 * hash + this.id;
-        return hash;
+        return Objects.hashCode(id);
     }
 
     @Override
     public boolean equals(Object obj) {
+
         if (this == obj) {
             return true;
         }
-        if (obj == null || !(obj instanceof Squadra)) {
+
+        if (!(obj instanceof Squadra)) {
             return false;
         }
-        Squadra s = (Squadra) obj;
-        return this.id == s.id;
+
+        Squadra other = (Squadra) obj;
+
+        /*
+         * Due entità nuove con ID null non devono
+         * essere considerate automaticamente uguali.
+         */
+        return id != null
+                && Objects.equals(id, other.id);
     }
+
     @Override
-    public String toString()
-    {
-        return "Id: " + this.id + "\nNome Squadra: " + this.nome;
+    public String toString() {
+        return "Id: " + id
+                + "\nNome squadra: " + nome;
     }
 }

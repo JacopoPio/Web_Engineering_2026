@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dao.dao_impl;
 
 import dao.DaoInterfaceMissione;
@@ -10,35 +6,83 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 import model.Missione;
-import model.Operatore;
 import model.Richiesta;
 
-/**
- *
- * @author Jacopo Antonio
- */
-public class DaoInterfaceMissioneImpl implements DaoInterfaceMissione {
-    
-    private EntityManager entityManager;
-    public DaoInterfaceMissioneImpl(EntityManager em)
-    {
-        this.entityManager = em;
+public class DaoInterfaceMissioneImpl
+        implements DaoInterfaceMissione {
+
+    private final EntityManager entityManager;
+
+    public DaoInterfaceMissioneImpl(
+            EntityManager entityManager
+    ) {
+
+        if (entityManager == null) {
+            throw new IllegalArgumentException(
+                    "EntityManager non può essere null"
+            );
+        }
+
+        this.entityManager = entityManager;
     }
+
+    /*
+     * Crea una nuova missione.
+     */
     @Override
     public Missione save(Missione missione) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+
+        if (missione == null) {
+            throw new IllegalArgumentException(
+                    "La missione non può essere null"
+            );
+        }
+
+        if (missione.getSquadra() == null) {
+            throw new IllegalArgumentException(
+                    "La missione deve essere associata a una squadra"
+            );
+        }
+
+        if (missione.getSquadra().getId() == null) {
+            throw new IllegalArgumentException(
+                    "La squadra deve essere salvata prima della missione"
+            );
+        }
+
+        if (missione.getRichiesta() == null) {
+            throw new IllegalArgumentException(
+                    "La missione deve essere associata a una richiesta"
+            );
+        }
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
 
         try {
             tx.begin();
 
-            Missione salvato = this.entityManager.merge(missione);
+            /*
+             * La missione è una nuova entità.
+             * persist() conserva la stessa istanza e,
+             * dopo flush(), valorizza l'ID generato.
+             */
+            entityManager.persist(missione);
+
+            /*
+             * Esegue subito l'INSERT nel database.
+             * In questo modo eventuali errori sui vincoli
+             * vengono rilevati prima del commit.
+             */
+            entityManager.flush();
 
             tx.commit();
 
-            return salvato;
+            return missione;
 
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
                 tx.rollback();
             }
 
@@ -46,47 +90,119 @@ public class DaoInterfaceMissioneImpl implements DaoInterfaceMissione {
         }
     }
 
+    /*
+     * Restituisce tutte le missioni.
+     *
+     * Carica anche squadra e richiesta perché le relative
+     * relazioni possono essere LAZY e l'EntityManager viene
+     * normalmente chiuso prima del rendering del template.
+     */
     @Override
     public List<Missione> findAll() {
-        this.entityManager.clear();
 
-        String jpql = "SELECT m FROM Missione m";
+        String jpql =
+                "SELECT DISTINCT m "
+                + "FROM Missione m "
+                + "LEFT JOIN FETCH m.squadra "
+                + "LEFT JOIN FETCH m.richiesta "
+                + "ORDER BY m.id";
 
         TypedQuery<Missione> query =
-                this.entityManager.createQuery(jpql, Missione.class);
+                entityManager.createQuery(
+                        jpql,
+                        Missione.class
+                );
 
         return query.getResultList();
     }
 
-    
-
+    /*
+     * Aggiorna una missione già esistente.
+     */
     @Override
     public Missione update(Missione missione) {
-        return this.save(missione);
+
+        if (missione == null) {
+            throw new IllegalArgumentException(
+                    "La missione non può essere null"
+            );
+        }
+
+        if (missione.getSquadra() == null) {
+            throw new IllegalArgumentException(
+                    "La missione deve essere associata a una squadra"
+            );
+        }
+
+        if (missione.getRichiesta() == null) {
+            throw new IllegalArgumentException(
+                    "La missione deve essere associata a una richiesta"
+            );
+        }
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
+
+        try {
+            tx.begin();
+
+            Missione missioneAggiornata =
+                    entityManager.merge(missione);
+
+            entityManager.flush();
+
+            tx.commit();
+
+            return missioneAggiornata;
+
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+
+            throw e;
+        }
     }
 
+    /*
+     * Elimina una missione tramite il suo identificatore.
+     */
     @Override
     public boolean delete(int idMissione) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+
+        if (idMissione <= 0) {
+            return false;
+        }
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
 
         try {
             tx.begin();
 
             Missione missione =
-                    this.entityManager.find(Missione.class, idMissione);
+                    entityManager.find(
+                            Missione.class,
+                            idMissione
+                    );
 
-            if (missione != null) {
-                this.entityManager.remove(missione);
+            if (missione == null) {
                 tx.commit();
-                return true;
+                return false;
             }
+
+            entityManager.remove(missione);
+
+            entityManager.flush();
 
             tx.commit();
 
-            return false;
+            return true;
 
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
                 tx.rollback();
             }
 
@@ -94,13 +210,35 @@ public class DaoInterfaceMissioneImpl implements DaoInterfaceMissione {
         }
     }
 
+    /*
+     * Verifica se esiste già una missione collegata
+     * alla richiesta ricevuta.
+     */
     @Override
-public boolean existsByRichiesta(Richiesta richiesta) {
-    Long count = entityManager.createQuery(
-            "SELECT COUNT(m) FROM Missione m WHERE m.richiesta = :richiesta", Long.class)
-        .setParameter("richiesta", richiesta)
-        .getSingleResult();
-    return count > 0;
-}
-    
+    public boolean existsByRichiesta(
+            Richiesta richiesta
+    ) {
+
+        if (richiesta == null) {
+            return false;
+        }
+
+        String jpql =
+                "SELECT COUNT(m) "
+                + "FROM Missione m "
+                + "WHERE m.richiesta = :richiesta";
+
+        Long numeroMissioni =
+                entityManager.createQuery(
+                        jpql,
+                        Long.class
+                )
+                .setParameter(
+                        "richiesta",
+                        richiesta
+                )
+                .getSingleResult();
+
+        return numeroMissioni > 0;
+    }
 }

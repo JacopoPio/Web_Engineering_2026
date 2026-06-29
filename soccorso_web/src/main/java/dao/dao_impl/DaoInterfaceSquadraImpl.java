@@ -7,61 +7,151 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 import model.Squadra;
 
+public class DaoInterfaceSquadraImpl
+        implements DaoInterfaceSquadra {
 
-public class DaoInterfaceSquadraImpl implements DaoInterfaceSquadra {
     private final EntityManager entityManager;
-    
-    public DaoInterfaceSquadraImpl(EntityManager entityManager) {
+
+    public DaoInterfaceSquadraImpl(
+            EntityManager entityManager
+    ) {
         this.entityManager = entityManager;
     }
 
+    /*
+     * Usa questo metodo solamente per creare
+     * una nuova squadra.
+     */
     @Override
     public Squadra save(Squadra squadra) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+
+        if (squadra == null) {
+            throw new IllegalArgumentException(
+                    "La squadra non può essere null"
+            );
+        }
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
+
         try {
             tx.begin();
-            Squadra salvata = this.entityManager.merge(squadra);
+
+            /*
+             * persist mantiene gestita la stessa istanza
+             * ricevuta come parametro.
+             */
+            entityManager.persist(squadra);
+
+            /*
+             * Forza subito l'INSERT e la generazione
+             * dell'identificatore.
+             */
+            entityManager.flush();
+
             tx.commit();
-            return salvata;
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+
+            return squadra;
+
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
                 tx.rollback();
             }
+
             throw e;
         }
     }
 
     @Override
     public List<Squadra> findAll() {
-        String jpql = "SELECT s FROM Squadra s";
-        TypedQuery<Squadra> query = this.entityManager.createQuery(jpql, Squadra.class);
+
+        String jpql =
+                "SELECT DISTINCT s "
+                + "FROM Squadra s "
+                + "ORDER BY s.id";
+
+        TypedQuery<Squadra> query =
+                entityManager.createQuery(
+                        jpql,
+                        Squadra.class
+                );
+
         return query.getResultList();
     }
 
+    /*
+     * Usa merge solamente per una squadra
+     * già esistente nel database.
+     */
     @Override
     public Squadra update(Squadra squadra) {
-        return this.save(squadra); 
+
+        if (squadra == null) {
+            throw new IllegalArgumentException(
+                    "La squadra non può essere null"
+            );
+        }
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
+
+        try {
+            tx.begin();
+
+            Squadra aggiornata =
+                    entityManager.merge(squadra);
+
+            entityManager.flush();
+
+            tx.commit();
+
+            return aggiornata;
+
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+
+            throw e;
+        }
     }
 
     @Override
     public boolean delete(int idSquadra) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
+
         try {
             tx.begin();
-            Squadra squadra = entityManager.find(Squadra.class, idSquadra);
-            if (squadra != null) {
-                entityManager.remove(squadra);
+
+            Squadra squadra =
+                    entityManager.find(
+                            Squadra.class,
+                            idSquadra
+                    );
+
+            if (squadra == null) {
                 tx.commit();
-                return true;
+                return false;
             }
+
+            entityManager.remove(squadra);
+            entityManager.flush();
+
             tx.commit();
-            return false;
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+
+            return true;
+
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
                 tx.rollback();
             }
+
             throw e;
         }
     }
-    
 }

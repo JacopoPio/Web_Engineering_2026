@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Gestione missioni</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: Arial, Helvetica, sans-serif;
@@ -18,6 +26,10 @@
             color: white;
             padding: 30px;
             text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
         }
 
         nav {
@@ -33,9 +45,13 @@
             margin: 0 12px;
         }
 
+        nav a:hover {
+            text-decoration: underline;
+        }
+
         main {
-            width: 90%;
-            max-width: 1200px;
+            width: 95%;
+            max-width: 1400px;
             margin: 30px auto;
         }
 
@@ -62,6 +78,10 @@
             border-radius: 8px;
         }
 
+        .tabella-container {
+            overflow-x: auto;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -80,15 +100,25 @@
         th {
             background: #1976d2;
             color: white;
+            white-space: nowrap;
         }
 
-        tr:hover {
+        tbody tr:hover {
             background: #f5f5f5;
         }
 
         .lista {
             margin: 0;
             padding-left: 18px;
+        }
+
+        .lista li {
+            margin-bottom: 5px;
+        }
+
+        .caposquadra {
+            color: #1b5e20;
+            font-weight: bold;
         }
 
         .pulsante {
@@ -100,6 +130,10 @@
             text-decoration: none;
             border-radius: 5px;
         }
+
+        .pulsante:hover {
+            background: #0d47a1;
+        }
     </style>
 </head>
 
@@ -110,15 +144,15 @@
 </header>
 
 <nav>
-    <a href="${contextPath}/admin">
+    <a href="${contextPath!""}/admin">
         Dashboard
     </a>
 
-    <a href="${contextPath}/admin/richieste">
+    <a href="${contextPath!""}/admin/richieste">
         Gestione richieste
     </a>
 
-    <a href="${contextPath}/admin/missioni">
+    <a href="${contextPath!""}/admin/missioni">
         Gestione missioni
     </a>
 </nav>
@@ -142,168 +176,186 @@
     <#if errore??>
 
         <div class="messaggio-errore">
-            Si è verificato un errore: ${errore}
+            Si è verificato un errore:
+            ${errore!"Errore non specificato"}
         </div>
 
     </#if>
 
-    <#if missioni?has_content>
+    <#assign listaMissioni = missioni![]>
 
-        <table>
+    <#if listaMissioni?has_content>
 
-            <thead>
-            <tr>
-                <th>Descrizione</th>
-                <th>Richiesta</th>
-                <th>Squadra</th>
-                <th>Operatori</th>
-                <th>Mezzi</th>
-                <th>Materiali</th>
-            </tr>
-            </thead>
+        <div class="tabella-container">
 
-            <tbody>
+            <table>
 
-            <#list missioni as missione>
-
+                <thead>
                 <tr>
-
-                    <td>
-                        ${missione.descrizione!"Descrizione non disponibile"}
-                    </td>
-
-                    <td>
-
-                        <#if missione.richiesta??>
-
-                            ${missione.richiesta.emailSegnalante!"Email non disponibile"}
-
-                        <#else>
-
-                            Richiesta non disponibile
-
-                        </#if>
-
-                    </td>
-
-                    <td>
-
-                        <#if missione.squadra??>
-
-                            ${missione.squadra.nome!"Squadra senza nome"}
-
-                        <#else>
-
-                            Nessuna squadra
-
-                        </#if>
-
-                    </td>
-
-                    <td>
-
-                        <#if missione.squadra??
-                                && missione.squadra.operatori??>
-
-                            <#if missione.squadra.operatori?has_content>
-
-                                <ul class="lista">
-
-                                    <#list missione.squadra.operatori as operatore>
-
-                                        <li>
-                                            ${operatore.email!"Email non disponibile"}
-                                        </li>
-
-                                    </#list>
-
-                                </ul>
-
-                            <#else>
-
-                                Nessun operatore
-
-                            </#if>
-
-                        <#else>
-
-                            Nessun operatore
-
-                        </#if>
-
-                    </td>
-
-                    <td>
-
-                        <#if missione.mezzi??>
-
-                            <#if missione.mezzi?has_content>
-
-                                <ul class="lista">
-
-                                    <#list missione.mezzi as mezzo>
-
-                                        <li>
-                                            ${mezzo.targa!"Targa non disponibile"}
-                                        </li>
-
-                                    </#list>
-
-                                </ul>
-
-                            <#else>
-
-                                Nessun mezzo
-
-                            </#if>
-
-                        <#else>
-
-                            Nessun mezzo
-
-                        </#if>
-
-                    </td>
-
-                    <td>
-
-                        <#if missione.materiali??>
-
-                            <#if missione.materiali?has_content>
-
-                                <ul class="lista">
-
-                                    <#list missione.materiali as materiale>
-
-                                        <li>
-                                            ${materiale.tipo!"Materiale"}
-                                        </li>
-
-                                    </#list>
-
-                                </ul>
-
-                            <#else>
-
-                                Nessun materiale
-
-                            </#if>
-
-                        <#else>
-
-                            Nessun materiale
-
-                        </#if>
-
-                    </td>
-
+                    <th>Descrizione</th>
+                    <th>Richiesta</th>
+                    <th>Squadra</th>
+                    <th>Operatori</th>
+                    <th>Mezzi</th>
+                    <th>Materiali</th>
                 </tr>
+                </thead>
 
-            </#list>
+                <tbody>
 
-            </tbody>
+                <#list listaMissioni as m>
 
-        </table>
+                    <#if m??>
+
+                        <tr>
+
+                            <td>
+                                ${(m.descrizione)!"Descrizione non disponibile"}
+                            </td>
+
+                            <td>
+
+                                <#if m.richiesta??>
+
+                                    ${(m.richiesta.email_segnalante)!"Email non disponibile"}
+
+                                <#else>
+
+                                    Richiesta non disponibile
+
+                                </#if>
+
+                            </td>
+
+                            <td>
+
+                                <#if m.squadra??>
+
+                                    ${(m.squadra.nome)!"Squadra senza nome"}
+
+                                <#else>
+
+                                    Nessuna squadra
+
+                                </#if>
+
+                            </td>
+
+                            <td>
+
+                                <#if m.squadra??
+                                    && m.squadra.operatori??
+                                    && m.squadra.operatori?has_content>
+
+                                    <ul class="lista">
+
+                                        <#list m.squadra.operatori as operatore>
+
+                                            <#if operatore??>
+
+                                                <li>
+
+                                                    ${(operatore.nome)!""}
+                                                    ${(operatore.cognome)!""}
+
+                                                    <#if operatore.email??>
+                                                        -
+                                                        ${operatore.email}
+                                                    </#if>
+
+                                                    <#if operatore.caposquadra!false>
+
+                                                        <span class="caposquadra">
+                                                            (Caposquadra)
+                                                        </span>
+
+                                                    </#if>
+
+                                                </li>
+
+                                            </#if>
+
+                                        </#list>
+
+                                    </ul>
+
+                                <#else>
+
+                                    Nessun operatore
+
+                                </#if>
+
+                            </td>
+
+                            <td>
+
+                                <#if m.mezzi??
+                                    && m.mezzi?has_content>
+
+                                    <ul class="lista">
+
+                                        <#list m.mezzi as mezzo>
+
+                                            <#if mezzo??>
+
+                                                <li>
+                                                    ${(mezzo.targa)!"Targa non disponibile"}
+                                                </li>
+
+                                            </#if>
+
+                                        </#list>
+
+                                    </ul>
+
+                                <#else>
+
+                                    Nessun mezzo
+
+                                </#if>
+
+                            </td>
+
+                            <td>
+
+                                <#if m.materiali??
+                                    && m.materiali?has_content>
+
+                                    <ul class="lista">
+
+                                        <#list m.materiali as materiale>
+
+                                            <#if materiale??>
+
+                                                <li>
+                                                    ${(materiale.tipo)!"Materiale non disponibile"}
+                                                </li>
+
+                                            </#if>
+
+                                        </#list>
+
+                                    </ul>
+
+                                <#else>
+
+                                    Nessun materiale
+
+                                </#if>
+
+                            </td>
+
+                        </tr>
+
+                    </#if>
+
+                </#list>
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     <#else>
 
@@ -313,10 +365,8 @@
 
     </#if>
 
-    <a
-        class="pulsante"
-        href="${contextPath}/admin/richieste"
-    >
+    <a class="pulsante"
+       href="${contextPath!""}/admin/richieste">
         Vai alle richieste
     </a>
 

@@ -5,6 +5,7 @@ import dao.dao_impl.DaoInterfaceMissioneImpl;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 
 import jakarta.persistence.EntityManager;
@@ -21,13 +22,13 @@ import jakarta_configuration.resources.JPAUtil;
 import model.Missione;
 
 import java.io.IOException;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @WebServlet(
-        name = "AdminMissioniServlet",
+        name = "AdminMissioneServlet",
         urlPatterns = {"/admin/missioni"}
 )
 public class AdminMissioneServlet extends HttpServlet {
@@ -65,10 +66,13 @@ public class AdminMissioneServlet extends HttpServlet {
             return false;
         }
 
-        String ruolo =
-                (String) session.getAttribute("ruolo");
+        Object ruolo =
+                session.getAttribute("ruolo");
 
-        return "ADMIN".equalsIgnoreCase(ruolo);
+        return ruolo != null
+                && "ADMIN".equalsIgnoreCase(
+                        ruolo.toString()
+                );
     }
 
     @Override
@@ -86,18 +90,63 @@ public class AdminMissioneServlet extends HttpServlet {
             return;
         }
 
-        EntityManager entityManager =
-                JPAUtil.getEntityManager();
+        EntityManager entityManager = null;
 
         try {
+
+            entityManager =
+                    JPAUtil.getEntityManager();
 
             DaoInterfaceMissione daoMissione =
                     new DaoInterfaceMissioneImpl(
                             entityManager
                     );
 
-            List<Missione> missioni =
+            List<Missione> missioniRecuperate =
                     daoMissione.findAll();
+
+            /*
+             * Lista senza eventuali elementi null.
+             */
+            List<Missione> missioni =
+                    new ArrayList<>();
+
+            if (missioniRecuperate != null) {
+
+                for (Missione missione
+                        : missioniRecuperate) {
+
+                    if (missione != null) {
+                        missioni.add(missione);
+                    }
+                }
+            }
+
+            System.out.println(
+                    "ELEMENTI RESTITUITI DAL DAO: "
+                    + (missioniRecuperate == null
+                            ? 0
+                            : missioniRecuperate.size())
+            );
+
+            System.out.println(
+                    "MISSIONI VALIDE: "
+                    + missioni.size()
+            );
+
+            /*
+             * Ora il ciclo è sicuro, perché la lista
+             * non contiene elementi null.
+             */
+            for (Missione missione : missioni) {
+
+                System.out.println(
+                        "Missione ID: "
+                        + missione.getId()
+                        + " - Descrizione: "
+                        + missione.getDescrizione()
+                );
+            }
 
             Map<String, Object> data =
                     new HashMap<>();
@@ -113,22 +162,29 @@ public class AdminMissioneServlet extends HttpServlet {
             );
 
             String successo =
-                    request.getParameter("successo");
+                    normalizza(
+                            request.getParameter("successo")
+                    );
 
-            if (successo != null
-                    && !successo.isBlank()) {
+            if ("creata".equals(successo)) {
 
                 data.put(
                         "successo",
                         successo
                 );
+
+                data.put(
+                        "messaggioSuccesso",
+                        "Missione creata correttamente."
+                );
             }
 
             String errore =
-                    request.getParameter("errore");
+                    normalizza(
+                            request.getParameter("errore")
+                    );
 
-            if (errore != null
-                    && !errore.isBlank()) {
+            if (!errore.isBlank()) {
 
                 data.put(
                         "errore",
@@ -142,12 +198,31 @@ public class AdminMissioneServlet extends HttpServlet {
                     data
             );
 
+        } catch (RuntimeException e) {
+
+            throw new ServletException(
+                    "Errore durante il recupero "
+                    + "delle missioni dal database",
+                    e
+            );
+
         } finally {
 
-            if (entityManager.isOpen()) {
+            if (entityManager != null
+                    && entityManager.isOpen()) {
+
                 entityManager.close();
             }
         }
+    }
+
+    private String normalizza(
+            String valore
+    ) {
+
+        return valore == null
+                ? ""
+                : valore.trim();
     }
 
     private void renderTemplate(
@@ -163,18 +238,21 @@ public class AdminMissioneServlet extends HttpServlet {
         try {
 
             Template template =
-                    cfg.getTemplate(templateName);
+                    cfg.getTemplate(
+                            templateName
+                    );
 
             template.process(
                     data,
                     response.getWriter()
             );
 
-        } catch (Exception e) {
+        } catch (TemplateException e) {
 
             throw new ServletException(
-                    "Errore nel caricamento del template "
-                            + templateName,
+                    "Errore durante l'elaborazione "
+                    + "del template "
+                    + templateName,
                     e
             );
         }

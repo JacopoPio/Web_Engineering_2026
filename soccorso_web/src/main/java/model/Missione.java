@@ -1,149 +1,212 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
-import jakarta.persistence.*;
-import java.util.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
-/**
- *
- * @author Jacopo Antonio
- */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 @Entity
 @Table(name = "missione")
 public class Missione {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
+
+    @Column(name = "descrizione", length = 255)
     private String descrizione;
-    private int id_squadra;
-    @OneToOne
-    @JoinColumn(name = "email_richiesta", referencedColumnName = "email_segnalante")
+
+    /*
+     * Non deve esistere anche un campo int id_squadra.
+     *
+     * Questa relazione gestisce direttamente
+     * la foreign key missione.id_squadra.
+     */
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "id_squadra",
+            referencedColumnName = "ID",
+            nullable = false
+    )
+    private Squadra squadra;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "email_richiesta",
+            referencedColumnName = "email_segnalante",
+            nullable = false
+    )
     private Richiesta richiesta;
 
-    public Richiesta getRichiesta() {
-        return this.richiesta;
-    }
-
-    public void setRichiesta(Richiesta richiesta) {
-        this.richiesta = richiesta;
-    }
     @ManyToMany
     @JoinTable(
             name = "missione_mezzo",
-            joinColumns = @JoinColumn(name = "id_missione"),
-            inverseJoinColumns = @JoinColumn(name = "targa_mezzo")
+            joinColumns = @JoinColumn(
+                    name = "id_missione"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "targa_mezzo"
+            )
     )
     private List<Mezzo> mezzi = new ArrayList<>();
+
     @ManyToMany
     @JoinTable(
             name = "missione_aggiornamento",
-            joinColumns = @JoinColumn(name = "id_missione"),
-            inverseJoinColumns = @JoinColumn(name = "id_aggiornamento")
+            joinColumns = @JoinColumn(
+                    name = "id_missione"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "id_aggiornamento"
+            )
     )
-    private List<Aggiornamento> aggiornamenti = new ArrayList<>();
+    private List<Aggiornamento> aggiornamenti =
+            new ArrayList<>();
+
     @ManyToMany
     @JoinTable(
             name = "missione_materiale",
-            joinColumns = @JoinColumn(name = "id_missione"),
-            inverseJoinColumns = @JoinColumn(name = "id_materiale")
+            joinColumns = @JoinColumn(
+                    name = "id_missione"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "id_materiale"
+            )
     )
-    private List<Materiale> materiali = new ArrayList<>();
-    @OneToOne
-    @JoinColumn(name = "missione")
-    private Squadra squadra;
-    public Missione(int id, String descrizione, int id_squadra, Richiesta richiesta) {
-    this.id = id;
-    this.descrizione = descrizione;
-    this.id_squadra = id_squadra;
-    this.richiesta = richiesta;
-}
-    public List<Mezzo> getMezzi() {
-        return this.mezzi;
+    private List<Materiale> materiali =
+            new ArrayList<>();
+
+    public Missione() {
     }
 
-    public Squadra getSquadra() {
-        return this.squadra;
-    }
-
-    public void setSquadra(Squadra squadra) {
+    public Missione(
+            String descrizione,
+            Squadra squadra,
+            Richiesta richiesta
+    ) {
+        this.descrizione = descrizione;
         this.squadra = squadra;
-    }
-    
-
-    public void setMezzi(List<Mezzo> mezzi) {
-        this.mezzi = mezzi;
+        this.richiesta = richiesta;
     }
 
-    public List<Aggiornamento> getAggiornamenti() {
-        return this.aggiornamenti;
+    public Integer getId() {
+        return id;
     }
 
-    public void setAggiornamenti(List<Aggiornamento> aggiornamenti) {
-        this.aggiornamenti = aggiornamenti;
-    }
-
-    public List<Materiale> getMateriali() {
-        return this.materiali;
-    }
-
-    public void setMateriali(List<Materiale> materiali) {
-        this.materiali = materiali;
-    }
-    
-    public Missione()
-    {
-        super();
-    }
-    public int getId() {
-        return this.id;
-    }
-
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
     public String getDescrizione() {
-        return this.descrizione;
+        return descrizione;
     }
 
     public void setDescrizione(String descrizione) {
         this.descrizione = descrizione;
     }
 
-    public int getId_squadra() {
-        return this.id_squadra;
+    public Squadra getSquadra() {
+        return squadra;
     }
 
-    public void setId_squadra(int id_squadra) {
-        this.id_squadra = id_squadra;
+    public void setSquadra(Squadra squadra) {
+        this.squadra = squadra;
     }
+
+    public Richiesta getRichiesta() {
+        return richiesta;
+    }
+
+    public void setRichiesta(Richiesta richiesta) {
+        this.richiesta = richiesta;
+    }
+
+    public List<Mezzo> getMezzi() {
+        return mezzi;
+    }
+
+    public void setMezzi(List<Mezzo> mezzi) {
+        this.mezzi = mezzi != null
+                ? mezzi
+                : new ArrayList<>();
+    }
+
+    public List<Aggiornamento> getAggiornamenti() {
+        return aggiornamenti;
+    }
+
+    public void setAggiornamenti(
+            List<Aggiornamento> aggiornamenti
+    ) {
+        this.aggiornamenti =
+                aggiornamenti != null
+                        ? aggiornamenti
+                        : new ArrayList<>();
+    }
+
+    public List<Materiale> getMateriali() {
+        return materiali;
+    }
+
+    public void setMateriali(
+            List<Materiale> materiali
+    ) {
+        this.materiali =
+                materiali != null
+                        ? materiali
+                        : new ArrayList<>();
+    }
+
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 29 * hash + this.id;
-        return hash;
+        return Objects.hashCode(id);
     }
 
     @Override
     public boolean equals(Object obj) {
+
         if (this == obj) {
             return true;
         }
-        if (obj == null || !(obj instanceof Missione)) {
+
+        if (!(obj instanceof Missione)) {
             return false;
         }
-        Missione m = (Missione) obj;
-        return this.id == m.id;
+
+        Missione other = (Missione) obj;
+
+        return id != null
+                && Objects.equals(id, other.id);
     }
 
     @Override
     public String toString() {
-        return "Missione: " + " id= " + id + "\ndescrizione= " + descrizione + "\nid_squadra= " + id_squadra + 
-                "\nemail_segnalante= " + this.richiesta.getEmail_segnalante() + '\n';
+
+        String emailRichiesta =
+                richiesta == null
+                        ? ""
+                        : richiesta.getEmail_segnalante();
+
+        Integer idSquadra =
+                squadra == null
+                        ? null
+                        : squadra.getId();
+
+        return "Missione: id=" + id
+                + "\nDescrizione=" + descrizione
+                + "\nId squadra=" + idSquadra
+                + "\nEmail segnalante="
+                + emailRichiesta;
     }
-    
-    
 }

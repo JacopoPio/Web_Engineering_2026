@@ -53,6 +53,13 @@ import java.util.Set;
 )
 public class AdminCreaMissioneServlet extends HttpServlet {
 
+    /*
+     * Devono corrispondere esattamente ai valori
+     * ammessi dal vincolo chk_stato nel database.
+     */
+    private static final String STATO_ATTIVA = "attiva";
+    private static final String STATO_IN_CORSO = "in corso";
+
     private Configuration cfg;
 
     @Override
@@ -109,17 +116,15 @@ public class AdminCreaMissioneServlet extends HttpServlet {
 
         String richiestaId =
                 normalizza(
-                        request.getParameter(
-                                "richiestaId"
-                        )
+                        request.getParameter("richiestaId")
                 );
 
         if (richiestaId.isBlank()) {
 
             response.sendRedirect(
                     request.getContextPath()
-                            + "/admin/richieste"
-                            + "?errore=richiesta_non_valida"
+                    + "/admin/richieste"
+                    + "?errore=richiesta_non_valida"
             );
 
             return;
@@ -164,23 +169,26 @@ public class AdminCreaMissioneServlet extends HttpServlet {
 
                 response.sendRedirect(
                         request.getContextPath()
-                                + "/admin/richieste"
-                                + "?errore=richiesta_non_trovata"
+                        + "/admin/richieste"
+                        + "?errore=richiesta_non_trovata"
                 );
 
                 return;
             }
 
-            if (!"ATTIVA".equalsIgnoreCase(
+            /*
+             * Il database salva lo stato come "attiva".
+             */
+            if (!STATO_ATTIVA.equalsIgnoreCase(
                     String.valueOf(
                             richiesta.getStato()
-                    )
+                    ).trim()
             )) {
 
                 response.sendRedirect(
                         request.getContextPath()
-                                + "/admin/richieste"
-                                + "?errore=richiesta_non_attiva"
+                        + "/admin/richieste"
+                        + "?errore=richiesta_non_attiva"
                 );
 
                 return;
@@ -192,32 +200,26 @@ public class AdminCreaMissioneServlet extends HttpServlet {
 
                 response.sendRedirect(
                         request.getContextPath()
-                                + "/admin/richieste"
-                                + "?errore=missione_esistente"
+                        + "/admin/richieste"
+                        + "?errore=missione_esistente"
                 );
 
                 return;
             }
 
-            /*
-             * Recupera tutti gli operatori disponibili.
-             */
             List<Operatore> operatoriDisponibili =
                     daoOperatore.findDisponibili();
 
-            /*
-             * Tra gli operatori disponibili mantiene solamente
-             * quelli abilitati come caposquadra.
-             */
             List<Operatore> capisquadraDisponibili =
                     new ArrayList<>();
 
             for (Operatore operatore
                     : operatoriDisponibili) {
 
-                if (daoOperatore.isCaposquadra(
-                        operatore.getEmail()
-                )) {
+                if (operatore.isAttivo()
+                        && daoOperatore.isCaposquadra(
+                                operatore.getEmail()
+                        )) {
 
                     capisquadraDisponibili.add(
                             operatore
@@ -280,17 +282,11 @@ public class AdminCreaMissioneServlet extends HttpServlet {
 
             String errore =
                     normalizza(
-                            request.getParameter(
-                                    "errore"
-                            )
+                            request.getParameter("errore")
                     );
 
             if (!errore.isBlank()) {
-
-                data.put(
-                        "errore",
-                        errore
-                );
+                data.put("errore", errore);
             }
 
             renderTemplate(
@@ -299,9 +295,19 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                     data
             );
 
+        } catch (RuntimeException e) {
+
+            throw new ServletException(
+                    "Errore nel caricamento "
+                    + "del form della missione",
+                    e
+            );
+
         } finally {
 
-            if (entityManager.isOpen()) {
+            if (entityManager != null
+                    && entityManager.isOpen()) {
+
                 entityManager.close();
             }
         }
@@ -326,34 +332,22 @@ public class AdminCreaMissioneServlet extends HttpServlet {
 
         String richiestaId =
                 normalizza(
-                        request.getParameter(
-                                "richiestaId"
-                        )
+                        request.getParameter("richiestaId")
                 );
 
         String obiettivo =
                 normalizza(
-                        request.getParameter(
-                                "obiettivo"
-                        )
+                        request.getParameter("obiettivo")
                 );
 
         String posizione =
                 normalizza(
-                        request.getParameter(
-                                "posizione"
-                        )
+                        request.getParameter("posizione")
                 );
 
-        /*
-         * Non trasformare l'email in minuscolo.
-         * Viene usato esattamente il valore ricevuto dal form.
-         */
         String emailCaposquadra =
                 normalizza(
-                        request.getParameter(
-                                "caposquadra"
-                        )
+                        request.getParameter("caposquadra")
                 );
 
         if (richiestaId.isBlank()
@@ -434,10 +428,10 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 return;
             }
 
-            if (!"ATTIVA".equalsIgnoreCase(
+            if (!STATO_ATTIVA.equalsIgnoreCase(
                     String.valueOf(
                             richiesta.getStato()
-                    )
+                    ).trim()
             )) {
 
                 redirectErrore(
@@ -464,9 +458,6 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 return;
             }
 
-            /*
-             * Recupera il caposquadra.
-             */
             Operatore caposquadra =
                     daoOperatore.findByEmail(
                             emailCaposquadra
@@ -524,9 +515,6 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 return;
             }
 
-            /*
-             * Recupera gli altri operatori.
-             */
             List<Operatore> altriOperatori =
                     costruisciListaOperatori(
                             request,
@@ -557,9 +545,6 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                     altriOperatori
             );
 
-            /*
-             * Recupera i mezzi.
-             */
             List<Mezzo> mezzi =
                     costruisciListaMezzi(
                             request,
@@ -578,9 +563,6 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 return;
             }
 
-            /*
-             * Recupera i materiali.
-             */
             List<Materiale> materiali =
                     costruisciListaMateriali(
                             request,
@@ -600,48 +582,48 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             }
 
             /*
-             * Crea la squadra.
-             *
-             * IMPORTANTE: non collegarla ancora alla missione.
-             * La missione non esiste ancora nel database
-             * (è "transient"), quindi se la squadra la
-             * referenziasse già, Hibernate lancerebbe
-             * TransientPropertyValueException al momento
-             * del salvataggio.
+             * 1. Crea e salva la squadra.
              */
-            Squadra squadra =
+            Squadra nuovaSquadra =
                     new Squadra();
 
-            squadra.setNome(
+            nuovaSquadra.setNome(
                     "Squadra - " + obiettivo
             );
 
-            squadra.setOperatori(
-                    tuttiOperatori
+            Squadra squadraSalvata =
+                    daoSquadra.save(
+                            nuovaSquadra
+                    );
+
+            if (squadraSalvata == null
+                    || squadraSalvata.getId() == null
+                    || squadraSalvata.getId() <= 0) {
+
+                redirectErrore(
+                        request,
+                        response,
+                        richiestaId,
+                        "squadra_non_salvata"
+                );
+
+                return;
+            }
+
+            System.out.println(
+                    "Squadra salvata con ID: "
+                    + squadraSalvata.getId()
             );
 
             /*
-             * IMPORTANTE: entityManager.merge() non modifica
-             * l'oggetto passato, ma restituisce una NUOVA
-             * istanza gestita con l'id generato già impostato.
-             * Bisogna quindi ricatturare il valore di ritorno,
-             * altrimenti la variabile "squadra" continuerebbe
-             * a puntare a un oggetto con id=0, che Hibernate
-             * considera ancora "non salvato".
-             */
-            squadra = daoSquadra.save(
-                    squadra
-            );
-
-            /*
-             * Ora che la squadra ha un id valido, possiamo
-             * assegnarla agli operatori e salvare la modifica.
+             * 2. Assegna la nuova squadra
+             * agli operatori.
              */
             for (Operatore operatore
                     : tuttiOperatori) {
 
                 operatore.setSquadra(
-                        squadra
+                        squadraSalvata
                 );
 
                 daoOperatore.update(
@@ -650,9 +632,7 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             }
 
             /*
-             * Crea la missione e collegala alla squadra,
-             * che a questo punto è già persistita
-             * e ha un id valido.
+             * 3. Crea e salva la missione.
              */
             Missione missione =
                     new Missione();
@@ -662,7 +642,9 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             );
 
             missione.setDescrizione(
-                    obiettivo + " - " + posizione
+                    obiettivo
+                    + " - "
+                    + posizione
             );
 
             missione.setMezzi(
@@ -674,44 +656,62 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             );
 
             missione.setSquadra(
-                    squadra
+                    squadraSalvata
             );
 
+            Missione missioneSalvata =
+                    daoMissione.save(
+                            missione
+                    );
+
+            if (missioneSalvata == null
+                    || missioneSalvata.getId() == null
+                    || missioneSalvata.getId() <= 0) {
+
+                throw new IllegalStateException(
+                        "La missione non è stata salvata"
+                );
+            }
+
             /*
-             * Stesso discorso fatto per la squadra:
-             * cattura il valore di ritorno di save().
+             * Aggiorna il lato inverso in memoria.
              */
-            missione = daoMissione.save(
-                    missione
+            squadraSalvata.setMissione(
+                    missioneSalvata
             );
 
             /*
-             * Aggiorna anche il lato inverso in memoria.
-             * Non scrive nulla nel database (il campo
-             * Squadra.missione è mappedBy), serve solo
-             * per la consistenza dell'oggetto squadra.
-             */
-            squadra.setMissione(
-                    missione
-            );
-
-            /*
-             * La richiesta passa allo stato IN_CORSO.
+             * 4. Il valore deve essere esattamente:
+             *
+             * "in corso"
+             *
+             * perché è quello ammesso dal vincolo
+             * chk_stato della tabella richiesta.
              */
             daoRichiesta.updateStato(
                     richiestaId,
-                    "IN_CORSO"
+                    STATO_IN_CORSO
             );
 
             response.sendRedirect(
                     request.getContextPath()
-                            + "/admin/missioni"
-                            + "?successo=creata"
+                    + "/admin/missioni"
+                    + "?successo=creata"
+            );
+
+        } catch (RuntimeException e) {
+
+            throw new ServletException(
+                    "Errore durante la creazione "
+                    + "della missione",
+                    e
             );
 
         } finally {
 
-            if (entityManager.isOpen()) {
+            if (entityManager != null
+                    && entityManager.isOpen()) {
+
                 entityManager.close();
             }
         }
@@ -748,7 +748,8 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             }
 
             /*
-             * Evita di inserire nuovamente il caposquadra.
+             * Evita di aggiungere nuovamente
+             * il caposquadra.
              */
             if (email.equalsIgnoreCase(
                     emailCaposquadra
@@ -756,10 +757,6 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                 continue;
             }
 
-            /*
-             * Usa il minuscolo solamente per controllare
-             * eventuali duplicati.
-             */
             String emailConfronto =
                     email.toLowerCase();
 
@@ -933,11 +930,11 @@ public class AdminCreaMissioneServlet extends HttpServlet {
 
         response.sendRedirect(
                 request.getContextPath()
-                        + "/admin/missioni/nuova"
-                        + "?richiestaId="
-                        + richiestaCodificata
-                        + "&errore="
-                        + erroreCodificato
+                + "/admin/missioni/nuova"
+                + "?richiestaId="
+                + richiestaCodificata
+                + "&errore="
+                + erroreCodificato
         );
     }
 
@@ -945,11 +942,9 @@ public class AdminCreaMissioneServlet extends HttpServlet {
             String valore
     ) {
 
-        if (valore == null) {
-            return "";
-        }
-
-        return valore.trim();
+        return valore == null
+                ? ""
+                : valore.trim();
     }
 
     private void renderTemplate(
@@ -977,8 +972,9 @@ public class AdminCreaMissioneServlet extends HttpServlet {
         } catch (Exception e) {
 
             throw new ServletException(
-                    "Errore nel caricamento del template "
-                            + templateName,
+                    "Errore nel caricamento "
+                    + "del template "
+                    + templateName,
                     e
             );
         }
