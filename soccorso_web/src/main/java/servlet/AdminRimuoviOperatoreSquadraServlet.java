@@ -2,26 +2,21 @@ package servlet;
 
 import dao.DaoInterfaceOperatore;
 import dao.dao_impl.DaoInterfaceOperatoreImpl;
-
 import jakarta.persistence.EntityManager;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import jakarta_configuration.resources.JPAUtil;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @WebServlet(
-        name = "AdminRimuoviOperatoreSquadraServlet",
+        name = "AdminRimuoviOperatoreDaSquadraServlet",
         urlPatterns = {
-            "/admin/operatori/rimuovi-squadra"
+            "/admin/utenti/rimuovi-squadra"
         }
 )
 public class AdminRimuoviOperatoreSquadraServlet
@@ -36,142 +31,101 @@ public class AdminRimuoviOperatoreSquadraServlet
         HttpSession session =
                 request.getSession(false);
 
+        /*
+         * Solo un amministratore può rimuovere
+         * un operatore da una squadra.
+         */
         if (session == null
-                || !"ADMIN".equalsIgnoreCase(
-                        String.valueOf(
-                                session.getAttribute("ruolo")
-                        )
+                || !"ADMIN".equals(
+                        session.getAttribute("ruolo")
                 )) {
 
             response.sendRedirect(
-                    request.getContextPath() + "/login"
+                    request.getContextPath()
+                    + "/login"
             );
 
             return;
         }
 
-        request.setCharacterEncoding("UTF-8");
-
         String email =
-                normalizza(
-                        request.getParameter("email")
-                );
+                request.getParameter("email");
 
-        if (email.isBlank()) {
+        if (email == null || email.isBlank()) {
 
             response.sendRedirect(
                     request.getContextPath()
-                    + "/operatori"
-                    + "?errore=email_non_valida"
+                    + "/admin/utenti"
+                    + "?errore=emailNonValida"
             );
 
             return;
         }
 
-        EntityManager entityManager =
-                JPAUtil.getEntityManager();
+        EntityManager entityManager = null;
 
         try {
+            entityManager =
+                    JPAUtil.getEntityManager();
 
-            DaoInterfaceOperatore daoOperatore =
+            DaoInterfaceOperatore operatoreDao =
                     new DaoInterfaceOperatoreImpl(
                             entityManager
                     );
 
-            OperatoreRisultato risultato =
-                    rimuoviOperatore(
-                            daoOperatore,
-                            email
+            boolean rimosso =
+                    operatoreDao.rimuoviDaSquadra(
+                            email.trim()
                     );
 
-            if (risultato
-                    == OperatoreRisultato.NON_TROVATO) {
+            if (rimosso) {
 
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/operatori"
-                        + "?errore=operatore_non_trovato"
+                        + "/admin/utenti"
+                        + "?successo=rimossoDaSquadra"
                 );
 
-                return;
-            }
-
-            if (risultato
-                    == OperatoreRisultato.NON_ASSEGNATO) {
+            } else {
 
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/operatori"
-                        + "?errore=operatore_non_assegnato"
+                        + "/admin/utenti"
+                        + "?errore=operatoreNonAssegnato"
                 );
-
-                return;
             }
 
-            response.sendRedirect(
-                    request.getContextPath()
-                    + "/operatori"
-                    + "?successo=rimosso_da_squadra"
-            );
+        } catch (RuntimeException e) {
 
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            response.sendRedirect(
-                    request.getContextPath()
-                    + "/operatori"
-                    + "?errore=rimozione_fallita"
+            throw new ServletException(
+                    "Errore durante la rimozione "
+                    + "dell'operatore dalla squadra",
+                    e
             );
 
         } finally {
 
-            if (entityManager.isOpen()) {
+            if (entityManager != null
+                    && entityManager.isOpen()) {
+
                 entityManager.close();
             }
         }
     }
 
-    private OperatoreRisultato rimuoviOperatore(
-            DaoInterfaceOperatore daoOperatore,
-            String email
-    ) {
+    @Override
+    protected void doGet(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws ServletException, IOException {
 
-        model.Operatore operatore =
-                daoOperatore.findByEmail(email);
-
-        if (operatore == null) {
-            return OperatoreRisultato.NON_TROVATO;
-        }
-
-        if (operatore.getSquadra() == null) {
-            return OperatoreRisultato.NON_ASSEGNATO;
-        }
-
-        boolean rimosso =
-                daoOperatore.rimuoviDaSquadra(
-                        email
-                );
-
-        if (rimosso) {
-            return OperatoreRisultato.RIMOSSO;
-        }
-
-        return OperatoreRisultato.NON_ASSEGNATO;
-    }
-
-    private String normalizza(String valore) {
-
-        if (valore == null) {
-            return "";
-        }
-
-        return valore.trim();
-    }
-
-    private enum OperatoreRisultato {
-        RIMOSSO,
-        NON_TROVATO,
-        NON_ASSEGNATO
+        /*
+         * L'operazione modifica il database,
+         * quindi deve essere eseguita tramite POST.
+         */
+        response.sendRedirect(
+                request.getContextPath()
+                + "/admin/utenti"
+        );
     }
 }

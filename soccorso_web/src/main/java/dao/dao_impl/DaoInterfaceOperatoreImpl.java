@@ -3,34 +3,40 @@ package dao.dao_impl;
 import dao.DaoInterfaceOperatore;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 import model.Operatore;
 
-public class DaoInterfaceOperatoreImpl implements DaoInterfaceOperatore {
+public class DaoInterfaceOperatoreImpl
+        implements DaoInterfaceOperatore {
 
     private final EntityManager entityManager;
 
-    public DaoInterfaceOperatoreImpl(EntityManager entityManager) {
+    public DaoInterfaceOperatoreImpl(
+            EntityManager entityManager
+    ) {
         this.entityManager = entityManager;
     }
 
     @Override
     public Operatore save(Operatore operatore) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
 
         try {
             tx.begin();
 
-            Operatore salvato = this.entityManager.merge(operatore);
+            Operatore salvato =
+                    entityManager.merge(operatore);
 
             tx.commit();
 
             return salvato;
 
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
                 tx.rollback();
             }
 
@@ -40,50 +46,94 @@ public class DaoInterfaceOperatoreImpl implements DaoInterfaceOperatore {
 
     @Override
     public List<Operatore> findAll() {
-        this.entityManager.clear();
 
-        String jpql = "SELECT o FROM Operatore o";
+        entityManager.clear();
+
+        /*
+         * LEFT JOIN FETCH permette al template FreeMarker
+         * di controllare operatore.squadra anche dopo la
+         * chiusura dell'EntityManager.
+         */
+        String jpql =
+                "SELECT DISTINCT o "
+                + "FROM Operatore o "
+                + "LEFT JOIN FETCH o.squadra "
+                + "ORDER BY o.cognome, o.nome";
 
         TypedQuery<Operatore> query =
-                this.entityManager.createQuery(jpql, Operatore.class);
+                entityManager.createQuery(
+                        jpql,
+                        Operatore.class
+                );
 
         return query.getResultList();
     }
 
     @Override
     public Operatore findByEmail(String email) {
-        this.entityManager.clear();
 
-        return this.entityManager.find(Operatore.class, email);
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+
+        entityManager.clear();
+
+        return entityManager.find(
+                Operatore.class,
+                email.trim()
+        );
     }
 
     @Override
     public Operatore update(Operatore operatore) {
-        return this.save(operatore);
+        return save(operatore);
     }
 
     @Override
     public boolean delete(String emailOp) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+
+        if (emailOp == null || emailOp.isBlank()) {
+            return false;
+        }
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
 
         try {
             tx.begin();
 
             Operatore operatore =
-                    this.entityManager.find(Operatore.class, emailOp);
+                    entityManager.find(
+                            Operatore.class,
+                            emailOp.trim()
+                    );
 
-            if (operatore != null) {
-                this.entityManager.remove(operatore);
+            if (operatore == null) {
                 tx.commit();
-                return true;
+                return false;
             }
+
+            /*
+             * Rimuove prima i collegamenti con le
+             * tabelle associative.
+             */
+            operatore.setSquadra(null);
+            operatore.setCaposquadra(false);
+
+            operatore.getPatenti().clear();
+            operatore.getAbilita().clear();
+
+            entityManager.flush();
+
+            entityManager.remove(operatore);
 
             tx.commit();
 
-            return false;
+            return true;
 
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
                 tx.rollback();
             }
 
@@ -93,130 +143,162 @@ public class DaoInterfaceOperatoreImpl implements DaoInterfaceOperatore {
 
     @Override
     public List<Operatore> findDisponibili() {
-        return entityManager.createQuery(
-                "SELECT o FROM Operatore o WHERE o.squadra IS NULL", Operatore.class)
-            .getResultList();
-        }
+
+        String jpql =
+                "SELECT o "
+                + "FROM Operatore o "
+                + "WHERE o.squadra IS NULL "
+                + "AND o.attivo = true "
+                + "ORDER BY o.cognome, o.nome";
+
+        return entityManager
+                .createQuery(jpql, Operatore.class)
+                .getResultList();
+    }
 
     @Override
-    public boolean isCaposquadra(String email) { // Evita di caricare record inutili
-        Long count = entityManager.createQuery(
-                "SELECT COUNT(o) FROM Operatore o WHERE o.email = :email AND o.caposquadra = true", Long.class)
-            .setParameter("email", email)
-            .getSingleResult();
-            return count > 0;
-    }
-    @Override
-public boolean isDisponibile(String email) {
+    public boolean isCaposquadra(String email) {
 
-    if (email == null || email.isBlank()) {
-        return false;
-    }
-
-    String jpql =
-            "SELECT COUNT(op) "
-            + "FROM Operatore op "
-            + "WHERE op.email = :email "
-            + "AND op.attivo = true "
-            + "AND op.squadra IS NULL";
-
-    Long risultato = entityManager
-            .createQuery(jpql, Long.class)
-            .setParameter(
-                    "email",
-                    email.trim().toLowerCase()
-            )
-            .getSingleResult();
-
-    return risultato > 0; 
-    }
-@Override
-public boolean rimuoviDaSquadra(String email) {
-
-    EntityTransaction tx =
-            entityManager.getTransaction();
-
-    try {
-        tx.begin();
-
-        Operatore operatore =
-                entityManager.find(
-                        Operatore.class,
-                        email
-                );
-
-        if (operatore == null) {
-            tx.commit();
+        if (email == null || email.isBlank()) {
             return false;
         }
 
-        if (operatore.getSquadra() == null) {
-            tx.commit();
+        String jpql =
+                "SELECT COUNT(o) "
+                + "FROM Operatore o "
+                + "WHERE o.email = :email "
+                + "AND o.caposquadra = true";
+
+        Long risultato = entityManager
+                .createQuery(jpql, Long.class)
+                .setParameter("email", email.trim())
+                .getSingleResult();
+
+        return risultato > 0;
+    }
+
+    @Override
+    public boolean isDisponibile(String email) {
+
+        if (email == null || email.isBlank()) {
             return false;
         }
 
-        /*
-         * Operatore è il lato proprietario della relazione.
-         * Impostando squadra a null viene aggiornato
-         * il campo id_squadra nel database.
-         */
-        operatore.setSquadra(null);
+        String jpql =
+                "SELECT COUNT(o) "
+                + "FROM Operatore o "
+                + "WHERE o.email = :email "
+                + "AND o.attivo = true "
+                + "AND o.squadra IS NULL";
 
-        entityManager.flush();
+        Long risultato = entityManager
+                .createQuery(jpql, Long.class)
+                .setParameter("email", email.trim())
+                .getSingleResult();
 
-        tx.commit();
+        return risultato > 0;
+    }
 
-        return true;
+    @Override
+    public boolean rimuoviDaSquadra(String email) {
 
-    } catch (Exception e) {
-
-        if (tx.isActive()) {
-            tx.rollback();
+        if (email == null || email.isBlank()) {
+            return false;
         }
 
-        throw e;
-    }
-}
+        EntityTransaction tx =
+                entityManager.getTransaction();
 
-@Override
-public int rimuoviTuttiDaSquadra(int idSquadra) {
+        try {
+            tx.begin();
 
-    EntityTransaction tx =
-            entityManager.getTransaction();
+            Operatore operatore =
+                    entityManager.find(
+                            Operatore.class,
+                            email.trim()
+                    );
 
-    try {
-        tx.begin();
+            if (operatore == null) {
+                tx.commit();
+                return false;
+            }
 
-        int operatoriAggiornati =
-                entityManager.createQuery(
-                        "UPDATE Operatore o "
-                        + "SET o.squadra = null "
-                        + "WHERE o.squadra.id = :idSquadra"
-                )
-                .setParameter(
-                        "idSquadra",
-                        idSquadra
-                )
-                .executeUpdate();
+            if (operatore.getSquadra() == null) {
+                tx.commit();
+                return false;
+            }
 
-        /*
-         * Una query UPDATE JPQL non aggiorna automaticamente
-         * gli oggetti già presenti nella cache.
-         */
-        entityManager.clear();
+            /*
+             * Operatore è il lato proprietario
+             * della relazione ManyToOne.
+             *
+             * Questo aggiorna id_squadra a NULL.
+             */
+            operatore.setSquadra(null);
 
-        tx.commit();
+            /*
+             * Un operatore senza squadra non può
+             * continuare a essere caposquadra.
+             */
+            operatore.setCaposquadra(false);
 
-        return operatoriAggiornati;
+            entityManager.flush();
 
-    } catch (Exception e) {
+            tx.commit();
 
-        if (tx.isActive()) {
-            tx.rollback();
+            return true;
+
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+
+            throw e;
         }
-
-        throw e;
     }
-}
 
+    @Override
+    public int rimuoviTuttiDaSquadra(int idSquadra) {
+
+        EntityTransaction tx =
+                entityManager.getTransaction();
+
+        try {
+            tx.begin();
+
+            String jpql =
+                    "UPDATE Operatore o "
+                    + "SET o.squadra = null, "
+                    + "o.caposquadra = false "
+                    + "WHERE o.squadra.id = :idSquadra";
+
+            int operatoriAggiornati =
+                    entityManager
+                            .createQuery(jpql)
+                            .setParameter(
+                                    "idSquadra",
+                                    idSquadra
+                            )
+                            .executeUpdate();
+
+            tx.commit();
+
+            /*
+             * Le query UPDATE JPQL non aggiornano
+             * automaticamente gli oggetti nella cache.
+             */
+            entityManager.clear();
+
+            return operatoriAggiornati;
+
+        } catch (RuntimeException e) {
+
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+
+            throw e;
+        }
+    }
 }
