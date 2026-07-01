@@ -555,13 +555,6 @@
 
                             <div class="azioni">
 
-                                <a
-                                    class="btn btn-dettaglio"
-                                    href="${contextPath}/admin/dettaglio-richiesta?email=${(r.email_segnalante!"")?url('UTF-8')}"
-                                >
-                                    Apri
-                                </a>
-
                                 <#if statoRichiesta == "ATTIVA">
 
                                     <a

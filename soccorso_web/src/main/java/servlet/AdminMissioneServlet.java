@@ -116,7 +116,7 @@ public class AdminMissioneServlet extends HttpServlet {
                 for (Missione missione
                         : missioniRecuperate) {
 
-                    if (missione != null) {
+                    if (missione != null && !missione.getRichiesta().getStato().equalsIgnoreCase("chiusa")) {
                         missioni.add(missione);
                     }
                 }

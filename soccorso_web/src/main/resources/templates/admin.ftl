@@ -134,11 +134,6 @@
 
 <nav>
     <a href="${contextPath}/admin">Dashboard</a>
-    <a href="${contextPath}/admin/richieste">Richieste</a>
-    <a href="${contextPath}/admin/nuovo-utente">Gestione Utenti</a>
-    <a href="${contextPath}/mezzi">Mezzi</a>
-    <a href="${contextPath}/materiale">Materiali</a>
-    <a href="${contextPath}/operatori">Gestione Operatori</a>
     <a href="${contextPath}/logout">Logout</a>
 </nav>
 
@@ -154,7 +149,7 @@
                 <p>Controlla le richieste inviate dagli utenti e il loro stato.</p>
             </a>
 
-            <a class="card" href="${contextPath}/admin/nuovo-utente">
+            <a class="card" href="${contextPath}/admin/utenti">
                 <h3>Gestione Utenti</h3>
                 <p>Visualizza, modifica o elimina gli utenti registrati.</p>
             </a>
@@ -162,11 +157,6 @@
             <a class="card" href="${contextPath}/admin/missioni">
                 <h3>Missioni in corso</h3>
                 <p>Monitora missioni aperte, aggiornamenti e risorse impegnate.</p>
-            </a>
-
-            <a class="card" href="${contextPath}/operatori">
-                <h3>Gestione Operatori</h3>
-                <p>Gestisci gli operatori disponibili nel sistema.</p>
             </a>
 
             <a class="card" href="${contextPath}/mezzi">

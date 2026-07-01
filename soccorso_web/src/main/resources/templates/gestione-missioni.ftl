@@ -198,6 +198,7 @@
                     <th>Operatori</th>
                     <th>Mezzi</th>
                     <th>Materiali</th>
+                    <th>Aggiornamenti</th>
                 </tr>
                 </thead>
 
@@ -340,6 +341,21 @@
                                 <#else>
 
                                     Nessun materiale
+
+                                </#if>
+
+                            </td>
+                            <td>
+
+                                <#if m.id??>
+
+                                    <a href="${contextPath!""}/admin/missioni/aggiornamenti?id=${m.id}">
+                                        Vedi aggiornamenti
+                                    </a>
+
+                                <#else>
+
+                                    Non disponibile
 
                                 </#if>
 
