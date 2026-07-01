@@ -24,4 +24,5 @@ public interface DaoInterfaceOperatore {
     boolean rimuoviDaSquadra(String email);
 
     int rimuoviTuttiDaSquadra(int idSquadra);
+    public List<Operatore> findBySquadra(Integer idSquadra);
 }

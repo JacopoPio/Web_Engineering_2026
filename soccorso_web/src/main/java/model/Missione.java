@@ -49,6 +49,25 @@ public class Missione {
     )
     private Richiesta richiesta;
 
+    /*
+     * Operatori che hanno partecipato alla missione.
+     * La relazione viene conservata anche quando gli operatori
+     * vengono successivamente rimossi dalla squadra.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "missione_operatore",
+            joinColumns = @JoinColumn(
+                    name = "id_missione"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "email_operatore",
+                    referencedColumnName = "email"
+            )
+    )
+    private List<Operatore> operatori =
+            new ArrayList<>();
+
     @ManyToMany
     @JoinTable(
             name = "missione_mezzo",
@@ -130,6 +149,19 @@ public class Missione {
 
     public void setRichiesta(Richiesta richiesta) {
         this.richiesta = richiesta;
+    }
+
+    public List<Operatore> getOperatori() {
+        return operatori;
+    }
+
+    public void setOperatori(
+            List<Operatore> operatori
+    ) {
+        this.operatori =
+                operatori != null
+                        ? operatori
+                        : new ArrayList<>();
     }
 
     public List<Mezzo> getMezzi() {

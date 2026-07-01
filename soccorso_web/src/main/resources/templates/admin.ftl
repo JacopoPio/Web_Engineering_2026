@@ -70,6 +70,10 @@
             color: #b71c1c;
         }
 
+        .panel + .panel {
+            margin-top: 25px;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -167,6 +171,30 @@
             <a class="card" href="${contextPath}/materiali">
                 <h3>Materiali</h3>
                 <p>Gestisci materiali e risorse utilizzabili nelle missioni.</p>
+            </a>
+
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Storico missioni</h2>
+        <p>Seleziona la categoria e scegli l'elemento di cui vuoi consultare le missioni.</p>
+
+        <div class="grid">
+
+            <a class="card" href="${contextPath}/storico/operatori">
+                <h3>Storico operatori</h3>
+                <p>Visualizza gli operatori e apri lo storico delle missioni a cui hanno partecipato.</p>
+            </a>
+
+            <a class="card" href="${contextPath}/storico/mezzi">
+                <h3>Storico mezzi</h3>
+                <p>Visualizza i mezzi e apri lo storico delle missioni in cui sono stati utilizzati.</p>
+            </a>
+
+            <a class="card" href="${contextPath}/storico/materiali">
+                <h3>Storico materiali</h3>
+                <p>Visualizza i materiali e apri lo storico delle missioni in cui sono stati impiegati.</p>
             </a>
 
         </div>

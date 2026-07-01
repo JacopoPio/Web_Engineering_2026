@@ -3,6 +3,7 @@ package dao.dao_impl;
 import dao.DaoInterfaceMissione;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 import model.Missione;
@@ -114,6 +115,117 @@ public class DaoInterfaceMissioneImpl
                 );
 
         return query.getResultList();
+    }
+    
+    /*cerca una missione tramite  il suo ID e carica
+    anche squadra e richieste prima della chiusura dell'EnityManager
+    */
+    @Override
+    public Missione findById(int idMissione) {
+
+        if (idMissione <= 0) {
+            return null;
+        }
+
+        String jpql =
+                "SELECT DISTINCT m "
+                + "FROM Missione m "
+                + "LEFT JOIN FETCH m.squadra "
+                + "LEFT JOIN FETCH m.richiesta "
+                + "WHERE m.id = :idMissione";
+
+        try {
+            return entityManager
+                    .createQuery(jpql, Missione.class)
+                    .setParameter("idMissione", idMissione)
+                    .getSingleResult();
+
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+    
+    /*
+     * Storico delle missioni nelle quali è stato coinvolto
+     * un determinato operatore.
+     */
+    @Override
+    public List<Missione> findByOperatore(String emailOperatore) {
+
+        if (emailOperatore == null || emailOperatore.isBlank()) {
+            return List.of();
+        }
+
+        String jpql =
+                "SELECT DISTINCT m "
+                + "FROM Missione m "
+                + "JOIN m.operatori o "
+                + "LEFT JOIN FETCH m.squadra "
+                + "LEFT JOIN FETCH m.richiesta "
+                + "WHERE o.email = :email "
+                + "ORDER BY m.id DESC";
+
+        return entityManager
+                .createQuery(jpql, Missione.class)
+                .setParameter(
+                        "email",
+                        emailOperatore.trim()
+                )
+                .getResultList();
+    }
+    /*
+     * Storico delle missioni nelle quali è stato utilizzato
+     * un determinato mezzo.
+     */
+    @Override
+    public List<Missione> findByMezzo(String targaMezzo) {
+
+        if (targaMezzo == null || targaMezzo.isBlank()) {
+            return List.of();
+        }
+
+        String jpql =
+                "SELECT DISTINCT mi "
+                + "FROM Mezzo me "
+                + "JOIN me.missioni mi "
+                + "LEFT JOIN FETCH mi.squadra "
+                + "LEFT JOIN FETCH mi.richiesta "
+                + "WHERE me.targa = :targa "
+                + "ORDER BY mi.id DESC";
+
+        return entityManager
+                .createQuery(jpql, Missione.class)
+                .setParameter(
+                        "targa",
+                        targaMezzo.trim().toUpperCase()
+                )
+                .getResultList();
+    }
+
+    /*
+     * Storico delle missioni nelle quali è stato utilizzato
+     * un determinato materiale.
+     */
+    @Override
+    public List<Missione> findByMateriale(Long idMateriale) {
+
+        if (idMateriale == null || idMateriale <= 0) {
+            return List.of();
+        }
+
+        String jpql =
+                "SELECT DISTINCT mi "
+                + "FROM Materiale mat "
+                + "JOIN mat.missioni mi "
+                + "LEFT JOIN FETCH mi.squadra "
+                + "LEFT JOIN FETCH mi.richiesta "
+                + "WHERE mat.id = :idMateriale "
+                + "ORDER BY mi.id DESC";
+
+        return entityManager
+                .createQuery(jpql, Missione.class)
+                .setParameter("idMateriale", idMateriale)
+                .getResultList();
     }
 
     /*

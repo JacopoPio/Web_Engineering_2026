@@ -311,6 +311,10 @@
                                 <td>${m.tipo}</td>
                                 <td>
                                     <div class="azioni">
+                                        <!-- Storico missioni -->
+                                        <a href="${contextPath}/storico/mezzo?targa=${m.targa?url('UTF-8')}"
+                                           class="btn btn-primary btn-sm">Storico</a>
+
                                         <!-- Bottone modifica -->
                                         <a href="${contextPath}/mezzi/modifica-form?targa=${m.targa?url('UTF-8')}"
                                            class="btn btn-edit btn-sm">Modifica</a>

@@ -659,6 +659,15 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                     squadraSalvata
             );
 
+            /*
+             * Salva nello storico gli operatori che partecipano
+             * alla missione. Missione è il lato proprietario
+             * della relazione ManyToMany missione_operatore.
+             */
+            missione.setOperatori(
+                    new ArrayList<>(tuttiOperatori)
+            );
+
             Missione missioneSalvata =
                     daoMissione.save(
                             missione

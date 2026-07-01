@@ -59,6 +59,14 @@ public class Operatore {
     )
     private List<Abilita> abilita = new ArrayList<>();
     
+    /*
+     * Storico delle missioni a cui l'operatore ha partecipato.
+     * Missione è il lato proprietario della relazione.
+     */
+    @ManyToMany(mappedBy = "operatori")
+    private List<Missione> missioni =
+            new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_squadra")
     private Squadra squadra;
@@ -168,6 +176,19 @@ public class Operatore {
 
     public void setAbilita(List<Abilita> abilita) {
         this.abilita = abilita;
+    }
+
+    public List<Missione> getMissioni() {
+        return missioni;
+    }
+
+    public void setMissioni(
+            List<Missione> missioni
+    ) {
+        this.missioni =
+                missioni != null
+                        ? missioni
+                        : new ArrayList<>();
     }
 
     public Squadra getSquadra() {

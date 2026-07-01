@@ -301,4 +301,22 @@ public class DaoInterfaceOperatoreImpl
             throw e;
         }
     }
+    @Override
+    public List<Operatore> findBySquadra(Integer idSquadra) {
+
+    if (idSquadra == null || idSquadra <= 0) {
+        return List.of();
+    }
+
+    String jpql =
+            "SELECT o "
+            + "FROM Operatore o "
+            + "WHERE o.squadra.id = :idSquadra "
+            + "ORDER BY o.cognome, o.nome";
+
+    return entityManager
+            .createQuery(jpql, Operatore.class)
+            .setParameter("idSquadra", idSquadra)
+            .getResultList(); 
+    }
 }
