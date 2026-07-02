@@ -2,349 +2,235 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Gestione Mezzi - SoccorsoWeb</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creazione missione - SoccorsoWeb</title>
 
     <style>
         * { box-sizing: border-box; }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f4f6f8;
-            color: #222;
-        }
-
-        /* ── HEADER ── */
-        header {
-            background: linear-gradient(135deg, #b71c1c, #d32f2f);
-            color: white;
-            padding: 35px 20px;
-            text-align: center;
-        }
-        header h1 { margin: 0; font-size: 38px; }
-
-        /* ── NAV ── */
-        nav {
-            background: #8e0000;
-            padding: 14px;
-            text-align: center;
-        }
-        nav a {
-            color: white;
-            margin: 0 10px;
-            font-weight: bold;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
-        nav a:hover { background: rgba(255,255,255,0.18); }
-
-        /* ── MAIN ── */
-        main {
-            max-width: 1100px;
-            margin: 35px auto;
-            padding: 0 20px;
-            display: grid;
-            gap: 28px;
-        }
-
-        /* ── PANEL ── */
-        .panel {
-            background: white;
-            padding: 30px;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0,0,0,.10);
-        }
-        .panel h2 { margin-top: 0; color: #b71c1c; }
-        .panel p  { margin-top: 0; color: #555; }
-
-        /* ── MESSAGGI ── */
-        .msg-ok {
-            background: #e8f5e9; color: #1b5e20;
-            border-left: 6px solid #2e7d32;
-            padding: 14px; margin-bottom: 20px; border-radius: 6px;
-        }
-        .msg-errore {
-            background: #ffebee; color: #b71c1c;
-            border-left: 6px solid #b71c1c;
-            padding: 14px; margin-bottom: 20px; border-radius: 6px;
-        }
-
-        /* ── FORM INSERIMENTO ── */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 12px;
-            align-items: end;
-        }
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #444;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #bbb;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #b71c1c;
-            box-shadow: 0 0 0 2px rgba(183,28,28,.15);
-        }
-
-        /* ── BOTTONI ── */
-        .btn {
-            display: inline-block;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-        .btn-primary   { background: #b71c1c; color: white; }
-        .btn-primary:hover { background: #8e0000; }
-        .btn-edit      { background: #1565c0; color: white; }
-        .btn-edit:hover { background: #0d47a1; }
-        .btn-delete    { background: #c62828; color: white; }
-        .btn-delete:hover { background: #8e0000; }
-        .btn-cancel    { background: #546e7a; color: white; }
-        .btn-cancel:hover { background: #263238; }
-        .btn-sm { padding: 7px 12px; font-size: 13px; }
-
-        /* ── TABELLA ── */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th {
-            background: #b71c1c;
-            color: white;
-            padding: 12px 14px;
-            text-align: left;
-        }
-        td {
-            padding: 11px 14px;
-            border-bottom: 1px solid #e0e0e0;
-            vertical-align: middle;
-        }
-        tr:hover { background: #fafafa; }
-
-        /* riga in modalità modifica */
-        tr.editing { background: #fff8e1; }
-        tr.editing td { border-bottom: 1px solid #ffe082; }
-
-        .azioni { display: flex; gap: 8px; flex-wrap: wrap; }
-
-        /* campo inline nella riga di modifica */
-        .inline-input {
-            padding: 7px 10px;
-            border: 1px solid #bbb;
-            border-radius: 5px;
-            font-size: 13px;
-            width: 100%;
-        }
-        .inline-input:focus {
-            outline: none;
-            border-color: #1565c0;
-        }
-
-        /* ── VUOTO ── */
-        .vuoto {
-            padding: 22px;
-            background: #f7f7f7;
-            border-radius: 8px;
-            margin-top: 20px;
-            color: #666;
-        }
-
-        /* ── FOOTER ── */
-        footer {
-            text-align: center;
-            padding: 25px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* ── RESPONSIVE ── */
+        body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f4f6f8; color: #222; }
+        header { padding: 32px 20px; background: linear-gradient(135deg, #1565c0, #1976d2); color: white; text-align: center; }
+        header h1 { margin: 0 0 8px; }
+        header p { margin: 0; }
+        nav { padding: 14px; background: #0d47a1; text-align: center; }
+        nav a { display: inline-block; margin: 5px 12px; color: white; font-weight: bold; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+        main { width: min(1050px, 94%); margin: 30px auto; }
+        section { margin-bottom: 25px; padding: 24px; background: white; border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+        section h2 { margin-top: 0; color: #0d47a1; }
+        .messaggio { margin-bottom: 20px; padding: 14px 16px; border-radius: 7px; font-weight: bold; }
+        .errore { border: 1px solid #ef9a9a; background: #fde2e2; color: #991b1b; }
+        .dettagli-richiesta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+        .dettaglio { padding: 14px; border: 1px solid #d8e0e7; border-radius: 7px; background: #f8fafc; }
+        .dettaglio-intero { grid-column: 1 / -1; }
+        .etichetta { display: block; margin-bottom: 5px; color: #555; font-size: .9rem; font-weight: bold; }
+        .valore { margin: 0; overflow-wrap: anywhere; }
+        .campo { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 7px; font-weight: bold; }
+        input[type="text"], textarea { width: 100%; padding: 11px; border: 1px solid #b8c2cc; border-radius: 6px; font: inherit; }
+        input[type="text"]:focus, textarea:focus { outline: 2px solid #90caf9; border-color: #1565c0; }
+        textarea { min-height: 120px; resize: vertical; }
+        fieldset { margin: 25px 0; padding: 18px; border: 1px solid #c7d1da; border-radius: 8px; }
+        legend { padding: 0 8px; color: #0d47a1; font-weight: bold; }
+        .spiegazione { margin-top: 0; color: #555; }
+        .lista-risorse { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+        .risorsa { display: flex; align-items: flex-start; gap: 9px; margin: 0; padding: 12px; border: 1px solid #d6dee5; border-radius: 7px; background: #f8fafc; cursor: pointer; }
+        .risorsa:hover { background: #eaf2fb; }
+        .risorsa input { width: auto; margin-top: 3px; }
+        .risorsa-contenuto { flex: 1; }
+        .risorsa-nome { display: block; margin-bottom: 3px; font-weight: bold; }
+        .risorsa-dettaglio { display: block; color: #666; font-size: .9rem; }
+        .nessun-elemento { margin: 0; padding: 14px; border-radius: 6px; background: #fff3cd; color: #664d03; }
+        .obbligatorio { color: #c62828; }
+        .azioni { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
+        button, .pulsante { display: inline-block; padding: 11px 20px; border: none; border-radius: 6px; background: #1565c0; color: white; font: inherit; font-weight: bold; text-decoration: none; cursor: pointer; }
+        button:hover, .pulsante:hover { background: #0d47a1; }
+        button:disabled { background: #9e9e9e; cursor: not-allowed; }
+        .pulsante-secondario { background: #607d8b; }
+        .pulsante-secondario:hover { background: #455a64; }
+        footer { margin-top: 35px; padding: 20px; background: #263238; color: white; text-align: center; }
         @media (max-width: 700px) {
-            .form-grid { grid-template-columns: 1fr; }
-            nav a { display: block; margin: 6px 0; }
-            table { font-size: 13px; }
+            .dettagli-richiesta { grid-template-columns: 1fr; }
+            .dettaglio-intero { grid-column: auto; }
             .azioni { flex-direction: column; }
+            button, .pulsante { width: 100%; text-align: center; }
         }
     </style>
 </head>
-
 <body>
-
-<!-- ════════════ HEADER ════════════ -->
 <header>
-    <h1>Gestione Mezzi</h1>
-    <p>Benvenuto ${nome!"Amministratore"} - Ruolo: ${ruolo!"ADMIN"}</p>
+    <h1>Crea nuova missione</h1>
+    <p>Assegna una richiesta attiva a una squadra di soccorso</p>
 </header>
 
-<!-- ════════════ NAV ════════════ -->
 <nav>
     <a href="${contextPath}/admin">Dashboard</a>
     <a href="${contextPath}/admin/richieste">Richieste</a>
-    <a href="${contextPath}/gestione-utenti">Gestione Utenti</a>
-    <a href="${contextPath}/mezzi">Mezzi</a>
-    <a href="${contextPath}/materiali">Materiali</a>
-    <a href="${contextPath}/operatori">Operatori</a>
+    <a href="${contextPath}/admin/missioni">Missioni</a>
     <a href="${contextPath}/logout">Logout</a>
 </nav>
 
-<!-- ════════════ MAIN ════════════ -->
 <main>
-
-    <!-- ── MESSAGGI DI FEEDBACK ── -->
-    <#if ok??>
-        <div class="msg-ok">Operazione eseguita correttamente.</div>
-    </#if>
     <#if errore??>
-        <div class="msg-errore">Errore: ${errore}</div>
+        <div class="messaggio errore">
+            <#if errore == "richiesta_non_trovata">
+                La richiesta selezionata non esiste.
+            <#elseif errore == "richiesta_non_attiva">
+                La richiesta non è più attiva oppure è già stata assegnata a una missione.
+            <#elseif errore == "missione_esistente">
+                Per questa richiesta esiste già una missione.
+            <#elseif errore == "campi">
+                Inserisci l'obiettivo e la posizione della missione.
+            <#elseif errore == "caposquadra">
+                Devi selezionare un caposquadra.
+            <#elseif errore == "caposquadra_non_trovato">
+                L'operatore selezionato come caposquadra non è stato trovato.
+            <#elseif errore == "caposquadra_non_attivo">
+                L'operatore selezionato come caposquadra non è attivo.
+            <#elseif errore == "caposquadra_occupato">
+                L'operatore selezionato come caposquadra appartiene già a una squadra.
+            <#elseif errore == "operatore_non_caposquadra">
+                L'operatore selezionato non possiede l'abilitazione di caposquadra.
+            <#elseif errore == "operatore_non_disponibile">
+                Uno degli operatori selezionati non è più disponibile.
+            <#elseif errore == "mezzo_non_disponibile">
+                Uno dei mezzi selezionati non è più disponibile.
+            <#elseif errore == "materiale_non_disponibile">
+                Uno dei materiali selezionati non è più disponibile.
+            <#else>
+                Non è stato possibile creare la missione.
+            </#if>
+        </div>
     </#if>
 
-    <!-- ── PANNELLO INSERIMENTO ── -->
-    <section class="panel">
-        <h2>Aggiungi nuovo mezzo</h2>
-        <p>Inserisci la targa e il tipo del mezzo da aggiungere al parco veicoli.</p>
+    <section>
+        <h2>Richiesta di soccorso</h2>
+        <div class="dettagli-richiesta">
+            <div class="dettaglio">
+                <span class="etichetta">Identificativo richiesta</span>
+                <p class="valore">${(richiestaId!"Non disponibile")?html}</p>
+            </div>
+            <div class="dettaglio">
+                <span class="etichetta">Stato</span>
+                <p class="valore">${(richiestaStato!"Non disponibile")?html}</p>
+            </div>
+            <div class="dettaglio dettaglio-intero">
+                <span class="etichetta">Email segnalante</span>
+                <p class="valore">${(emailSegnalante!"Non indicata")?html}</p>
+            </div>
+            <div class="dettaglio dettaglio-intero">
+                <span class="etichetta">Descrizione</span>
+                <p class="valore">${(richiestaDescrizione!"Nessuna descrizione")?html}</p>
+            </div>
+            <div class="dettaglio dettaglio-intero">
+                <span class="etichetta">Posizione segnalata</span>
+                <p class="valore">${(richiestaPosizione!"Non indicata")?html}</p>
+            </div>
+        </div>
+    </section>
 
-        <form action="${contextPath}/mezzi/inserisci" method="post">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="targa">Targa</label>
-                    <input type="text"
-                           id="targa"
-                           name="targa"
-                           placeholder="es. AB123CD"
-                           maxlength="7"
-                           required
-                           value="${targaForm!}">
-                </div>
+    <section>
+        <h2>Dati della missione</h2>
+        <form method="post" action="${contextPath}/admin/missioni/nuova">
+            <input type="hidden" name="richiestaId" value="${(richiestaId!"")?html}">
 
-                <div class="form-group">
-                    <label for="tipo">Tipo mezzo</label>
-                    <input type="text"
-                           id="tipo"
-                           name="tipo"
-                           placeholder="es. Ambulanza, Autopompa…"
-                           maxlength="255"
-                           required
-                           value="${tipoForm!}">
-                </div>
+            <div class="campo">
+                <label for="obiettivo">Obiettivo <span class="obbligatorio">*</span></label>
+                <textarea id="obiettivo" name="obiettivo" maxlength="500" placeholder="Descrivi l'obiettivo operativo della missione" required></textarea>
+            </div>
 
-                <div class="form-group">
-                    <label>&nbsp;</label>
-                    <button type="submit" class="btn btn-primary">Aggiungi</button>
-                </div>
+            <div class="campo">
+                <label for="posizione">Posizione della missione <span class="obbligatorio">*</span></label>
+                <input type="text" id="posizione" name="posizione" maxlength="255" value="${(richiestaPosizione!"")?html}" required>
+            </div>
+
+            <fieldset>
+                <legend>Caposquadra <span class="obbligatorio">*</span></legend>
+                <p class="spiegazione">Seleziona un operatore disponibile e abilitato come caposquadra.</p>
+                <#if capisquadraDisponibili?? && capisquadraDisponibili?has_content>
+                    <div class="lista-risorse">
+                        <#list capisquadraDisponibili as operatore>
+                            <label class="risorsa">
+                                <input type="radio" name="caposquadra" value="${(operatore.email!"")?html}" required>
+                                <span class="risorsa-contenuto">
+                                    <span class="risorsa-nome">${(operatore.nome!"")?html} ${(operatore.cognome!"")?html}</span>
+                                    <span class="risorsa-dettaglio">${(operatore.email!"")?html}</span>
+                                </span>
+                            </label>
+                        </#list>
+                    </div>
+                <#else>
+                    <p class="nessun-elemento">Non sono presenti operatori disponibili con l'abilitazione di caposquadra.</p>
+                </#if>
+            </fieldset>
+
+            <fieldset>
+                <legend>Altri componenti della squadra</legend>
+                <p class="spiegazione">Puoi selezionare zero o più operatori aggiuntivi.</p>
+                <#if operatoriDisponibili?? && operatoriDisponibili?has_content>
+                    <div class="lista-risorse">
+                        <#list operatoriDisponibili as operatore>
+                            <label class="risorsa">
+                                <input type="checkbox" name="operatori" value="${(operatore.email!"")?html}">
+                                <span class="risorsa-contenuto">
+                                    <span class="risorsa-nome">${(operatore.nome!"")?html} ${(operatore.cognome!"")?html}</span>
+                                    <span class="risorsa-dettaglio">${(operatore.email!"")?html}</span>
+                                </span>
+                            </label>
+                        </#list>
+                    </div>
+                <#else>
+                    <p class="nessun-elemento">Non sono disponibili altri operatori.</p>
+                </#if>
+            </fieldset>
+
+            <fieldset>
+                <legend>Mezzi</legend>
+                <p class="spiegazione">Seleziona gli eventuali mezzi da assegnare.</p>
+                <#if mezziDisponibili?? && mezziDisponibili?has_content>
+                    <div class="lista-risorse">
+                        <#list mezziDisponibili as mezzo>
+                            <label class="risorsa">
+                                <input type="checkbox" name="mezzi" value="${(mezzo.targa!"")?html}">
+                                <span class="risorsa-contenuto">
+                                    <span class="risorsa-nome">${(mezzo.tipo!"Mezzo")?html}</span>
+                                    <span class="risorsa-dettaglio">Targa: ${(mezzo.targa!"Non indicata")?html}</span>
+                                </span>
+                            </label>
+                        </#list>
+                    </div>
+                <#else>
+                    <p class="nessun-elemento">Nessun mezzo disponibile.</p>
+                </#if>
+            </fieldset>
+
+            <fieldset>
+                <legend>Materiali</legend>
+                <p class="spiegazione">Seleziona gli eventuali materiali necessari.</p>
+                <#if materialiDisponibili?? && materialiDisponibili?has_content>
+                    <div class="lista-risorse">
+                        <#list materialiDisponibili as materiale>
+                            <label class="risorsa">
+                                <input type="checkbox" name="materiali" value="${materiale.id!""}">
+                                <span class="risorsa-contenuto">
+                                    <span class="risorsa-nome">${(materiale.tipo!"Materiale")?html}</span>
+                                    <span class="risorsa-dettaglio">Identificativo: ${materiale.id!"Non disponibile"}</span>
+                                </span>
+                            </label>
+                        </#list>
+                    </div>
+                <#else>
+                    <p class="nessun-elemento">Nessun materiale disponibile.</p>
+                </#if>
+            </fieldset>
+
+            <div class="azioni">
+                <button type="submit" <#if !capisquadraDisponibili?? || !capisquadraDisponibili?has_content>disabled</#if>>Crea missione</button>
+                <a class="pulsante pulsante-secondario" href="${contextPath}/admin/richieste">Annulla</a>
             </div>
         </form>
     </section>
-
-    <!-- ── PANNELLO LISTA ── -->
-    <section class="panel">
-        <h2>Mezzi registrati</h2>
-        <p>Elenco di tutti i mezzi presenti nel database. Puoi modificare o eliminare ciascun record.</p>
-
-        <#if mezzi?size == 0>
-            <div class="vuoto">Nessun mezzo presente nel database.</div>
-        <#else>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Targa</th>
-                        <th>Tipo mezzo</th>
-                        <th>Azioni</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <#list mezzi as m>
-
-                        <#-- Riga normale o riga in modifica? -->
-                        <#if (targaModifica??) && (targaModifica == m.targa)>
-
-                            <!-- RIGA IN MODIFICA -->
-                            <tr class="editing">
-                                <td><strong>${m.targa}</strong></td>
-                                <td>
-                                    <form action="${contextPath}/mezzi/modifica" method="post"
-                                          id="form-mod-${m.targa?replace(' ','-')}">
-                                        <input type="hidden" name="targa" value="${m.targa}">
-                                        <input class="inline-input"
-                                               type="text"
-                                               name="tipo"
-                                               value="${m.tipo}"
-                                               maxlength="255"
-                                               required>
-                                </td>
-                                <td>
-                                    <div class="azioni">
-                                        <button type="submit"
-                                                form="form-mod-${m.targa?replace(' ','-')}"
-                                                class="btn btn-edit btn-sm">Salva</button>
-                                        <a href="${contextPath}/mezzi"
-                                           class="btn btn-cancel btn-sm">Annulla</a>
-                                    </div>
-                                        </form>
-                                </td>
-                            </tr>
-
-                        <#else>
-
-                            <!-- RIGA NORMALE -->
-                            <tr>
-                                <td>${m.targa}</td>
-                                <td>${m.tipo}</td>
-                                <td>
-                                    <div class="azioni">
-                                        <!-- Storico missioni -->
-                                        <a href="${contextPath}/storico/mezzo?targa=${m.targa?url('UTF-8')}"
-                                           class="btn btn-primary btn-sm">Storico</a>
-
-                                        <!-- Bottone modifica -->
-                                        <a href="${contextPath}/mezzi/modifica-form?targa=${m.targa?url('UTF-8')}"
-                                           class="btn btn-edit btn-sm">Modifica</a>
-
-                                        <!-- Form cancellazione -->
-                                        <form action="${contextPath}/mezzi/elimina" method="post"
-                                              onsubmit="return confirm('Eliminare il mezzo ${m.targa}?');"
-                                              style="display:inline;">
-                                            <input type="hidden" name="targa" value="${m.targa}">
-                                            <button type="submit"
-                                                    class="btn btn-delete btn-sm">Elimina</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-
-                        </#if>
-                    </#list>
-                </tbody>
-            </table>
-
-        </#if>
-    </section>
-
 </main>
 
-<!-- ════════════ FOOTER ════════════ -->
-<footer>
-    <p>&copy; 2026 SoccorsoWeb - Progetto Web Engineering</p>
-</footer>
-
+<footer>SoccorsoWeb – Gestione missioni</footer>
 </body>
 </html>
