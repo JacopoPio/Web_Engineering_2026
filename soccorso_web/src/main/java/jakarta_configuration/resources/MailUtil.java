@@ -12,11 +12,30 @@ import java.util.Properties;
 
 public final class MailUtil {
 
-    private static final String SMTP_HOST = env("SOCCORSOWEB_SMTP_HOST", "sandbox.smtp.mailtrap.io");
-    private static final String SMTP_PORT = env("SOCCORSOWEB_SMTP_PORT", "2525");
-    private static final String SMTP_USER = env("SOCCORSOWEB_SMTP_USER", "");
-    private static final String SMTP_PASSWORD = env("SOCCORSOWEB_SMTP_PASSWORD", "");
-    private static final String SMTP_FROM = env("SOCCORSOWEB_SMTP_FROM", "noreply@soccorsoweb.local");
+    /*
+     * Se le variabili d'ambiente non sono impostate,
+     * vengono usati questi valori di default (credenziali
+     * Mailtrap sandbox per lo sviluppo locale).
+     *
+     * NOTA: se questo file finisce in un repository
+     * condiviso, valuta di rimuovere i default e di
+     * richiedere sempre le variabili d'ambiente, per non
+     * esporre credenziali nel codice sorgente.
+     */
+    private static final String SMTP_HOST =
+            env("SOCCORSOWEB_SMTP_HOST", "sandbox.smtp.mailtrap.io");
+
+    private static final String SMTP_PORT =
+            env("SOCCORSOWEB_SMTP_PORT", "2525");
+
+    private static final String SMTP_USER =
+            env("SOCCORSOWEB_SMTP_USER", "19b8e6b29128f7");
+
+    private static final String SMTP_PASSWORD =
+            env("SOCCORSOWEB_SMTP_PASSWORD", "4f2f02b562f35c");
+
+    private static final String SMTP_FROM =
+            env("SOCCORSOWEB_SMTP_FROM", "noreply@soccorsoweb.local");
 
     private MailUtil() {
     }
@@ -107,11 +126,17 @@ public final class MailUtil {
     }
 
     private static void invia(String destinatario, String oggetto, String testo) {
+
         if (destinatario == null || destinatario.isBlank()) {
+            System.err.println("Email non inviata: destinatario mancante");
             return;
         }
+
         if (SMTP_USER.isBlank() || SMTP_PASSWORD.isBlank()) {
-            System.err.println("Email non inviata: configurare SOCCORSOWEB_SMTP_USER e SOCCORSOWEB_SMTP_PASSWORD");
+            System.err.println(
+                    "Email non inviata: configurare "
+                    + "SOCCORSOWEB_SMTP_USER e SOCCORSOWEB_SMTP_PASSWORD"
+            );
             return;
         }
 
@@ -130,14 +155,35 @@ public final class MailUtil {
         });
 
         try {
+
             Message message = new MimeMessage(session);
+
             message.setFrom(new InternetAddress(SMTP_FROM));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
+
+            message.setRecipients(
+                    Message.RecipientType.TO,
+                    InternetAddress.parse(destinatario)
+            );
+
             message.setSubject(oggetto);
             message.setText(testo);
+
             Transport.send(message);
+
+            System.out.println(
+                    "Email inviata correttamente a: " + destinatario
+            );
+
         } catch (MessagingException e) {
-            System.err.println("Errore invio email a " + destinatario + ": " + e.getMessage());
+
+            System.err.println(
+                    "Errore invio email a "
+                    + destinatario
+                    + ": "
+                    + e.getMessage()
+            );
+
+            e.printStackTrace();
         }
     }
 
