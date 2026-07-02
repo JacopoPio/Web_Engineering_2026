@@ -1,21 +1,26 @@
 package dao;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import model.Richiesta;
 
 public interface DaoInterfaceRichiesta {
 
-    public Richiesta save(Richiesta richiesta);
+    Richiesta save(Richiesta richiesta);
 
-    public List<Richiesta> findAll();
+    List<Richiesta> findAll();
 
-    public Richiesta findByEmail(String email_segnalante);
+    Richiesta findByEmail(String emailSegnalante);
 
-    public List<Richiesta> findByStato(String stato);
+    Richiesta findByToken(String token);
 
-    public Richiesta update(Richiesta richiesta);
+    List<Richiesta> findByStato(String stato);
 
-    public Richiesta updateStato(String email_segnalante, String nuovoStato);
+    boolean existsIpRecente(byte[] ipOrigine, LocalDateTime limite);
 
-    public boolean delete(String email_segnalante);
+    Richiesta update(Richiesta richiesta);
+
+    Richiesta updateStato(String emailSegnalante, String nuovoStato);
+
+    boolean delete(String emailSegnalante);
 }

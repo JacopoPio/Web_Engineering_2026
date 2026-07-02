@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta_configuration.resources.JPAUtil;
 import java.io.IOException;
 import model.Richiesta;
+import model.StatoRichiesta;
 
 @WebServlet(
         name = "AdminIgnoraRichiestaServlet",
@@ -19,126 +20,73 @@ import model.Richiesta;
 )
 public class AdminIgnoraRichiestaServlet extends HttpServlet {
 
-    private static final String STATO_ATTIVA = "attiva";
-    private static final String STATO_IGNORATA = "ignorata";
-
     @Override
-    protected void doPost(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-
-        if (session == null
-                || !"ADMIN".equals(session.getAttribute("ruolo"))) {
-
-            response.sendRedirect(
-                    request.getContextPath() + "/login"
-            );
+        if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        String emailSegnalante =
-                request.getParameter("email_segnalante");
+        String email = normalizza(request.getParameter("email_segnalante"))
+                .toLowerCase();
 
-        if (emailSegnalante == null
-                || emailSegnalante.isBlank()) {
-
+        if (email.isBlank()) {
             response.sendRedirect(
                     request.getContextPath()
-                    + "/admin/richieste"
-                    + "?errore=richiesta_non_valida"
+                    + "/admin/richieste?errore=richiesta_non_valida"
             );
             return;
         }
 
-        emailSegnalante =
-                emailSegnalante.trim().toLowerCase();
-
-        EntityManager entityManager =
-                JPAUtil.getEntityManager();
-
+        EntityManager em = JPAUtil.getEntityManager();
         try {
-
-            DaoInterfaceRichiesta daoRichiesta =
-                    new DaoInterfaceRichiestaImpl(
-                            entityManager
-                    );
-
-            Richiesta richiesta =
-                    daoRichiesta.findByEmail(
-                            emailSegnalante
-                    );
+            DaoInterfaceRichiesta dao = new DaoInterfaceRichiestaImpl(em);
+            Richiesta richiesta = dao.findByEmail(email);
 
             if (richiesta == null) {
-
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/admin/richieste"
-                        + "?errore=richiesta_non_trovata"
+                        + "/admin/richieste?errore=richiesta_non_trovata"
                 );
                 return;
             }
 
-            String statoAttuale =
-                    richiesta.getStato();
-
-            if (statoAttuale == null
-                    || !STATO_ATTIVA.equalsIgnoreCase(
-                            statoAttuale.trim()
-                    )) {
-
+            if (!StatoRichiesta.ATTIVA.equalsIgnoreCase(richiesta.getStato())) {
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/admin/richieste"
-                        + "?errore=richiesta_non_attiva"
+                        + "/admin/richieste?errore=richiesta_non_attiva"
                 );
                 return;
             }
 
-            Richiesta richiestaAggiornata =
-                    daoRichiesta.updateStato(
-                            emailSegnalante,
-                            STATO_IGNORATA
-                    );
+            Richiesta aggiornata = dao.updateStato(
+                    email,
+                    StatoRichiesta.IGNORATA
+            );
 
-            if (richiestaAggiornata == null) {
-
+            if (aggiornata == null) {
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/admin/richieste"
-                        + "?errore=aggiornamento_fallito"
+                        + "/admin/richieste?errore=aggiornamento_fallito"
                 );
                 return;
             }
 
             response.sendRedirect(
                     request.getContextPath()
-                    + "/admin/richieste"
-                    + "?successo=ignorata"
+                    + "/admin/richieste?successo=ignorata"
             );
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            if (!response.isCommitted()) {
-                response.sendRedirect(
-                        request.getContextPath()
-                        + "/admin/richieste"
-                        + "?errore=aggiornamento_fallito"
-                );
-            }
-
         } finally {
-
-            if (entityManager != null
-                    && entityManager.isOpen()) {
-
-                entityManager.close();
+            if (em.isOpen()) {
+                em.close();
             }
         }
     }
-}
 
+    private String normalizza(String valore) {
+        return valore == null ? "" : valore.trim();
+    }
+}

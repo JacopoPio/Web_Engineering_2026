@@ -1,521 +1,191 @@
 <!DOCTYPE html>
-
 <html lang="it">
-
 <head>
     <meta charset="UTF-8">
-
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>Area Operatore - SoccorsoWeb</title>
-
-<style>
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: #f4f6f8;
-        color: #222;
-    }
-
-    header {
-        padding: 35px 20px;
-        background: linear-gradient(
-            135deg,
-            #1565c0,
-            #1976d2
-        );
-        color: white;
-        text-align: center;
-    }
-
-    header h1 {
-        margin: 0;
-        font-size: 38px;
-    }
-
-    header p {
-        margin: 8px 0 0;
-    }
-
-    nav {
-        padding: 14px;
-        background: #0d47a1;
-        text-align: center;
-    }
-
-    nav a {
-        display: inline-block;
-        margin: 4px 10px;
-        padding: 8px 12px;
-        border-radius: 6px;
-        color: white;
-        font-weight: bold;
-        text-decoration: none;
-    }
-
-    nav a:hover {
-        background: rgba(255, 255, 255, 0.18);
-    }
-
-    main {
-        max-width: 1050px;
-        margin: 35px auto;
-        padding: 0 20px;
-    }
-
-    .panel {
-        padding: 30px;
-        border-radius: 14px;
-        background: white;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
-    }
-
-    .panel h2 {
-        margin-top: 0;
-        color: #1565c0;
-    }
-
-    .panel p {
-        line-height: 1.5;
-    }
-
-    .msg-ok {
-        margin-bottom: 22px;
-        padding: 14px;
-        border-left: 6px solid #2e7d32;
-        border-radius: 7px;
-        background: #e8f5e9;
-        color: #1b5e20;
-    }
-
-    .msg-errore {
-        margin-bottom: 22px;
-        padding: 14px;
-        border-left: 6px solid #c62828;
-        border-radius: 7px;
-        background: #ffebee;
-        color: #b71c1c;
-    }
-
-    .squadra-box {
-        margin-top: 25px;
-        padding: 22px;
-        border: 1px solid #d7e5f5;
-        border-left: 6px solid #1976d2;
-        border-radius: 12px;
-        background: #f5f9ff;
-    }
-
-    .squadra-box h3 {
-        margin: 0 0 12px;
-        color: #1565c0;
-    }
-
-    .squadra-info {
-        margin: 7px 0;
-    }
-
-    .etichetta {
-        font-weight: bold;
-    }
-
-    .stato-assegnato {
-        color: #ef6c00;
-        font-weight: bold;
-    }
-
-    .stato-disponibile {
-        color: #2e7d32;
-        font-weight: bold;
-    }
-
-    .form-lascia-squadra {
-        margin-top: 18px;
-    }
-
-    .btn-lascia-squadra {
-        padding: 10px 16px;
-        border: none;
-        border-radius: 6px;
-        background: #c62828;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .btn-lascia-squadra:hover {
-        background: #8e0000;
-    }
-
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(
-            auto-fit,
-            minmax(230px, 1fr)
-        );
-        gap: 20px;
-        margin-top: 28px;
-    }
-
-    .card {
-        display: block;
-        padding: 22px;
-        border-left: 6px solid #1976d2;
-        border-radius: 12px;
-        background: #f7f7f7;
-        color: #222;
-        text-decoration: none;
-        transition: 0.2s;
-    }
-
-    .card:hover {
-        transform: translateY(-4px);
-        background: white;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-    }
-
-    .card h3 {
-        margin-top: 0;
-        color: #1565c0;
-    }
-
-    .card p {
-        margin-bottom: 0;
-        line-height: 1.5;
-    }
-
-    .card-disabilitata {
-        border-left-color: #999;
-        background: #eeeeee;
-        color: #777;
-        cursor: not-allowed;
-    }
-
-    .card-disabilitata h3 {
-        color: #666;
-    }
-
-    .card-disabilitata:hover {
-        transform: none;
-        background: #eeeeee;
-        box-shadow: none;
-    }
-
-    footer {
-        padding: 25px;
-        color: #666;
-        font-size: 14px;
-        text-align: center;
-    }
-
-    @media screen and (max-width: 700px) {
-
-        nav a {
-            display: block;
-            margin: 6px 0;
-        }
-
-        header h1 {
-            font-size: 30px;
-        }
-
-        .panel {
-            padding: 22px;
-        }
-    }
-</style>
-
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area operatore - SoccorsoWeb</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6f8; color: #222; }
+        header { padding: 32px 20px; background: linear-gradient(135deg,#1565c0,#1976d2); color: white; text-align: center; }
+        nav { padding: 14px; background: #0d47a1; text-align: center; }
+        nav a { color: white; margin: 0 12px; font-weight: bold; text-decoration: none; }
+        main { width: min(1150px, 95%); margin: 30px auto; }
+        .panel { margin-bottom: 25px; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 5px 18px rgba(0,0,0,.09); }
+        h2 { color: #1565c0; }
+        .profilo { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 12px; }
+        .dato { padding: 13px; border: 1px solid #d7e5f5; border-radius: 7px; background: #f7fbff; }
+        .etichetta { display: block; color: #555; font-size: .9rem; font-weight: bold; margin-bottom: 4px; }
+        .missione { margin-top: 18px; padding: 20px; border-left: 6px solid #1976d2; background: #f8fafc; border-radius: 9px; }
+        .missione.chiusa { border-left-color: #616161; }
+        .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-weight: bold; background: #fff3e0; color: #e65100; }
+        .badge.chiusa { background: #eeeeee; color: #424242; }
+        ul { padding-left: 20px; }
+        .vuoto { padding: 18px; background: #fff3cd; color: #664d03; border-radius: 7px; }
+        .aggiornamenti { margin-top: 15px; padding-top: 12px; border-top: 1px solid #ddd; }
+        .messaggio { padding: 14px; margin-bottom: 18px; border-radius: 7px; font-weight: bold; }
+        .ok { background: #e8f5e9; color: #1b5e20; border-left: 5px solid #2e7d32; }
+        .errore { background: #ffebee; color: #b71c1c; border-left: 5px solid #c62828; }
+        .form-profilo { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 14px; margin-top: 20px; }
+        .campo label { display: block; margin-bottom: 6px; font-weight: bold; }
+        .campo input { width: 100%; padding: 10px; border: 1px solid #bbb; border-radius: 6px; }
+        fieldset { grid-column: 1 / -1; border: 1px solid #c7d1da; border-radius: 8px; padding: 15px; }
+        legend { color: #0d47a1; font-weight: bold; padding: 0 7px; }
+        .scelte { display: flex; flex-wrap: wrap; gap: 9px; }
+        .scelta { display: inline-flex; align-items: center; gap: 6px; padding: 8px 11px; border: 1px solid #d1d9e0; border-radius: 6px; background: #f8fafc; }
+        .scelta input { width: auto; }
+        .azioni { grid-column: 1 / -1; }
+        button { padding: 11px 18px; border: 0; border-radius: 6px; background: #1565c0; color: white; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0d47a1; }
+    </style>
 </head>
-
 <body>
-
 <header>
-
-`
-<h1>Area Operatore</h1>
-
-<p>
-    Benvenuto ${(nome!"Operatore")?html}
-    - Ruolo: ${(ruolo!"OPERATORE")?html}
-</p>
-
-
+    <h1>Area operatore</h1>
+    <p>Benvenuto ${(nome!"Operatore")?html}</p>
 </header>
-
 <nav>
-
-
-<a href="${contextPath}/operatore">
-    Dashboard
-</a>
-
-<a href="${contextPath}/operatore/richieste">
-    Richieste assegnate
-</a>
-
-<a href="${contextPath}/operatore/missioni">
-    Missioni operative
-</a>
-
-<a href="${contextPath}/operatore/profilo">
-    Profilo
-</a>
-
-<a href="${contextPath}/logout">
-    Logout
-</a>
-
-
+    <a href="${contextPath}/operatori">Dashboard e missioni</a>
+    <a href="${contextPath}/logout">Logout</a>
 </nav>
-
 <main>
-
-
-<section class="panel">
-
-    <h2>Pannello Operatore</h2>
-
-    <p>
-        Da questa area puoi visualizzare le richieste
-        assegnate, controllare le missioni operative e
-        consultare il tuo profilo.
-    </p>
-
-    <#if successo?? && successo?has_content>
-
-        <div class="msg-ok">
-
-            <#if successo == "squadra_abbandonata">
-
-                Sei stato rimosso correttamente dalla squadra.
-
-            <#else>
-
-                Operazione completata correttamente.
-
-            </#if>
-
+    <#if successo??>
+        <div class="messaggio ok">Profilo aggiornato correttamente.</div>
+    </#if>
+    <#if errore??>
+        <div class="messaggio errore">
+            <#if errore == "campi">Nome e cognome sono obbligatori.
+            <#elseif errore == "data">La data di nascita non è valida.
+            <#elseif errore == "selezione">Una patente o abilità selezionata non esiste.
+            <#else>Non è stato possibile aggiornare il profilo.</#if>
         </div>
-
     </#if>
 
-    <#if errore?? && errore?has_content>
-
-        <div class="msg-errore">
-
-            <#if errore == "operatore_non_trovato">
-
-                Non è stato possibile trovare il tuo profilo
-                operatore.
-
-            <#elseif errore == "nessuna_squadra">
-
-                Non appartieni attualmente a nessuna squadra.
-
-            <#elseif errore == "missione_in_corso">
-
-                Non puoi lasciare la squadra mentre è collegata
-                a una missione ancora in corso.
-
-            <#elseif errore == "rimozione_fallita">
-
-                Non è stato possibile rimuovere la tua
-                appartenenza alla squadra.
-
-            <#else>
-
-                Si è verificato un errore durante l'operazione.
-
-            </#if>
-
+    <section class="panel">
+        <h2>Profilo</h2>
+        <div class="profilo">
+            <div class="dato"><span class="etichetta">Email</span>${(operatore.email!"-")?html}</div>
+            <div class="dato"><span class="etichetta">Nome</span>${(operatore.nome!"-")?html} ${(operatore.cognome!"")?html}</div>
+            <div class="dato"><span class="etichetta">Codice fiscale</span>${(operatore.CF!"-")?html}</div>
+            <div class="dato">
+                <span class="etichetta">Squadra attuale</span>
+                <#if operatore.squadra??>${(operatore.squadra.nome!"Squadra senza nome")?html}<#else>Nessuna squadra</#if>
+            </div>
+            <div class="dato">
+                <span class="etichetta">Patenti</span>
+                <#if operatore.patenti?? && operatore.patenti?has_content>
+                    <#list operatore.patenti as p>${(p.tipoPatente!"-")?html}<#sep>, </#list>
+                <#else>Nessuna</#if>
+            </div>
+            <div class="dato">
+                <span class="etichetta">Abilità</span>
+                <#if operatore.abilita?? && operatore.abilita?has_content>
+                    <#list operatore.abilita as a>${(a.nome!"-")?html}<#sep>, </#list>
+                <#else>Nessuna</#if>
+            </div>
         </div>
 
-    </#if>
-
-    <div class="squadra-box">
-
-        <h3>Situazione operativa</h3>
-
-        <#if squadra??>
-
-            <p class="squadra-info">
-
-                <span class="etichetta">
-                    Squadra attuale:
-                </span>
-
-                ${(squadra.nome!"Squadra senza nome")?html}
-
-            </p>
-
-            <p class="squadra-info">
-
-                <span class="etichetta">
-                    Stato:
-                </span>
-
-                <span class="stato-assegnato">
-                    ASSEGNATO
-                </span>
-
-            </p>
-
-            <#if squadra.missione??>
-
-                <p class="squadra-info">
-
-                    <span class="etichetta">
-                        Missione:
-                    </span>
-
-                    ${(squadra.missione.descrizione!"Missione assegnata")?html}
-
-                </p>
-
-            </#if>
-
-            <form
-                action="${contextPath}/operatore/lascia-squadra"
-                method="post"
-                class="form-lascia-squadra"
-                onsubmit="return confirm('Vuoi davvero lasciare la squadra?');"
-            >
-
-                <button
-                    type="submit"
-                    class="btn-lascia-squadra"
-                >
-                    Lascia la squadra
-                </button>
-
-            </form>
-
-        <#else>
-
-            <p class="squadra-info">
-
-                <span class="etichetta">
-                    Squadra attuale:
-                </span>
-
-                Nessuna squadra assegnata
-
-            </p>
-
-            <p class="squadra-info">
-
-                <span class="etichetta">
-                    Stato:
-                </span>
-
-                <span class="stato-disponibile">
-                    DISPONIBILE
-                </span>
-
-            </p>
-
-        </#if>
-
-    </div>
-
-    <div class="grid">
-
-        <#if squadra??>
-
-            <a
-                class="card"
-                href="${contextPath}/operatore/richieste"
-            >
-
-                <h3>Richieste assegnate</h3>
-
-                <p>
-                    Visualizza le richieste collegate alla
-                    tua squadra e agli interventi operativi.
-                </p>
-
-            </a>
-
-            <a
-                class="card"
-                href="${contextPath}/operatore/missioni"
-            >
-
-                <h3>Missioni operative</h3>
-
-                <p>
-                    Controlla le missioni e le attività
-                    collegate alla tua squadra.
-                </p>
-
-            </a>
-
-        <#else>
-
-            <div class="card card-disabilitata">
-
-                <h3>Richieste assegnate</h3>
-
-                <p>
-                    Non sono presenti richieste assegnate
-                    perché non appartieni a una squadra.
-                </p>
-
+        <h3>Modifica dati personali</h3>
+        <form class="form-profilo" method="post" action="${contextPath}/operatori">
+            <div class="campo">
+                <label for="nome">Nome</label>
+                <input id="nome" name="nome" type="text" maxlength="50"
+                       value="${(operatore.nome!"")?html}" required>
             </div>
-
-            <div class="card card-disabilitata">
-
-                <h3>Missioni operative</h3>
-
-                <p>
-                    Non sono presenti missioni operative
-                    perché non appartieni a una squadra.
-                </p>
-
+            <div class="campo">
+                <label for="cognome">Cognome</label>
+                <input id="cognome" name="cognome" type="text" maxlength="50"
+                       value="${(operatore.cognome!"")?html}" required>
             </div>
+            <div class="campo">
+                <label for="data_nascita">Data di nascita</label>
+                <input id="data_nascita" name="data_nascita" type="date"
+                       value="${(dataNascita!"")?html}">
+            </div>
+            <div class="campo">
+                <label for="citta_nascita">Città di nascita</label>
+                <input id="citta_nascita" name="citta_nascita" type="text" maxlength="100"
+                       value="${(operatore.citta_nascita!"")?html}">
+            </div>
+            <div class="campo">
+                <label for="indirizzo">Indirizzo</label>
+                <input id="indirizzo" name="indirizzo" type="text" maxlength="150"
+                       value="${(operatore.indirizzo!"")?html}">
+            </div>
+            <fieldset>
+                <legend>Patenti</legend>
+                <div class="scelte">
+                    <#if listaPatenti?? && listaPatenti?has_content>
+                        <#list listaPatenti as patente>
+                            <label class="scelta">
+                                <input type="checkbox" name="patenti"
+                                       value="${patente.tipoPatente?html}"
+                                       <#if patentiSelezionate?? && patentiSelezionate?seq_contains(patente.tipoPatente)>checked</#if>>
+                                ${patente.tipoPatente?html}
+                            </label>
+                        </#list>
+                    <#else>Nessuna patente disponibile.</#if>
+                </div>
+            </fieldset>
 
+            <fieldset>
+                <legend>Abilità</legend>
+                <div class="scelte">
+                    <#if listaAbilita?? && listaAbilita?has_content>
+                        <#list listaAbilita as voce>
+                            <label class="scelta">
+                                <input type="checkbox" name="abilita"
+                                       value="${voce.nome?html}"
+                                       <#if abilitaSelezionate?? && abilitaSelezionate?seq_contains(voce.nome)>checked</#if>>
+                                ${voce.nome?html}
+                            </label>
+                        </#list>
+                    <#else>Nessuna abilità disponibile.</#if>
+                </div>
+            </fieldset>
+
+            <div class="azioni">
+                <button type="submit">Salva profilo</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Missioni associate</h2>
+        <#if missioni?? && missioni?has_content>
+            <#list missioni as m>
+                <#assign chiusa = (m.stato!"")?lower_case == "chiusa">
+                <article class="missione <#if chiusa>chiusa</#if>">
+                    <h3>Missione #${m.id} — ${(m.descrizione!"Nessuna descrizione")?html}</h3>
+                    <p><span class="badge <#if chiusa>chiusa</#if>">${(m.stato!"-")?upper_case?html}</span></p>
+                    <p><strong>Posizione:</strong> ${(m.posizione!"-")?html}</p>
+                    <p><strong>Inizio:</strong> ${(m.dataInizio!"-")?html}</p>
+                    <p><strong>Fine:</strong> ${(m.dataFine!"-")?html}</p>
+                    <#if m.successo??>
+                        <p><strong>Successo:</strong> ${m.successo}/5</p>
+                    </#if>
+                    <#if m.commentoFinale?? && m.commentoFinale?has_content>
+                        <p><strong>Commento finale:</strong> ${m.commentoFinale?html}</p>
+                    </#if>
+
+                    <div class="aggiornamenti">
+                        <strong>Aggiornamenti</strong>
+                        <#if m.aggiornamenti?? && m.aggiornamenti?has_content>
+                            <ul>
+                                <#list m.aggiornamenti as a>
+                                    <li><strong>${(a.data!"-")?html}</strong> — ${(a.descrizione!"-")?html}</li>
+                                </#list>
+                            </ul>
+                        <#else>
+                            <p>Nessun aggiornamento presente.</p>
+                        </#if>
+                    </div>
+                </article>
+            </#list>
+        <#else>
+            <div class="vuoto">Non sei ancora stato coinvolto in alcuna missione.</div>
         </#if>
-
-        <a
-            class="card"
-            href="${contextPath}/operatore/profilo"
-        >
-
-            <h3>Profilo operatore</h3>
-
-            <p>
-                Visualizza le informazioni del tuo profilo,
-                le patenti e le abilità possedute.
-            </p>
-
-        </a>
-
-    </div>
-
-</section>
-
-
+    </section>
 </main>
-
-<footer>
-
-
-<p>
-    &copy; 2026 SoccorsoWeb - Progetto Web Engineering
-</p>
-
-
-</footer>
-
 </body>
-
 </html>

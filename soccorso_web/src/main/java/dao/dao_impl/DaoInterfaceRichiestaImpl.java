@@ -3,7 +3,8 @@ package dao.dao_impl;
 import dao.DaoInterfaceRichiesta;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.NoResultException;
+import java.time.LocalDateTime;
 import java.util.List;
 import model.Richiesta;
 
@@ -12,21 +13,40 @@ public class DaoInterfaceRichiestaImpl implements DaoInterfaceRichiesta {
     private final EntityManager entityManager;
 
     public DaoInterfaceRichiestaImpl(EntityManager entityManager) {
+        if (entityManager == null) {
+            throw new IllegalArgumentException("EntityManager non può essere null");
+        }
         this.entityManager = entityManager;
     }
 
     @Override
     public Richiesta save(Richiesta richiesta) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+        if (richiesta == null) {
+            throw new IllegalArgumentException("La richiesta non può essere null");
+        }
 
+        String email = normalizzaEmail(richiesta.getEmail_segnalante());
+        if (email.isBlank()) {
+            throw new IllegalArgumentException("L'email del segnalante è obbligatoria");
+        }
+        richiesta.setEmail_segnalante(email);
+
+        EntityTransaction tx = entityManager.getTransaction();
         try {
             tx.begin();
-            Richiesta salvata = this.entityManager.merge(richiesta);
-            tx.commit();
-            return salvata;
 
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+            /*
+             * Con email_segnalante come PK usiamo persist():
+             * una seconda richiesta con la stessa email non deve
+             * sovrascrivere quella già presente.
+             */
+            entityManager.persist(richiesta);
+            entityManager.flush();
+
+            tx.commit();
+            return richiesta;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) {
                 tx.rollback();
             }
             throw e;
@@ -35,62 +55,112 @@ public class DaoInterfaceRichiestaImpl implements DaoInterfaceRichiesta {
 
     @Override
     public List<Richiesta> findAll() {
-        /*
-         * Utile se stai usando sempre lo stesso EntityManager.
-         * Evita di vedere dati vecchi rimasti nella cache JPA.
-         */
-        this.entityManager.clear();
-
-        String jpql = "SELECT r FROM Richiesta r";
-        TypedQuery<Richiesta> query = this.entityManager.createQuery(jpql, Richiesta.class);
-        return query.getResultList();
+        entityManager.clear();
+        return entityManager.createQuery(
+                "SELECT r FROM Richiesta r "
+                + "ORDER BY r.dataCreazione DESC, r.email_segnalante",
+                Richiesta.class
+        ).getResultList();
     }
 
     @Override
-    public Richiesta findByEmail(String email_segnalante) {
-        this.entityManager.clear();
-        return this.entityManager.find(Richiesta.class, email_segnalante);
+    public Richiesta findByEmail(String emailSegnalante) {
+        String email = normalizzaEmail(emailSegnalante);
+        if (email.isBlank()) {
+            return null;
+        }
+        entityManager.clear();
+        return entityManager.find(Richiesta.class, email);
+    }
+
+    @Override
+    public Richiesta findByToken(String token) {
+        if (token == null || token.isBlank()) {
+            return null;
+        }
+        try {
+            return entityManager.createQuery(
+                    "SELECT r FROM Richiesta r WHERE r.tokenConferma = :token",
+                    Richiesta.class
+            ).setParameter("token", token.trim())
+             .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
     @Override
     public List<Richiesta> findByStato(String stato) {
-        this.entityManager.clear();
+        if (stato == null || stato.isBlank()) {
+            return List.of();
+        }
+        return entityManager.createQuery(
+                "SELECT r FROM Richiesta r "
+                + "WHERE LOWER(TRIM(r.stato)) = LOWER(TRIM(:stato)) "
+                + "ORDER BY r.dataCreazione DESC, r.email_segnalante",
+                Richiesta.class
+        ).setParameter("stato", stato.trim())
+         .getResultList();
+    }
 
-        String jpql = "SELECT r FROM Richiesta r WHERE r.stato = :stato";
-        TypedQuery<Richiesta> query = this.entityManager.createQuery(jpql, Richiesta.class);
-        query.setParameter("stato", stato);
-
-        return query.getResultList();
+    @Override
+    public boolean existsIpRecente(byte[] ipOrigine, LocalDateTime limite) {
+        if (ipOrigine == null || limite == null) {
+            return false;
+        }
+        Long count = entityManager.createQuery(
+                "SELECT COUNT(r) FROM Richiesta r "
+                + "WHERE r.ip_origine = :ip "
+                + "AND r.dataCreazione >= :limite",
+                Long.class
+        ).setParameter("ip", ipOrigine)
+         .setParameter("limite", limite)
+         .getSingleResult();
+        return count > 0;
     }
 
     @Override
     public Richiesta update(Richiesta richiesta) {
-        return this.save(richiesta);
+        if (richiesta == null) {
+            throw new IllegalArgumentException("La richiesta non può essere null");
+        }
+
+        EntityTransaction tx = entityManager.getTransaction();
+        try {
+            tx.begin();
+            Richiesta aggiornata = entityManager.merge(richiesta);
+            entityManager.flush();
+            tx.commit();
+            return aggiornata;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
+        }
     }
 
     @Override
-    public Richiesta updateStato(String email_segnalante, String nuovoStato) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+    public Richiesta updateStato(String emailSegnalante, String nuovoStato) {
+        String email = normalizzaEmail(emailSegnalante);
+        if (email.isBlank() || nuovoStato == null || nuovoStato.isBlank()) {
+            return null;
+        }
 
+        EntityTransaction tx = entityManager.getTransaction();
         try {
             tx.begin();
-
-            Richiesta richiesta = this.entityManager.find(Richiesta.class, email_segnalante);
-
+            Richiesta richiesta = entityManager.find(Richiesta.class, email);
             if (richiesta == null) {
                 tx.commit();
                 return null;
             }
-
-            richiesta.setStato(nuovoStato);
-
-            Richiesta aggiornata = this.entityManager.merge(richiesta);
-
+            richiesta.setStato(nuovoStato.trim().toLowerCase());
+            entityManager.flush();
             tx.commit();
-            return aggiornata;
-
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+            return richiesta;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) {
                 tx.rollback();
             }
             throw e;
@@ -98,28 +168,46 @@ public class DaoInterfaceRichiestaImpl implements DaoInterfaceRichiesta {
     }
 
     @Override
-    public boolean delete(String email_segnalante) {
-        EntityTransaction tx = this.entityManager.getTransaction();
+    public boolean delete(String emailSegnalante) {
+        String email = normalizzaEmail(emailSegnalante);
+        if (email.isBlank()) {
+            return false;
+        }
 
+        EntityTransaction tx = entityManager.getTransaction();
         try {
             tx.begin();
-
-            Richiesta richiesta = this.entityManager.find(Richiesta.class, email_segnalante);
-
-            if (richiesta != null) {
-                this.entityManager.remove(richiesta);
+            Richiesta richiesta = entityManager.find(Richiesta.class, email);
+            if (richiesta == null) {
                 tx.commit();
-                return true;
+                return false;
             }
 
-            tx.commit();
-            return false;
+            Long missioni = entityManager.createQuery(
+                    "SELECT COUNT(m) FROM Missione m "
+                    + "WHERE m.richiesta.email_segnalante = :email",
+                    Long.class
+            ).setParameter("email", email)
+             .getSingleResult();
 
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) {
+            if (missioni > 0) {
+                tx.commit();
+                return false;
+            }
+
+            entityManager.remove(richiesta);
+            entityManager.flush();
+            tx.commit();
+            return true;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) {
                 tx.rollback();
             }
             throw e;
         }
+    }
+
+    private String normalizzaEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase();
     }
 }

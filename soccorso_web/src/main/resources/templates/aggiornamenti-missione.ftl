@@ -1,217 +1,60 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aggiornamenti missione</title>
-
     <style>
         * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f8;
-            color: #222;
-        }
-
-        header {
-            background: #1565c0;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        header p {
-            margin: 8px 0 0 0;
-            opacity: 0.9;
-        }
-
-        nav {
-            background: #0d47a1;
-            padding: 15px;
-            text-align: center;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            margin: 0 12px;
-        }
-
-        nav a:hover {
-            text-decoration: underline;
-        }
-
-        main {
-            width: 95%;
-            max-width: 1000px;
-            margin: 30px auto;
-        }
-
-        .messaggio-errore {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-
-        .form-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 25px;
-        }
-
-        .form-container textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: 10px;
-            font-family: inherit;
-            font-size: 1em;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: vertical;
-        }
-
-        .form-container button {
-            margin-top: 12px;
-            padding: 10px 20px;
-            background: #1565c0;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-
-        .form-container button:hover {
-            background: #0d47a1;
-        }
-
-        .vuoto {
-            background: white;
-            padding: 25px;
-            text-align: center;
-            border-radius: 8px;
-        }
-
-        .aggiornamento {
-            background: white;
-            padding: 18px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .aggiornamento .data {
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 8px;
-        }
-
-        .pulsante {
-            display: inline-block;
-            margin-top: 25px;
-            padding: 12px 18px;
-            background: #1565c0;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-
-        .pulsante:hover {
-            background: #0d47a1;
-        }
+        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6f8; color: #222; }
+        header { padding: 30px; background: #1565c0; color: white; text-align: center; }
+        nav { padding: 14px; background: #0d47a1; text-align: center; }
+        nav a { color: white; margin: 0 12px; text-decoration: none; font-weight: bold; }
+        main { width: min(950px, 94%); margin: 30px auto; }
+        .panel, .aggiornamento { margin-bottom: 18px; padding: 20px; background: white; border-radius: 9px; box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+        textarea { width: 100%; min-height: 100px; padding: 10px; }
+        button, .btn { display: inline-block; margin-top: 12px; padding: 10px 17px; border: 0; border-radius: 5px; background: #1565c0; color: white; text-decoration: none; font-weight: bold; cursor: pointer; }
+        .errore { margin-bottom: 18px; padding: 14px; background: #f8d7da; color: #721c24; border-radius: 6px; }
+        .chiusa { margin-bottom: 18px; padding: 14px; background: #eeeeee; color: #424242; border-radius: 6px; }
+        .data { color: #666; font-size: .9rem; margin-bottom: 6px; }
     </style>
 </head>
-
 <body>
-
 <header>
-    <h1>Aggiornamenti missione</h1>
-    <p>${(missione.descrizione)!"Descrizione non disponibile"}</p>
+    <h1>Aggiornamenti missione #${missione.id}</h1>
+    <p>${(missione.descrizione!"-")?html}</p>
 </header>
-
 <nav>
-    <a href="${contextPath!""}/admin">Dashboard</a>
-    <a href="${contextPath!""}/admin/richieste">Gestione richieste</a>
-    <a href="${contextPath!""}/admin/missioni">Gestione missioni</a>
+    <a href="${contextPath}/admin">Dashboard</a>
+    <a href="${contextPath}/admin/missioni">Missioni</a>
 </nav>
-
 <main>
+    <#if errore??><div class="errore">${errore?html}</div></#if>
 
-    <#if errore??>
-
-        <div class="messaggio-errore">
-            ${errore}
-        </div>
-
+    <#if missioneChiusa!false>
+        <div class="chiusa">La missione è chiusa: gli aggiornamenti restano consultabili ma non possono essere modificati.</div>
+    <#else>
+        <section class="panel">
+            <form method="post" action="${contextPath}/admin/missioni/aggiornamenti?id=${missione.id}">
+                <label for="descrizione"><strong>Nuovo aggiornamento</strong></label>
+                <textarea id="descrizione" name="descrizione" maxlength="1000" required></textarea>
+                <button type="submit">Inserisci aggiornamento</button>
+            </form>
+        </section>
     </#if>
 
-    <div class="form-container">
+    <#if aggiornamenti?? && aggiornamenti?has_content>
+        <#list aggiornamenti as a>
+            <article class="aggiornamento">
+                <div class="data">${(a.dataFormattata!"-")?html}</div>
+                <div>${(a.descrizione!"-")?html}</div>
+            </article>
+        </#list>
+    <#else>
+        <section class="panel">Non sono presenti aggiornamenti.</section>
+    </#if>
 
-        <form method="POST"
-              action="${contextPath!""}/admin/missioni/aggiornamenti?id=${missione.id}">
-
-            <label for="descrizione">
-                <strong>Nuovo aggiornamento</strong>
-            </label>
-
-            <textarea id="descrizione"
-                      name="descrizione"
-                      placeholder="Scrivi qui il testo dell'aggiornamento..."
-                      required></textarea>
-
-            <button type="submit">
-                Inserisci aggiornamento
-            </button>
-
-        </form>
-
-    </div>
-
-    <#assign listaAggiornamenti = aggiornamenti![]>
-
-<#if listaAggiornamenti?has_content>
-
-    <#list listaAggiornamenti as a>
-
-        <#if a??>
-
-            <div class="aggiornamento">
-
-                <div class="data">
-                    ${(a.dataFormattata)!"Data non disponibile"}
-                </div>
-
-                <div>
-                    ${(a.descrizione)!"Nessuna descrizione"}
-                </div>
-
-            </div>
-
-        </#if>
-
-    </#list>
-
-<#else>
-
-    <div class="vuoto">
-        Non sono presenti aggiornamenti per questa missione.
-    </div>
-
-</#if>
-
-    <a class="pulsante" href="${contextPath!""}/admin/missioni">
-        Torna alle missioni
-    </a>
-
+    <a class="btn" href="${contextPath}/admin/missioni">Torna alle missioni</a>
 </main>
-
 </body>
 </html>
