@@ -72,4 +72,75 @@ private static final String SMTP_PASSWORD = "4f2f02b562f35c"; // Clicca sull'occ
             // Opzionale: puoi rilanciare un'eccezione personalizzata per catturarla nel Servlet
         }
     }
+    public static void inviaNotificaAggiornamento(
+        String destinatario,
+        String nomeOperatore,
+        String descrizioneMissione,
+        String testoAggiornamento) 
+ {
+
+    Properties props = new Properties();
+    props.put("mail.smtp.auth", "true");
+    props.put("mail.smtp.starttls.enable", "true");
+    props.put("mail.smtp.host", SMTP_HOST);
+    props.put("mail.smtp.port", SMTP_PORT);
+    props.put("mail.smtp.ssl.trust", SMTP_HOST);
+
+    Session session = Session.getInstance(
+            props,
+            new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(
+                            SMTP_USER,
+                            SMTP_PASSWORD
+                    );
+                }
+            }
+    );
+
+    try {
+
+        Message message = new MimeMessage(session);
+
+        message.setFrom(
+                new InternetAddress(SMTP_USER)
+        );
+
+        message.setRecipients(
+                Message.RecipientType.TO,
+                InternetAddress.parse(destinatario)
+        );
+
+        message.setSubject(
+                "Nuovo aggiornamento missione - SoccorsoWeb"
+        );
+
+        String testoEmail =
+                "Ciao " + nomeOperatore + ",\n\n"
+                + "È stato inserito un nuovo aggiornamento "
+                + "per la missione a cui sei assegnato:\n\n"
+                + "Missione: " + descrizioneMissione + "\n\n"
+                + "Aggiornamento:\n" + testoAggiornamento + "\n\n"
+                + "Cordiali saluti,\nIl Team di SoccorsoWeb";
+
+        message.setText(testoEmail);
+
+        Transport.send(message);
+
+        System.out.println(
+                "Notifica aggiornamento inviata a: "
+                + destinatario
+        );
+
+    } catch (MessagingException e) {
+
+        System.err.println(
+                "Errore invio notifica aggiornamento: "
+                + e.getMessage()
+        );
+
+        e.printStackTrace();
+    }
+}
 }

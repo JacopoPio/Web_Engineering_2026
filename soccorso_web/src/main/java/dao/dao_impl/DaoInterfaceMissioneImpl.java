@@ -6,6 +6,7 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
+import model.Aggiornamento;
 import model.Missione;
 import model.Richiesta;
 
@@ -352,5 +353,49 @@ public class DaoInterfaceMissioneImpl
                 .getSingleResult();
 
         return numeroMissioni > 0;
+    }
+    @Override
+    public Missione aggiungiAggiornamento(int idMissione, Aggiornamento aggiornamento) {
+
+    if (aggiornamento == null) {
+        throw new IllegalArgumentException(
+                "L'aggiornamento non può essere null"
+        );
+    }
+
+    EntityTransaction tx =
+            entityManager.getTransaction();
+
+    try {
+        tx.begin();
+
+        Missione missione =
+                entityManager.find(
+                        Missione.class,
+                        idMissione
+                );
+
+        if (missione == null) {
+            tx.rollback();
+            return null;
+        }
+        entityManager.persist(aggiornamento);
+        missione.getAggiornamenti().add(aggiornamento);
+        missione.getOperatori().size();
+
+        entityManager.flush();
+
+        tx.commit();
+
+        return missione;
+
+        } catch (RuntimeException e) {
+
+        if (tx.isActive()) {
+            tx.rollback();
+        }
+
+        throw e;
+        }
     }
 }

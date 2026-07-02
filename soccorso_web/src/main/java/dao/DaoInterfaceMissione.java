@@ -5,6 +5,7 @@
 package dao;
 
 import java.util.List;
+import model.Aggiornamento;
 import model.Missione;
 import model.Richiesta;
 
@@ -19,4 +20,5 @@ public interface DaoInterfaceMissione {
     public Missione update(Missione missione);
     public boolean delete(int idMissione);
     public boolean existsByRichiesta(Richiesta richiesta);
-}
+    Missione aggiungiAggiornamento(int idMissione,Aggiornamento aggiornamento);
+} 

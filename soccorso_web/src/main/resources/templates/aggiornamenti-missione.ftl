@@ -51,6 +51,48 @@
             margin: 30px auto;
         }
 
+        .messaggio-errore {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        .form-container textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .form-container button {
+            margin-top: 12px;
+            padding: 10px 20px;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .form-container button:hover {
+            background: #0d47a1;
+        }
+
         .vuoto {
             background: white;
             padding: 25px;
@@ -103,41 +145,67 @@
 
 <main>
 
-    <#assign listaAggiornamenti = aggiornamenti![]>
+    <#if errore??>
 
-    <#if listaAggiornamenti?has_content>
-
-        <#list listaAggiornamenti as a>
-
-            <#if a??>
-
-                <div class="aggiornamento">
-
-                    <div class="data">
-                        <#if a.data_update??>
-                            ${a.data_update?string("dd/MM/yyyy HH:mm")}
-                        <#else>
-                            Data non disponibile
-                        </#if>
-                    </div>
-
-                    <div>
-                        ${(a.descrizione)!"Nessuna descrizione"}
-                    </div>
-
-                </div>
-
-            </#if>
-
-        </#list>
-
-    <#else>
-
-        <div class="vuoto">
-            Non sono presenti aggiornamenti per questa missione.
+        <div class="messaggio-errore">
+            ${errore}
         </div>
 
     </#if>
+
+    <div class="form-container">
+
+        <form method="POST"
+              action="${contextPath!""}/admin/missioni/aggiornamenti?id=${missione.id}">
+
+            <label for="descrizione">
+                <strong>Nuovo aggiornamento</strong>
+            </label>
+
+            <textarea id="descrizione"
+                      name="descrizione"
+                      placeholder="Scrivi qui il testo dell'aggiornamento..."
+                      required></textarea>
+
+            <button type="submit">
+                Inserisci aggiornamento
+            </button>
+
+        </form>
+
+    </div>
+
+    <#assign listaAggiornamenti = aggiornamenti![]>
+
+<#if listaAggiornamenti?has_content>
+
+    <#list listaAggiornamenti as a>
+
+        <#if a??>
+
+            <div class="aggiornamento">
+
+                <div class="data">
+                    ${(a.dataFormattata)!"Data non disponibile"}
+                </div>
+
+                <div>
+                    ${(a.descrizione)!"Nessuna descrizione"}
+                </div>
+
+            </div>
+
+        </#if>
+
+    </#list>
+
+<#else>
+
+    <div class="vuoto">
+        Non sono presenti aggiornamenti per questa missione.
+    </div>
+
+</#if>
 
     <a class="pulsante" href="${contextPath!""}/admin/missioni">
         Torna alle missioni

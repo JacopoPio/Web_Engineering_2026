@@ -18,11 +18,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import jakarta_configuration.resources.JPAUtil;
+import jakarta_configuration.resources.MailUtil;
 
 import model.Aggiornamento;
 import model.Missione;
+import model.Operatore;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,6 +40,9 @@ import java.util.Map;
 public class AdminAggiornamentiMissioneServlet extends HttpServlet {
 
     private Configuration cfg;
+
+    private static final DateTimeFormatter FORMATO_DATA =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @Override
     public void init() throws ServletException {
@@ -77,6 +84,62 @@ public class AdminAggiornamentiMissioneServlet extends HttpServlet {
                 );
     }
 
+    private Integer parseId(String idParam) {
+
+        if (idParam == null || idParam.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Integer.valueOf(idParam.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /*
+     * Converte la lista di entità Aggiornamento in una
+     * lista di Map con la data già formattata come stringa,
+     * per evitare che FreeMarker debba gestire direttamente
+     * un tipo java.time.LocalDateTime (non supportato in
+     * modo nativo da ?string con pattern).
+     */
+    private List<Map<String, Object>> costruisciVistaAggiornamenti(
+            List<Aggiornamento> aggiornamenti
+    ) {
+
+        List<Map<String, Object>> vista =
+                new ArrayList<>();
+
+        for (Aggiornamento aggiornamento : aggiornamenti) {
+
+            if (aggiornamento == null) {
+                continue;
+            }
+
+            Map<String, Object> item = new HashMap<>();
+
+            item.put(
+                    "descrizione",
+                    aggiornamento.getDescrizione()
+            );
+
+            LocalDateTime dataUpdate =
+                    aggiornamento.getData_update();
+
+            item.put(
+                    "dataFormattata",
+                    dataUpdate != null
+                            ? dataUpdate.format(FORMATO_DATA)
+                            : "Data non disponibile"
+            );
+
+            vista.add(item);
+        }
+
+        return vista;
+    }
+
     @Override
     protected void doGet(
             HttpServletRequest request,
@@ -92,28 +155,10 @@ public class AdminAggiornamentiMissioneServlet extends HttpServlet {
             return;
         }
 
-        String idParam =
-                request.getParameter("id");
+        Integer missioneId =
+                parseId(request.getParameter("id"));
 
-        if (idParam == null
-                || idParam.isBlank()) {
-
-            response.sendRedirect(
-                    request.getContextPath()
-                    + "/admin/missioni"
-            );
-
-            return;
-        }
-
-        int missioneId;
-
-        try {
-
-            missioneId =
-                    Integer.parseInt(idParam.trim());
-
-        } catch (NumberFormatException e) {
+        if (missioneId == null) {
 
             response.sendRedirect(
                     request.getContextPath()
@@ -164,9 +209,6 @@ public class AdminAggiornamentiMissioneServlet extends HttpServlet {
                 }
             }
 
-            /*
-             * Ordino dal più recente al più vecchio.
-             */
             aggiornamenti.sort(
                     Comparator.comparing(
                             Aggiornamento::getData_update,
@@ -175,6 +217,11 @@ public class AdminAggiornamentiMissioneServlet extends HttpServlet {
                             )
                     )
             );
+
+            List<Map<String, Object>> vistaAggiornamenti =
+                    costruisciVistaAggiornamenti(
+                            aggiornamenti
+                    );
 
             Map<String, Object> data =
                     new HashMap<>();
@@ -191,8 +238,15 @@ public class AdminAggiornamentiMissioneServlet extends HttpServlet {
 
             data.put(
                     "aggiornamenti",
-                    aggiornamenti
+                    vistaAggiornamenti
             );
+
+            String errore =
+                    request.getParameter("errore");
+
+            if (errore != null && !errore.isBlank()) {
+                data.put("errore", errore);
+            }
 
             renderTemplate(
                     response,
@@ -205,6 +259,127 @@ public class AdminAggiornamentiMissioneServlet extends HttpServlet {
             throw new ServletException(
                     "Errore durante il recupero "
                     + "degli aggiornamenti",
+                    e
+            );
+
+        } finally {
+
+            if (entityManager != null
+                    && entityManager.isOpen()) {
+
+                entityManager.close();
+            }
+        }
+    }
+
+    @Override
+    protected void doPost(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws ServletException, IOException {
+
+        if (!isAdmin(request)) {
+
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+
+            return;
+        }
+
+        Integer missioneId =
+                parseId(request.getParameter("id"));
+
+        if (missioneId == null) {
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/missioni"
+            );
+
+            return;
+        }
+
+        String testo =
+                request.getParameter("descrizione");
+
+        if (testo == null || testo.isBlank()) {
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/missioni/aggiornamenti?id="
+                    + missioneId
+                    + "&errore=Il+testo+non+puo+essere+vuoto"
+            );
+
+            return;
+        }
+
+        EntityManager entityManager = null;
+
+        try {
+
+            entityManager =
+                    JPAUtil.getEntityManager();
+
+            DaoInterfaceMissione daoMissione =
+                    new DaoInterfaceMissioneImpl(
+                            entityManager
+                    );
+
+            Aggiornamento nuovoAggiornamento =
+                    new Aggiornamento();
+
+            nuovoAggiornamento.setDescrizione(
+                    testo.trim()
+            );
+
+            nuovoAggiornamento.setData_update(
+                    LocalDateTime.now()
+            );
+
+            Missione missione =
+                    daoMissione.aggiungiAggiornamento(
+                            missioneId,
+                            nuovoAggiornamento
+                    );
+
+            if (missione == null) {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/admin/missioni"
+                );
+
+                return;
+            }
+
+            for (Operatore operatore
+                    : missione.getOperatori()) {
+
+                if (operatore != null
+                        && operatore.getEmail() != null) {
+
+                    MailUtil.inviaNotificaAggiornamento(
+                            operatore.getEmail(),
+                            operatore.getNome(),
+                            missione.getDescrizione(),
+                            nuovoAggiornamento.getDescrizione()
+                    );
+                }
+            }
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/missioni/aggiornamenti?id="
+                    + missioneId
+            );
+
+        } catch (RuntimeException e) {
+
+            throw new ServletException(
+                    "Errore durante l'inserimento "
+                    + "dell'aggiornamento",
                     e
             );
 

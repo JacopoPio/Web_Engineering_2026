@@ -31,6 +31,9 @@ public class Aggiornamento {
         this.descrizione = descrizione;
         this.data_update = data_update;
     }
+    public Aggiornamento() {
+        super();
+}
 
     public List<Missione> getMissioni() {
         return this.missioni;
