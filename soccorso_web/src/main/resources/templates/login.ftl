@@ -123,7 +123,6 @@
 <nav>
     <a href="${contextPath}/home">Home</a>
     <a href="${contextPath}/servizi">Servizi</a>
-    <a href="${contextPath}/contatti">Contatti</a>
 </nav>
 
 <div class="login-container">

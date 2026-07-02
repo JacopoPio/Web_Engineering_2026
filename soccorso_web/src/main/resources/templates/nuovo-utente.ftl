@@ -1,4 +1,4 @@
-```ftl
+
 <!DOCTYPE html>
 <html lang="it">
 
@@ -691,4 +691,3 @@
 
 </body>
 </html>
-```

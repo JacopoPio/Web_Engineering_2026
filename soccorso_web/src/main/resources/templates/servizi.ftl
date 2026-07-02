@@ -153,7 +153,6 @@
 <nav>
     <a href="home">Home</a>
     <a href="servizi">Servizi</a>
-    <a href="contatti">Contatti</a>
 </nav>
 
 <div class="contenitore">

@@ -72,34 +72,51 @@ public class DaoInterfaceMezzoImpl implements DaoInterfaceMezzo {
 
         return this.entityManager.find(Mezzo.class, targa.trim().toUpperCase());
     }
-    @Override
+    
+  @Override
     public List<Mezzo> findDisponibili() {
-        return entityManager.createQuery(
-                "SELECT m FROM Mezzo m WHERE m.missioni IS EMPTY", Mezzo.class)
+
+        String jpql =
+            "SELECT me " +
+            "FROM Mezzo me " +
+            "WHERE NOT EXISTS (" +
+            "    SELECT mi.id " +
+            "    FROM Missione mi " +
+            "    JOIN mi.mezzi mezzoMissione " +
+            "    WHERE mezzoMissione = me " +
+            "    AND LOWER(TRIM(mi.richiesta.stato)) = 'in corso'" +
+            ") " +
+            "ORDER BY me.targa";
+
+        return entityManager
+            .createQuery(jpql, Mezzo.class)
             .getResultList();
-        }
-    @Override
-public boolean isDisponibile(String targa) { // Usiamo count per evitare il blocco try catch
+    }
+ @Override
+    public boolean isDisponibile(String targa) {
 
     if (targa == null || targa.isBlank()) {
         return false;
     }
 
-    String jpql =
-            "SELECT COUNT(m) "
-            + "FROM Mezzo m "
-            + "WHERE m.targa = :targa "
-            + "AND m.missioni IS EMPTY";
+        String jpql =
+            "SELECT COUNT(me) " +
+            "FROM Mezzo me " +
+            "WHERE UPPER(me.targa) = UPPER(:targa) " +
+            "AND NOT EXISTS (" +
+            "    SELECT mi.id " +
+            "    FROM Missione mi " +
+            "    JOIN mi.mezzi mezzoMissione " +
+            "    WHERE mezzoMissione = me " +
+            "    AND LOWER(TRIM(mi.richiesta.stato)) = 'in corso'" +
+            ")";
 
-    Long risultato = entityManager
+        Long risultato = entityManager
             .createQuery(jpql, Long.class)
-            .setParameter(
-                    "targa",
-                    targa.trim().toUpperCase()
-            )
+            .setParameter("targa", targa.trim())
             .getSingleResult();
 
-    return risultato > 0;
-}
+        return risultato > 0;
+    }
 }
 

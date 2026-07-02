@@ -102,31 +102,62 @@ public class DaoInterfaceMaterialeImpl implements DaoInterfaceMateriale {
             throw e;
         }
     }
+   @Override
+    public List<Materiale> findDisponibili() {
+
+        String jpql =
+            "SELECT mat " +
+            "FROM Materiale mat " +
+            "WHERE NOT EXISTS (" +
+            "    SELECT mi.id " +
+            "    FROM Missione mi " +
+            "    JOIN mi.materiali materialeMissione " +
+            "    WHERE materialeMissione = mat " +
+            "    AND LOWER(TRIM(mi.richiesta.stato)) = 'in corso'" +
+            ") " +
+            "ORDER BY mat.tipo, mat.id";
+
+        return entityManager
+            .createQuery(jpql, Materiale.class)
+            .getResultList();
+    }
+    @Override
+    public boolean isDisponibile(Long id) {
+
+        if (id == null || id <= 0) {
+            return false;
+        }
+
+        String jpql =
+            "SELECT COUNT(mat) " +
+            "FROM Materiale mat " +
+            "WHERE mat.id = :id " +
+            "AND NOT EXISTS (" +
+            "    SELECT mi.id " +
+            "    FROM Missione mi " +
+            "    JOIN mi.materiali materialeMissione " +
+            "    WHERE materialeMissione = mat " +
+            "    AND LOWER(TRIM(mi.richiesta.stato)) = 'in corso'" +
+            ")";
+
+        Long risultato = entityManager
+            .createQuery(jpql, Long.class)
+            .setParameter("id", id)
+            .getSingleResult();
+
+        return risultato > 0;
+    }
 
     @Override
-    public List<Materiale> findDisponibili() {
-        return entityManager.createQuery(
-                "SELECT m FROM Materiale m WHERE m.missioni IS EMPTY", Materiale.class)
-            .getResultList();
-        }
-     @Override
-    public boolean isDisponibile(Long id) {
-        String jpql = "SELECT CASE WHEN mat.missioni IS EMPTY THEN true ELSE false END " +
-                      "FROM Materiale mat WHERE mat.id = :id";
-
-        return entityManager.createQuery(jpql, Boolean.class)
-                .setParameter("id", id)
-                .getSingleResult();
-    }
     public Materiale findById(Long id) {
-    String jpql = "SELECT m FROM Materiale m WHERE m.id = :id";
 
-    try {
-        return entityManager.createQuery(jpql, Materiale.class)
-                .setParameter("id", id)
-                .getSingleResult();
-    } catch (NoResultException e) {
+        if (id <= 0 || id > Integer.MAX_VALUE) {
         return null;
         }
-    }
+
+        return entityManager.find(
+            Materiale.class,
+            Math.toIntExact(id)
+        );
+   }
 }
