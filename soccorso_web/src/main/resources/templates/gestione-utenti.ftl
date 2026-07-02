@@ -7,7 +7,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Gestione utenti - SoccorsoWeb</title>
+    <title>Gestione missioni</title>
 
     <style>
         * {
@@ -22,25 +22,20 @@
         }
 
         header {
-            background: linear-gradient(135deg, #1565c0, #1976d2);
+            background: #1565c0;
             color: white;
+            padding: 30px;
             text-align: center;
-            padding: 35px 20px;
         }
 
         header h1 {
             margin: 0;
-            font-size: 38px;
-        }
-
-        header p {
-            margin: 8px 0 0;
         }
 
         nav {
             background: #0d47a1;
+            padding: 15px;
             text-align: center;
-            padding: 14px;
         }
 
         nav a {
@@ -56,41 +51,31 @@
 
         main {
             width: 95%;
-            max-width: 1550px;
+            max-width: 1400px;
             margin: 30px auto;
         }
 
-        .messaggio {
-            padding: 14px 16px;
-            margin-bottom: 22px;
-            border-radius: 7px;
-            font-weight: bold;
-        }
-
         .messaggio-successo {
-            background: #dff2e1;
-            border: 1px solid #81c784;
-            color: #1b5e20;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
         }
 
         .messaggio-errore {
-            background: #fde0e0;
-            border: 1px solid #ef9a9a;
-            color: #b71c1c;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
         }
 
-        .sezione {
+        .vuoto {
             background: white;
-            border-radius: 9px;
-            padding: 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.10);
-        }
-
-        .sezione h2 {
-            margin: 0 0 20px;
-            color: #0d47a1;
-            font-size: 28px;
+            padding: 25px;
+            text-align: center;
+            border-radius: 8px;
         }
 
         .tabella-container {
@@ -100,150 +85,54 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         th,
         td {
-            padding: 13px;
+            padding: 14px;
             border-bottom: 1px solid #ddd;
             text-align: left;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
         th {
-            background: #e3f2fd;
-            color: #0d47a1;
+            background: #1976d2;
+            color: white;
             white-space: nowrap;
         }
 
         tbody tr:hover {
-            background: #f8f9fa;
+            background: #f5f5f5;
         }
 
-        .azioni {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 8px;
-            min-width: 300px;
-        }
-
-        .azioni form {
+        .lista {
             margin: 0;
+            padding-left: 18px;
         }
 
-        button {
-            border: none;
-            border-radius: 5px;
-            padding: 9px 13px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            white-space: nowrap;
+        .lista li {
+            margin-bottom: 5px;
         }
 
-        .btn-modifica {
-            background: #1565c0;
-        }
-
-        .btn-modifica:hover {
-            background: #0d47a1;
-        }
-
-        .btn-disattiva {
-            background: #c62828;
-        }
-
-        .btn-disattiva:hover {
-            background: #8e0000;
-        }
-
-        .btn-riattiva {
-            background: #2e7d32;
-        }
-
-        .btn-riattiva:hover {
-            background: #1b5e20;
-        }
-
-        .btn-caposquadra {
-            background: #2e7d32;
-        }
-
-        .btn-caposquadra:hover {
-            background: #1b5e20;
-        }
-
-        .btn-rimuovi-caposquadra {
-            background: #6a1b9a;
-        }
-
-        .btn-rimuovi-caposquadra:hover {
-            background: #4a148c;
-        }
-
-        .btn-rimuovi-squadra {
-            background: #ef6c00;
-        }
-
-        .btn-rimuovi-squadra:hover {
-            background: #e65100;
-        }
-
-        .btn-disabilitato {
-            background: #9e9e9e;
-            cursor: not-allowed;
-            opacity: 0.65;
-        }
-
-        .stato-attivo {
+        .caposquadra {
             color: #1b5e20;
             font-weight: bold;
         }
 
-        .stato-disattivato {
-            color: #b71c1c;
-            font-weight: bold;
-        }
-
-        .squadra-assegnata {
-            color: #1b5e20;
-            font-weight: bold;
-        }
-
-        .non-assegnato {
-            color: #666;
-            font-style: italic;
-        }
-
-        .badge-caposquadra {
+        .pulsante {
             display: inline-block;
-            background: #dcedc8;
-            border: 1px solid #81c784;
-            color: #1b5e20;
+            margin-top: 25px;
+            padding: 12px 18px;
+            background: #1565c0;
+            color: white;
+            text-decoration: none;
             border-radius: 5px;
-            padding: 7px 10px;
-            font-weight: bold;
         }
 
-        .nessun-utente {
-            color: #666;
-            font-style: italic;
-        }
-
-        @media (max-width: 900px) {
-            main {
-                width: 98%;
-            }
-
-            .sezione {
-                padding: 15px;
-            }
-
-            th,
-            td {
-                padding: 10px;
-            }
+        .pulsante:hover {
+            background: #0d47a1;
         }
     </style>
 </head>
@@ -251,30 +140,20 @@
 <body>
 
 <header>
-    <h1>Gestione utenti</h1>
-
-    <#if nomeAdmin??>
-        <p>
-            Amministratore: ${nomeAdmin}
-        </p>
-    </#if>
+    <h1>Gestione missioni</h1>
 </header>
 
 <nav>
-    <a href="${contextPath}/admin">
+    <a href="${contextPath!""}/admin">
         Dashboard
     </a>
 
-    <a href="${contextPath}/admin/utenti">
-        Gestione utenti
+    <a href="${contextPath!""}/admin/richieste">
+        Gestione richieste
     </a>
 
-    <a href="${contextPath}/admin/nuovo-utente">
-        Nuovo utente
-    </a>
-
-    <a href="${contextPath}/logout">
-        Logout
+    <a href="${contextPath!""}/admin/missioni">
+        Gestione missioni
     </a>
 </nav>
 
@@ -282,165 +161,68 @@
 
     <#if successo??>
 
-        <#if successo == "modificato">
+        <div class="messaggio-successo">
 
-            <div class="messaggio messaggio-successo">
-                Utente modificato correttamente.
-            </div>
-
-        <#elseif successo == "disattivato">
-
-            <div class="messaggio messaggio-successo">
-                Utente disattivato correttamente.
-            </div>
-
-        <#elseif successo == "riattivato">
-
-            <div class="messaggio messaggio-successo">
-                Utente riattivato correttamente.
-            </div>
-
-        <#elseif successo == "caposquadra_assegnato">
-
-            <div class="messaggio messaggio-successo">
-                L'operatore è stato impostato come caposquadra.
-            </div>
-
-        <#elseif successo == "caposquadra_rimosso">
-
-            <div class="messaggio messaggio-successo">
-                Il ruolo di caposquadra è stato rimosso.
-            </div>
-
-        <#elseif successo == "rimosso_da_squadra">
-
-            <div class="messaggio messaggio-successo">
-                L'operatore è stato rimosso dalla squadra.
-            </div>
-
-        <#else>
-
-            <div class="messaggio messaggio-successo">
+            <#if successo == "creata">
+                Missione creata correttamente.
+            <#else>
                 Operazione completata correttamente.
-            </div>
+            </#if>
 
-        </#if>
+        </div>
 
     </#if>
 
     <#if errore??>
 
-        <#if errore == "azione">
-
-            <div class="messaggio messaggio-errore">
-                L'azione richiesta non è valida.
-            </div>
-
-        <#elseif errore == "parametri">
-
-            <div class="messaggio messaggio-errore">
-                I parametri ricevuti non sono validi.
-            </div>
-
-        <#elseif errore == "utente_non_trovato">
-
-            <div class="messaggio messaggio-errore">
-                L'utente selezionato non è stato trovato.
-            </div>
-
-        <#elseif errore == "autodisattivazione">
-
-            <div class="messaggio messaggio-errore">
-                Non puoi disattivare il tuo account.
-            </div>
-
-        <#elseif errore == "ultimo_admin">
-
-            <div class="messaggio messaggio-errore">
-                Non puoi disattivare l'ultimo amministratore attivo.
-            </div>
-
-        <#elseif errore == "caposquadra_non_attivo">
-
-            <div class="messaggio messaggio-errore">
-                Un operatore disattivato non può diventare caposquadra.
-            </div>
-
-        <#elseif errore == "operatore_non_assegnato">
-
-            <div class="messaggio messaggio-errore">
-                L'operatore non appartiene a una squadra.
-            </div>
-
-        <#else>
-
-            <div class="messaggio messaggio-errore">
-                Si è verificato un errore durante l'operazione.
-            </div>
-
-        </#if>
+        <div class="messaggio-errore">
+            Si è verificato un errore:
+            ${errore!"Errore non specificato"}
+        </div>
 
     </#if>
 
-    <section class="sezione">
+    <#assign listaMissioni = missioni![]>
 
-        <h2>Amministratori</h2>
+    <#if listaMissioni?has_content>
 
-        <#assign listaAmministratori = amministratori![]>
+        <div class="tabella-container">
 
-        <#if listaAmministratori?size == 0>
+            <table>
 
-            <p class="nessun-utente">
-                Non sono presenti amministratori.
-            </p>
+                <thead>
+                <tr>
+                    <th>Descrizione</th>
+                    <th>Richiesta</th>
+                    <th>Squadra</th>
+                    <th>Operatori</th>
+                    <th>Mezzi</th>
+                    <th>Materiali</th>
+                    <th>Aggiornamenti</th>
+                </tr>
+                </thead>
 
-        <#else>
+                <tbody>
 
-            <div class="tabella-container">
+                <#list listaMissioni as m>
 
-                <table>
-
-                    <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Nome</th>
-                        <th>Cognome</th>
-                        <th>Codice fiscale</th>
-                        <th>Stato</th>
-                        <th>Operazioni</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-
-                    <#list listaAmministratori as amministratore>
-
-                        <#assign adminAttivo =
-                            amministratore.attivo!false>
+                    <#if m??>
 
                         <tr>
 
-                            <td>${amministratore.email!""}</td>
-
-                            <td>${amministratore.nome!""}</td>
-
-                            <td>${amministratore.cognome!""}</td>
-
-                            <td>${amministratore.CF!""}</td>
+                            <td>
+                                ${(m.descrizione)!"Descrizione non disponibile"}
+                            </td>
 
                             <td>
 
-                                <#if adminAttivo>
+                                <#if m.richiesta??>
 
-                                    <span class="stato-attivo">
-                                        Attivo
-                                    </span>
+                                    ${(m.richiesta.email_segnalante)!"Email non disponibile"}
 
                                 <#else>
 
-                                    <span class="stato-disattivato">
-                                        Disattivato
-                                    </span>
+                                    Richiesta non disponibile
 
                                 </#if>
 
@@ -448,388 +230,163 @@
 
                             <td>
 
-                                <div class="azioni">
+                                <#if m.squadra??>
 
-                                    <form action="${contextPath}/admin/utenti"
-                                          method="get">
+                                    ${(m.squadra.nome)!"Squadra senza nome"}
 
-                                        <input type="hidden"
-                                               name="azione"
-                                               value="modifica">
+                                <#else>
 
-                                        <input type="hidden"
-                                               name="ruolo"
-                                               value="ADMIN">
+                                    Nessuna squadra
 
-                                        <input type="hidden"
-                                               name="email"
-                                               value="${amministratore.email!""}">
+                                </#if>
 
-                                        <button type="submit"
-                                                class="btn-modifica">
-                                            Modifica
-                                        </button>
+                            </td>
 
-                                    </form>
+                            <td>
 
-                                    <#if adminAttivo>
+                                <#if m.squadra??
+                                    && m.squadra.operatori??
+                                    && m.squadra.operatori?has_content>
 
-                                        <form action="${contextPath}/admin/utenti"
-                                              method="post"
-                                              onsubmit="return confirm('Disattivare questo amministratore?');">
+                                    <ul class="lista">
 
-                                            <input type="hidden"
-                                                   name="azione"
-                                                   value="disattiva">
+                                        <#list m.squadra.operatori as operatore>
 
-                                            <input type="hidden"
-                                                   name="ruolo"
-                                                   value="ADMIN">
+                                            <#if operatore??>
 
-                                            <input type="hidden"
-                                                   name="email"
-                                                   value="${amministratore.email!""}">
+                                                <li>
 
-                                            <button type="submit"
-                                                    class="btn-disattiva">
-                                                Disattiva
-                                            </button>
+                                                    ${(operatore.nome)!""}
+                                                    ${(operatore.cognome)!""}
 
-                                        </form>
+                                                    <#if operatore.email??>
+                                                        -
+                                                        ${operatore.email}
+                                                    </#if>
 
-                                    <#else>
+                                                    <#if operatore.caposquadra!false>
 
-                                        <form action="${contextPath}/admin/utenti"
-                                              method="post"
-                                              onsubmit="return confirm('Riattivare questo amministratore?');">
+                                                        <span class="caposquadra">
+                                                            (Caposquadra)
+                                                        </span>
 
-                                            <input type="hidden"
-                                                   name="azione"
-                                                   value="riattiva">
+                                                    </#if>
 
-                                            <input type="hidden"
-                                                   name="ruolo"
-                                                   value="ADMIN">
+                                                </li>
 
-                                            <input type="hidden"
-                                                   name="email"
-                                                   value="${amministratore.email!""}">
+                                            </#if>
 
-                                            <button type="submit"
-                                                    class="btn-riattiva">
-                                                Riattiva
-                                            </button>
+                                        </#list>
 
-                                        </form>
+                                    </ul>
 
-                                    </#if>
+                                <#else>
 
-                                </div>
+                                    Nessun operatore
+
+                                </#if>
+
+                            </td>
+
+                            <td>
+
+                                <#if m.mezzi??
+                                    && m.mezzi?has_content>
+
+                                    <ul class="lista">
+
+                                        <#list m.mezzi as mezzo>
+
+                                            <#if mezzo??>
+
+                                                <li>
+                                                    ${(mezzo.targa)!"Targa non disponibile"}
+                                                </li>
+
+                                            </#if>
+
+                                        </#list>
+
+                                    </ul>
+
+                                <#else>
+
+                                    Nessun mezzo
+
+                                </#if>
+
+                            </td>
+
+                            <td>
+
+                                <#if m.materiali??
+                                    && m.materiali?has_content>
+
+                                    <ul class="lista">
+
+                                        <#list m.materiali as materiale>
+
+                                            <#if materiale??>
+
+                                                <li>
+                                                    ${(materiale.tipo)!"Materiale non disponibile"}
+                                                </li>
+
+                                            </#if>
+
+                                        </#list>
+
+                                    </ul>
+
+                                <#else>
+
+                                    Nessun materiale
+
+                                </#if>
+
+                            </td>
+                            <td>
+
+                                <#if m.id??>
+
+                                    <a href="${contextPath!""}/admin/missioni/aggiornamenti?id=${m.id}">
+                                        Vedi aggiornamenti
+                                    </a>
+
+                                <#else>
+
+                                    Non disponibile
+
+                                </#if>
 
                             </td>
 
                         </tr>
 
-                    </#list>
+                    </#if>
 
-                    </tbody>
+                </#list>
 
-                </table>
+                </tbody>
 
-            </div>
+            </table>
 
-        </#if>
+        </div>
 
-    </section>
+    <#else>
 
-    <section class="sezione">
+        <div class="vuoto">
+            Non sono presenti missioni.
+        </div>
 
-        <h2>Operatori</h2>
+    </#if>
 
-        <#assign listaOperatori = operatori![]>
-
-        <#if listaOperatori?size == 0>
-
-            <p class="nessun-utente">
-                Non sono presenti operatori.
-            </p>
-
-        <#else>
-
-            <div class="tabella-container">
-
-                <table>
-
-                    <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Nome</th>
-                        <th>Cognome</th>
-                        <th>Codice fiscale</th>
-                        <th>Stato</th>
-                        <th>Squadra</th>
-                        <th>Caposquadra</th>
-                        <th>Operazioni</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-
-                    <#list listaOperatori as operatore>
-
-                        <#assign operatoreAttivo =
-                            operatore.attivo!false>
-
-                        <#assign operatoreCaposquadra =
-                            operatore.caposquadra!false>
-
-                        <#assign operatoreAssegnato =
-                            operatore.squadra??>
-
-                        <tr>
-
-                            <td>${operatore.email!""}</td>
-
-                            <td>${operatore.nome!""}</td>
-
-                            <td>${operatore.cognome!""}</td>
-
-                            <td>${operatore.CF!""}</td>
-
-                            <td>
-
-                                <#if operatoreAttivo>
-
-                                    <span class="stato-attivo">
-                                        Attivo
-                                    </span>
-
-                                <#else>
-
-                                    <span class="stato-disattivato">
-                                        Disattivato
-                                    </span>
-
-                                </#if>
-
-                            </td>
-
-                            <td>
-
-                                <#if operatoreAssegnato>
-
-                                    <span class="squadra-assegnata">
-                                        Assegnato
-                                    </span>
-
-                                <#else>
-
-                                    <span class="non-assegnato">
-                                        Nessuna squadra
-                                    </span>
-
-                                </#if>
-
-                            </td>
-
-                            <td>
-
-                                <#if operatoreCaposquadra>
-
-                                    <span class="badge-caposquadra">
-                                        Sì
-                                    </span>
-
-                                <#else>
-
-                                    No
-
-                                </#if>
-
-                            </td>
-
-                            <td>
-
-                                <div class="azioni">
-
-                                    <form action="${contextPath}/admin/utenti"
-                                          method="get">
-
-                                        <input type="hidden"
-                                               name="azione"
-                                               value="modifica">
-
-                                        <input type="hidden"
-                                               name="ruolo"
-                                               value="OPERATORE">
-
-                                        <input type="hidden"
-                                               name="email"
-                                               value="${operatore.email!""}">
-
-                                        <button type="submit"
-                                                class="btn-modifica">
-                                            Modifica
-                                        </button>
-
-                                    </form>
-
-                                    <#if operatoreAttivo>
-
-                                        <form action="${contextPath}/admin/utenti"
-                                              method="post"
-                                              onsubmit="return confirm('Disattivare questo operatore?');">
-
-                                            <input type="hidden"
-                                                   name="azione"
-                                                   value="disattiva">
-
-                                            <input type="hidden"
-                                                   name="ruolo"
-                                                   value="OPERATORE">
-
-                                            <input type="hidden"
-                                                   name="email"
-                                                   value="${operatore.email!""}">
-
-                                            <button type="submit"
-                                                    class="btn-disattiva">
-                                                Disattiva
-                                            </button>
-
-                                        </form>
-
-                                    <#else>
-
-                                        <form action="${contextPath}/admin/utenti"
-                                              method="post"
-                                              onsubmit="return confirm('Riattivare questo operatore?');">
-
-                                            <input type="hidden"
-                                                   name="azione"
-                                                   value="riattiva">
-
-                                            <input type="hidden"
-                                                   name="ruolo"
-                                                   value="OPERATORE">
-
-                                            <input type="hidden"
-                                                   name="email"
-                                                   value="${operatore.email!""}">
-
-                                            <button type="submit"
-                                                    class="btn-riattiva">
-                                                Riattiva
-                                            </button>
-
-                                        </form>
-
-                                    </#if>
-
-                                    <!--
-                                        CAPOSQUADRA:
-                                        non richiede una squadra già assegnata.
-                                    -->
-                                    <#if operatoreCaposquadra>
-
-                                        <form action="${contextPath}/admin/utenti"
-                                              method="post"
-                                              onsubmit="return confirm('Rimuovere il ruolo di caposquadra?');">
-
-                                            <input type="hidden"
-                                                   name="azione"
-                                                   value="rimuovi_caposquadra">
-
-                                            <input type="hidden"
-                                                   name="email"
-                                                   value="${operatore.email!""}">
-
-                                            <button type="submit"
-                                                    class="btn-rimuovi-caposquadra">
-                                                Rimuovi caposquadra
-                                            </button>
-
-                                        </form>
-
-                                    <#elseif operatoreAttivo>
-
-                                        <form action="${contextPath}/admin/utenti"
-                                              method="post"
-                                              onsubmit="return confirm('Rendere questo operatore caposquadra?');">
-
-                                            <input type="hidden"
-                                                   name="azione"
-                                                   value="rendi_caposquadra">
-
-                                            <input type="hidden"
-                                                   name="email"
-                                                   value="${operatore.email!""}">
-
-                                            <button type="submit"
-                                                    class="btn-caposquadra">
-                                                Rendi caposquadra
-                                            </button>
-
-                                        </form>
-
-                                    <#else>
-
-                                        <button type="button"
-                                                class="btn-disabilitato"
-                                                disabled
-                                                title="Riattiva prima l'operatore">
-                                            Rendi caposquadra
-                                        </button>
-
-                                    </#if>
-
-                                    <!--
-                                        La rimozione dalla squadra compare
-                                        solo se una squadra è presente.
-                                    -->
-                                    <#if operatoreAssegnato>
-
-                                        <form action="${contextPath}/admin/utenti"
-                                              method="post"
-                                              onsubmit="return confirm('Rimuovere questo operatore dalla squadra?');">
-
-                                            <input type="hidden"
-                                                   name="azione"
-                                                   value="rimuovi_da_squadra">
-
-                                            <input type="hidden"
-                                                   name="email"
-                                                   value="${operatore.email!""}">
-
-                                            <button type="submit"
-                                                    class="btn-rimuovi-squadra">
-                                                Rimuovi dalla squadra
-                                            </button>
-
-                                        </form>
-
-                                    </#if>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    </#list>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </#if>
-
-    </section>
+    <a class="pulsante"
+       href="${contextPath!""}/admin/richieste">
+        Vai alle richieste
+    </a>
 
 </main>
 
 </body>
-
 </html>

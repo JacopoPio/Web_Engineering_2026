@@ -16,12 +16,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta_configuration.resources.JPAUtil;
 import jakarta_configuration.resources.PasswordConverter;
-import model.Amministratore;
-import model.Operatore;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import model.Amministratore;
+import model.Operatore;
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
 public class LoginServlet extends HttpServlet {
@@ -31,27 +30,22 @@ public class LoginServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         cfg = new Configuration(Configuration.VERSION_2_3_32);
-
         cfg.setClassLoaderForTemplateLoading(
                 Thread.currentThread().getContextClassLoader(),
                 "/templates"
         );
-
         cfg.setDefaultEncoding("UTF-8");
-        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         Map<String, Object> data = new HashMap<>();
         data.put("contextPath", request.getContextPath());
-
         if (request.getParameter("errore") != null) {
             data.put("errore", true);
         }
-
         renderTemplate(response, "login.ftl", data);
     }
 
@@ -60,120 +54,87 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-
         String ruolo = normalizza(request.getParameter("ruolo")).toUpperCase();
         String username = normalizza(request.getParameter("username")).toLowerCase();
         String password = normalizza(request.getParameter("password"));
 
         if (ruolo.isBlank() || username.isBlank() || password.isBlank()) {
-            response.sendRedirect(request.getContextPath() + "/login?errore=1");
-            return;
-        }
-
-        /*
-         * Admin fisso di emergenza.
-         * Serve solo durante lo sviluppo.
-         */
-        if ("ADMIN".equals(ruolo)
-                && "admin".equals(username)
-                && "admin123".equals(password)) {
-
-            HttpSession session = request.getSession();
-            session.setAttribute("email", "admin");
-            session.setAttribute("nome", "Amministratore");
-            session.setAttribute("ruolo", "ADMIN");
-
-            response.sendRedirect(request.getContextPath() + "/admin");
+            nega(request, response);
             return;
         }
 
         EntityManager em = JPAUtil.getEntityManager();
-
         try {
-            DaoInterfaceAmministratore daoAdmin =
-                    new DaoInterfaceAmministratoreImpl(em);
-
-            DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(em);
-
             if ("ADMIN".equals(ruolo)) {
-                Amministratore admin = daoAdmin.findByEmail(username);
+                DaoInterfaceAmministratore dao = new DaoInterfaceAmministratoreImpl(em);
+                Amministratore admin = dao.findByEmail(username);
 
-                if (admin == null) {
-                    response.sendRedirect(request.getContextPath() + "/login?errore=1");
+                if (admin == null || !admin.isAttivo()
+                        || !PasswordConverter.checkPassword(password, admin.getPassword())) {
+                    nega(request, response);
                     return;
                 }
 
-                boolean passwordCorretta =
-                        PasswordConverter.checkPassword(password, admin.getPassword());
-
-                if (!passwordCorretta) {
-                    response.sendRedirect(request.getContextPath() + "/login?errore=1");
-                    return;
-                }
-
-                HttpSession session = request.getSession();
-                session.setAttribute("email", admin.getEmail());
-                session.setAttribute("nome", admin.getNome());
-                session.setAttribute("ruolo", "ADMIN");
-
+                creaSessione(request, admin.getEmail(), admin.getNome(), "ADMIN");
                 response.sendRedirect(request.getContextPath() + "/admin");
                 return;
             }
 
             if ("OPERATORE".equals(ruolo)) {
-                Operatore operatore = daoOperatore.findByEmail(username);
+                DaoInterfaceOperatore dao = new DaoInterfaceOperatoreImpl(em);
+                Operatore operatore = dao.findByEmail(username);
 
-                if (operatore == null) {
-                    response.sendRedirect(request.getContextPath() + "/login?errore=1");
+                if (operatore == null || !operatore.isAttivo()
+                        || !PasswordConverter.checkPassword(password, operatore.getPassword())) {
+                    nega(request, response);
                     return;
                 }
 
-                boolean passwordCorretta =
-                        PasswordConverter.checkPassword(password, operatore.getPassword());
-
-                if (!passwordCorretta) {
-                    response.sendRedirect(request.getContextPath() + "/login?errore=1");
-                    return;
-                }
-
-                HttpSession session = request.getSession();
-                session.setAttribute("email", operatore.getEmail());
-                session.setAttribute("nome", operatore.getNome());
-                session.setAttribute("ruolo", "OPERATORE");
-
+                creaSessione(request, operatore.getEmail(), operatore.getNome(), "OPERATORE");
                 response.sendRedirect(request.getContextPath() + "/operatori");
                 return;
             }
 
-            response.sendRedirect(request.getContextPath() + "/login?errore=1");
+            nega(request, response);
 
         } finally {
             em.close();
         }
     }
 
-    private String normalizza(String valore) {
-        if (valore == null) {
-            return "";
+    private void creaSessione(HttpServletRequest request,
+                              String email,
+                              String nome,
+                              String ruolo) {
+        HttpSession vecchia = request.getSession(false);
+        if (vecchia != null) {
+            vecchia.invalidate();
         }
+        HttpSession session = request.getSession(true);
+        session.setAttribute("email", email);
+        session.setAttribute("nome", nome);
+        session.setAttribute("ruolo", ruolo);
+        session.setMaxInactiveInterval(30 * 60);
+    }
 
-        return valore.trim();
+    private void nega(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.sendRedirect(request.getContextPath() + "/login?errore=1");
+    }
+
+    private String normalizza(String valore) {
+        return valore == null ? "" : valore.trim();
     }
 
     private void renderTemplate(HttpServletResponse response,
                                 String templateName,
                                 Map<String, Object> data)
             throws ServletException, IOException {
-
         response.setContentType("text/html;charset=UTF-8");
-
         try {
             Template template = cfg.getTemplate(templateName);
             template.process(data, response.getWriter());
-
         } catch (Exception e) {
-            throw new ServletException("Errore nel caricamento del template " + templateName, e);
+            throw new ServletException("Errore nel template " + templateName, e);
         }
     }
 }

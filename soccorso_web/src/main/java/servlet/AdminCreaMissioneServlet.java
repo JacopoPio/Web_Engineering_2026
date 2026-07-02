@@ -5,47 +5,38 @@ import dao.DaoInterfaceMezzo;
 import dao.DaoInterfaceMissione;
 import dao.DaoInterfaceOperatore;
 import dao.DaoInterfaceRichiesta;
-import dao.DaoInterfaceSquadra;
-
 import dao.dao_impl.DaoInterfaceMaterialeImpl;
 import dao.dao_impl.DaoInterfaceMezzoImpl;
 import dao.dao_impl.DaoInterfaceMissioneImpl;
 import dao.dao_impl.DaoInterfaceOperatoreImpl;
 import dao.dao_impl.DaoInterfaceRichiestaImpl;
-import dao.dao_impl.DaoInterfaceSquadraImpl;
-
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
-
 import jakarta.persistence.EntityManager;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import jakarta_configuration.resources.JPAUtil;
-
-import model.Materiale;
-import model.Mezzo;
-import model.Missione;
-import model.Operatore;
-import model.Richiesta;
-import model.Squadra;
-
+import jakarta_configuration.resources.MailUtil;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import model.Materiale;
+import model.Mezzo;
+import model.Missione;
+import model.Operatore;
+import model.Richiesta;
+import model.StatoRichiesta;
 
 @WebServlet(
         name = "AdminCreaMissioneServlet",
@@ -53,937 +44,372 @@ import java.util.Set;
 )
 public class AdminCreaMissioneServlet extends HttpServlet {
 
-    /*
-     * Devono corrispondere esattamente ai valori
-     * ammessi dal vincolo chk_stato nel database.
-     */
-    private static final String STATO_ATTIVA = "attiva";
-    private static final String STATO_IN_CORSO = "in corso";
-
     private Configuration cfg;
 
     @Override
     public void init() throws ServletException {
-
-        cfg = new Configuration(
-                Configuration.VERSION_2_3_32
-        );
-
+        cfg = new Configuration(Configuration.VERSION_2_3_32);
         cfg.setClassLoaderForTemplateLoading(
-                Thread.currentThread()
-                        .getContextClassLoader(),
+                Thread.currentThread().getContextClassLoader(),
                 "/templates"
         );
-
         cfg.setDefaultEncoding("UTF-8");
-
-        cfg.setTemplateExceptionHandler(
-                TemplateExceptionHandler.HTML_DEBUG_HANDLER
-        );
-    }
-
-    private boolean isAdmin(
-            HttpServletRequest request
-    ) {
-
-        HttpSession session =
-                request.getSession(false);
-
-        if (session == null) {
-            return false;
-        }
-
-        String ruolo =
-                (String) session.getAttribute("ruolo");
-
-        return "ADMIN".equalsIgnoreCase(ruolo);
+        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
     }
 
     @Override
-    protected void doGet(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
         if (!isAdmin(request)) {
-
-            response.sendRedirect(
-                    request.getContextPath() + "/login"
-            );
-
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        String richiestaId =
-                normalizza(
-                        request.getParameter("richiestaId")
-                );
+        /*
+         * Il parametro si chiama ancora richiestaId per compatibilità
+         * con il template esistente, ma contiene l'email primaria.
+         */
+        String emailRichiesta = normalizza(request.getParameter("richiestaId"))
+                .toLowerCase();
 
-        if (richiestaId.isBlank()) {
-
-            response.sendRedirect(
-                    request.getContextPath()
-                    + "/admin/richieste"
-                    + "?errore=richiesta_non_valida"
-            );
-
+        if (emailRichiesta.isBlank()) {
+            redirectLista(request, response, "errore=richiesta_non_valida");
             return;
         }
 
-        EntityManager entityManager =
-                JPAUtil.getEntityManager();
-
+        EntityManager em = JPAUtil.getEntityManager();
         try {
+            DaoInterfaceRichiesta daoRichiesta = new DaoInterfaceRichiestaImpl(em);
+            DaoInterfaceMissione daoMissione = new DaoInterfaceMissioneImpl(em);
+            DaoInterfaceOperatore daoOperatore = new DaoInterfaceOperatoreImpl(em);
+            DaoInterfaceMezzo daoMezzo = new DaoInterfaceMezzoImpl(em);
+            DaoInterfaceMateriale daoMateriale = new DaoInterfaceMaterialeImpl(em);
 
-            DaoInterfaceRichiesta daoRichiesta =
-                    new DaoInterfaceRichiestaImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceMissione daoMissione =
-                    new DaoInterfaceMissioneImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceMezzo daoMezzo =
-                    new DaoInterfaceMezzoImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceMateriale daoMateriale =
-                    new DaoInterfaceMaterialeImpl(
-                            entityManager
-                    );
-
-            Richiesta richiesta =
-                    daoRichiesta.findByEmail(
-                            richiestaId
-                    );
-
+            Richiesta richiesta = daoRichiesta.findByEmail(emailRichiesta);
             if (richiesta == null) {
-
-                response.sendRedirect(
-                        request.getContextPath()
-                        + "/admin/richieste"
-                        + "?errore=richiesta_non_trovata"
-                );
-
+                redirectLista(request, response, "errore=richiesta_non_trovata");
+                return;
+            }
+            if (!StatoRichiesta.ATTIVA.equalsIgnoreCase(richiesta.getStato())) {
+                redirectLista(request, response, "errore=richiesta_non_attiva");
+                return;
+            }
+            if (daoMissione.existsByRichiesta(richiesta)) {
+                redirectLista(request, response, "errore=missione_esistente");
                 return;
             }
 
-            /*
-             * Il database salva lo stato come "attiva".
-             */
-            if (!STATO_ATTIVA.equalsIgnoreCase(
-                    String.valueOf(
-                            richiesta.getStato()
-                    ).trim()
-            )) {
+            List<Operatore> disponibili = daoOperatore.findDisponibili();
+            List<Operatore> capisquadra = new ArrayList<>();
+            List<Operatore> altriOperatori = new ArrayList<>();
 
-                response.sendRedirect(
-                        request.getContextPath()
-                        + "/admin/richieste"
-                        + "?errore=richiesta_non_attiva"
-                );
-
-                return;
-            }
-
-            if (daoMissione.existsByRichiesta(
-                    richiesta
-            )) {
-
-                response.sendRedirect(
-                        request.getContextPath()
-                        + "/admin/richieste"
-                        + "?errore=missione_esistente"
-                );
-
-                return;
-            }
-
-            List<Operatore> operatoriDisponibili =
-                    daoOperatore.findDisponibili();
-
-            List<Operatore> capisquadraDisponibili =
-                    new ArrayList<>();
-
-            for (Operatore operatore
-                    : operatoriDisponibili) {
-
-                if (operatore.isAttivo()
-                        && daoOperatore.isCaposquadra(
-                                operatore.getEmail()
-                        )) {
-
-                    capisquadraDisponibili.add(
-                            operatore
-                    );
+            for (Operatore operatore : disponibili) {
+                if (operatore == null || !operatore.isAttivo()) {
+                    continue;
+                }
+                if (daoOperatore.isCaposquadra(operatore.getEmail())) {
+                    capisquadra.add(operatore);
+                } else {
+                    altriOperatori.add(operatore);
                 }
             }
 
-            Map<String, Object> data =
-                    new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
+            data.put("contextPath", request.getContextPath());
+            data.put("richiestaId", richiesta.getEmail_segnalante());
+            data.put("emailSegnalante", richiesta.getEmail_segnalante());
+            data.put("richiestaStato", richiesta.getStato());
+            data.put("richiestaDescrizione", richiesta.getDescrizione());
+            data.put("richiestaPosizione", richiesta.getIndirizzo());
+            data.put("capisquadraDisponibili", capisquadra);
+            data.put("operatoriDisponibili", altriOperatori);
+            data.put("mezziDisponibili", daoMezzo.findDisponibili());
+            data.put("materialiDisponibili", daoMateriale.findDisponibili());
 
-            data.put(
-                    "contextPath",
-                    request.getContextPath()
-            );
-
-            data.put(
-                    "richiestaId",
-                    richiestaId
-            );
-
-            data.put(
-                    "emailSegnalante",
-                    richiestaId
-            );
-
-            data.put(
-                    "richiestaStato",
-                    richiesta.getStato()
-            );
-
-            data.put(
-                    "richiestaDescrizione",
-                    richiesta.getDescrizione()
-            );
-
-            data.put(
-                    "richiestaPosizione",
-                    richiesta.getIndirizzo()
-            );
-
-            data.put(
-                    "operatoriDisponibili",
-                    operatoriDisponibili
-            );
-
-            data.put(
-                    "capisquadraDisponibili",
-                    capisquadraDisponibili
-            );
-
-            data.put(
-                    "mezziDisponibili",
-                    daoMezzo.findDisponibili()
-            );
-
-            data.put(
-                    "materialiDisponibili",
-                    daoMateriale.findDisponibili()
-            );
-
-            String errore =
-                    normalizza(
-                            request.getParameter("errore")
-                    );
-
+            String errore = normalizza(request.getParameter("errore"));
             if (!errore.isBlank()) {
                 data.put("errore", errore);
             }
 
-            renderTemplate(
-                    response,
-                    "missione.ftl",
-                    data
-            );
-
-        } catch (RuntimeException e) {
-
-            throw new ServletException(
-                    "Errore nel caricamento "
-                    + "del form della missione",
-                    e
-            );
-
+            renderTemplate(response, "missione.ftl", data);
         } finally {
-
-            if (entityManager != null
-                    && entityManager.isOpen()) {
-
-                entityManager.close();
-            }
+            em.close();
         }
     }
 
     @Override
-    protected void doPost(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
         if (!isAdmin(request)) {
-
-            response.sendRedirect(
-                    request.getContextPath() + "/login"
-            );
-
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         request.setCharacterEncoding("UTF-8");
 
-        String richiestaId =
-                normalizza(
-                        request.getParameter("richiestaId")
-                );
+        String emailRichiesta = normalizza(request.getParameter("richiestaId"))
+                .toLowerCase();
+        String obiettivo = normalizza(request.getParameter("obiettivo"));
+        String posizione = normalizza(request.getParameter("posizione"));
+        String emailCaposquadra = normalizza(request.getParameter("caposquadra"))
+                .toLowerCase();
 
-        String obiettivo =
-                normalizza(
-                        request.getParameter("obiettivo")
-                );
-
-        String posizione =
-                normalizza(
-                        request.getParameter("posizione")
-                );
-
-        String emailCaposquadra =
-                normalizza(
-                        request.getParameter("caposquadra")
-                );
-
-        if (richiestaId.isBlank()
-                || obiettivo.isBlank()
-                || posizione.isBlank()) {
-
-            redirectErrore(
-                    request,
-                    response,
-                    richiestaId,
-                    "campi"
-            );
-
+        if (emailRichiesta.isBlank() || obiettivo.isBlank() || posizione.isBlank()) {
+            redirectForm(request, response, emailRichiesta, "campi");
             return;
         }
-
         if (emailCaposquadra.isBlank()) {
-
-            redirectErrore(
-                    request,
-                    response,
-                    richiestaId,
-                    "caposquadra"
-            );
-
+            redirectForm(request, response, emailRichiesta, "caposquadra");
             return;
         }
 
-        EntityManager entityManager =
-                JPAUtil.getEntityManager();
-
+        EntityManager em = JPAUtil.getEntityManager();
         try {
+            DaoInterfaceRichiesta daoRichiesta = new DaoInterfaceRichiestaImpl(em);
+            DaoInterfaceMissione daoMissione = new DaoInterfaceMissioneImpl(em);
+            DaoInterfaceOperatore daoOperatore = new DaoInterfaceOperatoreImpl(em);
+            DaoInterfaceMezzo daoMezzo = new DaoInterfaceMezzoImpl(em);
+            DaoInterfaceMateriale daoMateriale = new DaoInterfaceMaterialeImpl(em);
 
-            DaoInterfaceRichiesta daoRichiesta =
-                    new DaoInterfaceRichiestaImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceMissione daoMissione =
-                    new DaoInterfaceMissioneImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceOperatore daoOperatore =
-                    new DaoInterfaceOperatoreImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceMezzo daoMezzo =
-                    new DaoInterfaceMezzoImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceMateriale daoMateriale =
-                    new DaoInterfaceMaterialeImpl(
-                            entityManager
-                    );
-
-            DaoInterfaceSquadra daoSquadra =
-                    new DaoInterfaceSquadraImpl(
-                            entityManager
-                    );
-
-            Richiesta richiesta =
-                    daoRichiesta.findByEmail(
-                            richiestaId
-                    );
-
+            Richiesta richiesta = daoRichiesta.findByEmail(emailRichiesta);
             if (richiesta == null) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "richiesta_non_trovata"
-                );
-
+                redirectLista(request, response, "errore=richiesta_non_trovata");
+                return;
+            }
+            if (!StatoRichiesta.ATTIVA.equalsIgnoreCase(richiesta.getStato())) {
+                redirectForm(request, response, emailRichiesta, "richiesta_non_attiva");
+                return;
+            }
+            if (daoMissione.existsByRichiesta(richiesta)) {
+                redirectForm(request, response, emailRichiesta, "missione_esistente");
                 return;
             }
 
-            if (!STATO_ATTIVA.equalsIgnoreCase(
-                    String.valueOf(
-                            richiesta.getStato()
-                    ).trim()
-            )) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "richiesta_non_attiva"
-                );
-
-                return;
-            }
-
-            if (daoMissione.existsByRichiesta(
-                    richiesta
-            )) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "missione_esistente"
-                );
-
-                return;
-            }
-
-            Operatore caposquadra =
-                    daoOperatore.findByEmail(
-                            emailCaposquadra
-                    );
-
+            Operatore caposquadra = daoOperatore.findByEmail(emailCaposquadra);
             if (caposquadra == null) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "caposquadra_non_trovato"
-                );
-
+                redirectForm(request, response, emailRichiesta, "caposquadra_non_trovato");
                 return;
             }
-
             if (!caposquadra.isAttivo()) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "caposquadra_non_attivo"
-                );
-
+                redirectForm(request, response, emailRichiesta, "caposquadra_non_attivo");
+                return;
+            }
+            if (!daoOperatore.isCaposquadra(emailCaposquadra)) {
+                redirectForm(request, response, emailRichiesta, "operatore_non_caposquadra");
+                return;
+            }
+            if (!daoOperatore.isDisponibile(emailCaposquadra)) {
+                redirectForm(request, response, emailRichiesta, "caposquadra_occupato");
                 return;
             }
 
-            if (!daoOperatore.isDisponibile(
-                    emailCaposquadra
-            )) {
+            List<Operatore> operatori = new ArrayList<>();
+            operatori.add(caposquadra);
 
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "caposquadra_occupato"
-                );
-
-                return;
-            }
-
-            if (!daoOperatore.isCaposquadra(
-                    emailCaposquadra
-            )) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "operatore_non_caposquadra"
-                );
-
-                return;
-            }
-
-            List<Operatore> altriOperatori =
-                    costruisciListaOperatori(
-                            request,
-                            emailCaposquadra,
-                            daoOperatore
-                    );
-
-            if (altriOperatori == null) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "operatore_non_disponibile"
-                );
-
-                return;
-            }
-
-            List<Operatore> tuttiOperatori =
-                    new ArrayList<>();
-
-            tuttiOperatori.add(
-                    caposquadra
+            List<Operatore> altri = costruisciOperatori(
+                    request,
+                    emailCaposquadra,
+                    daoOperatore
             );
+            if (altri == null) {
+                redirectForm(request, response, emailRichiesta, "operatore_non_disponibile");
+                return;
+            }
+            operatori.addAll(altri);
 
-            tuttiOperatori.addAll(
-                    altriOperatori
-            );
-
-            List<Mezzo> mezzi =
-                    costruisciListaMezzi(
-                            request,
-                            daoMezzo
-                    );
-
+            List<Mezzo> mezzi = costruisciMezzi(request, daoMezzo);
             if (mezzi == null) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "mezzo_non_disponibile"
-                );
-
+                redirectForm(request, response, emailRichiesta, "mezzo_non_disponibile");
                 return;
             }
 
-            List<Materiale> materiali =
-                    costruisciListaMateriali(
-                            request,
-                            daoMateriale
-                    );
-
+            List<Materiale> materiali = costruisciMateriali(request, daoMateriale);
             if (materiali == null) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "materiale_non_disponibile"
-                );
-
+                redirectForm(request, response, emailRichiesta, "materiale_non_disponibile");
                 return;
             }
 
-            /*
-             * 1. Crea e salva la squadra.
-             */
-            Squadra nuovaSquadra =
-                    new Squadra();
-
-            nuovaSquadra.setNome(
-                    "Squadra - " + obiettivo
-            );
-
-            Squadra squadraSalvata =
-                    daoSquadra.save(
-                            nuovaSquadra
-                    );
-
-            if (squadraSalvata == null
-                    || squadraSalvata.getId() == null
-                    || squadraSalvata.getId() <= 0) {
-
-                redirectErrore(
-                        request,
-                        response,
-                        richiestaId,
-                        "squadra_non_salvata"
-                );
-
-                return;
-            }
-
-            System.out.println(
-                    "Squadra salvata con ID: "
-                    + squadraSalvata.getId()
-            );
-
-            /*
-             * 2. Assegna la nuova squadra
-             * agli operatori.
-             */
-            for (Operatore operatore
-                    : tuttiOperatori) {
-
-                operatore.setSquadra(
-                        squadraSalvata
-                );
-
-                daoOperatore.update(
-                        operatore
-                );
-            }
-
-            /*
-             * 3. Crea e salva la missione.
-             */
-            Missione missione =
-                    new Missione();
-
-            missione.setRichiesta(
-                    richiesta
-            );
-
-            missione.setDescrizione(
-                    obiettivo
-                    + " - "
-                    + posizione
-            );
-
-            missione.setMezzi(
-                    mezzi
-            );
-
-            missione.setMateriali(
+            Missione missione = daoMissione.creaMissioneCompleta(
+                    richiesta,
+                    "Squadra - " + obiettivo,
+                    obiettivo,
+                    posizione,
+                    operatori,
+                    mezzi,
                     materiali
             );
 
-            missione.setSquadra(
-                    squadraSalvata
+            MailUtil.inviaNotificaRichiestaAccettata(
+                    richiesta.getEmail_segnalante(),
+                    richiesta.getNome_segnalante(),
+                    missione.getDescrizione()
             );
 
-            /*
-             * Salva nello storico gli operatori che partecipano
-             * alla missione. Missione è il lato proprietario
-             * della relazione ManyToMany missione_operatore.
-             */
-            missione.setOperatori(
-                    new ArrayList<>(tuttiOperatori)
-            );
-
-            Missione missioneSalvata =
-                    daoMissione.save(
-                            missione
-                    );
-
-            if (missioneSalvata == null
-                    || missioneSalvata.getId() == null
-                    || missioneSalvata.getId() <= 0) {
-
-                throw new IllegalStateException(
-                        "La missione non è stata salvata"
+            for (Operatore operatore : missione.getOperatori()) {
+                MailUtil.inviaNotificaNuovaMissione(
+                        operatore.getEmail(),
+                        operatore.getNome(),
+                        missione.getDescrizione(),
+                        missione.getPosizione()
                 );
             }
-
-            /*
-             * Aggiorna il lato inverso in memoria.
-             */
-            squadraSalvata.setMissione(
-                    missioneSalvata
-            );
-
-            /*
-             * 4. Il valore deve essere esattamente:
-             *
-             * "in corso"
-             *
-             * perché è quello ammesso dal vincolo
-             * chk_stato della tabella richiesta.
-             */
-            daoRichiesta.updateStato(
-                    richiestaId,
-                    STATO_IN_CORSO
-            );
 
             response.sendRedirect(
-                    request.getContextPath()
-                    + "/admin/missioni"
-                    + "?successo=creata"
+                    request.getContextPath() + "/admin/missioni?successo=creata"
             );
 
-        } catch (RuntimeException e) {
-
-            throw new ServletException(
-                    "Errore durante la creazione "
-                    + "della missione",
-                    e
-            );
-
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            redirectForm(request, response, emailRichiesta, "creazione_fallita");
         } finally {
-
-            if (entityManager != null
-                    && entityManager.isOpen()) {
-
-                entityManager.close();
-            }
+            em.close();
         }
     }
 
-    private List<Operatore> costruisciListaOperatori(
+    private List<Operatore> costruisciOperatori(
             HttpServletRequest request,
             String emailCaposquadra,
-            DaoInterfaceOperatore daoOperatore
-    ) {
+            DaoInterfaceOperatore dao) {
 
-        List<Operatore> risultato =
-                new ArrayList<>();
-
-        Set<String> emailInserite =
-                new LinkedHashSet<>();
-
-        String[] valori =
-                request.getParameterValues(
-                        "operatori"
-                );
+        List<Operatore> risultato = new ArrayList<>();
+        Set<String> emailInserite = new LinkedHashSet<>();
+        String[] valori = request.getParameterValues("operatori");
 
         if (valori == null) {
             return risultato;
         }
 
         for (String valore : valori) {
-
-            String email =
-                    normalizza(valore);
-
-            if (email.isBlank()) {
+            String email = normalizza(valore).toLowerCase();
+            if (email.isBlank() || email.equals(emailCaposquadra)) {
+                continue;
+            }
+            if (!emailInserite.add(email)) {
                 continue;
             }
 
-            /*
-             * Evita di aggiungere nuovamente
-             * il caposquadra.
-             */
-            if (email.equalsIgnoreCase(
-                    emailCaposquadra
-            )) {
-                continue;
-            }
-
-            String emailConfronto =
-                    email.toLowerCase();
-
-            if (!emailInserite.add(
-                    emailConfronto
-            )) {
-                continue;
-            }
-
-            Operatore operatore =
-                    daoOperatore.findByEmail(
-                            email
-                    );
-
+            Operatore operatore = dao.findByEmail(email);
             if (operatore == null
                     || !operatore.isAttivo()
-                    || !daoOperatore.isDisponibile(
-                            email
-                    )) {
-
+                    || !dao.isDisponibile(email)) {
                 return null;
             }
-
-            risultato.add(
-                    operatore
-            );
+            risultato.add(operatore);
         }
-
         return risultato;
     }
 
-    private List<Mezzo> costruisciListaMezzi(
+    private List<Mezzo> costruisciMezzi(
             HttpServletRequest request,
-            DaoInterfaceMezzo daoMezzo
-    ) {
+            DaoInterfaceMezzo dao) {
 
-        List<Mezzo> risultato =
-                new ArrayList<>();
-
-        Set<String> targheInserite =
-                new LinkedHashSet<>();
-
-        String[] valori =
-                request.getParameterValues(
-                        "mezzi"
-                );
+        List<Mezzo> risultato = new ArrayList<>();
+        Set<String> targhe = new LinkedHashSet<>();
+        String[] valori = request.getParameterValues("mezzi");
 
         if (valori == null) {
             return risultato;
         }
 
         for (String valore : valori) {
-
-            String targa =
-                    normalizza(valore);
-
-            if (targa.isBlank()) {
+            String targa = normalizza(valore).toUpperCase();
+            if (targa.isBlank() || !targhe.add(targa)) {
                 continue;
             }
-
-            if (!targheInserite.add(targa)) {
-                continue;
-            }
-
-            Mezzo mezzo =
-                    daoMezzo.findByTarga(
-                            targa
-                    );
-
-            if (mezzo == null
-                    || !daoMezzo.isDisponibile(
-                            targa
-                    )) {
-
+            Mezzo mezzo = dao.findByTarga(targa);
+            if (mezzo == null || !dao.isDisponibile(targa)) {
                 return null;
             }
-
-            risultato.add(
-                    mezzo
-            );
+            risultato.add(mezzo);
         }
-
         return risultato;
     }
 
-    private List<Materiale> costruisciListaMateriali(
+    private List<Materiale> costruisciMateriali(
             HttpServletRequest request,
-            DaoInterfaceMateriale daoMateriale
-    ) {
+            DaoInterfaceMateriale dao) {
 
-        List<Materiale> risultato =
-                new ArrayList<>();
-
-        Set<Long> idInseriti =
-                new LinkedHashSet<>();
-
-        String[] valori =
-                request.getParameterValues(
-                        "materiali"
-                );
+        List<Materiale> risultato = new ArrayList<>();
+        Set<Long> ids = new LinkedHashSet<>();
+        String[] valori = request.getParameterValues("materiali");
 
         if (valori == null) {
             return risultato;
         }
 
         for (String valore : valori) {
-
-            String idTesto =
-                    normalizza(valore);
-
-            if (idTesto.isBlank()) {
-                continue;
-            }
-
             Long id;
-
             try {
-
-                id = Long.valueOf(
-                        idTesto
-                );
-
+                id = Long.valueOf(normalizza(valore));
             } catch (NumberFormatException e) {
-
                 return null;
             }
 
-            if (!idInseriti.add(id)) {
+            if (!ids.add(id)) {
                 continue;
             }
 
-            Materiale materiale =
-                    daoMateriale.findById(
-                            id
-                    );
-
-            if (materiale == null
-                    || !daoMateriale.isDisponibile(
-                            id
-                    )) {
-
+            Materiale materiale = dao.findById(id);
+            if (materiale == null || !dao.isDisponibile(id)) {
                 return null;
             }
-
-            risultato.add(
-                    materiale
-            );
+            risultato.add(materiale);
         }
-
         return risultato;
     }
 
-    private void redirectErrore(
+    private boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        return session != null && "ADMIN".equals(session.getAttribute("ruolo"));
+    }
+
+    private void redirectLista(
             HttpServletRequest request,
             HttpServletResponse response,
-            String richiestaId,
-            String errore
-    ) throws IOException {
-
-        String richiestaCodificata =
-                URLEncoder.encode(
-                        richiestaId,
-                        StandardCharsets.UTF_8
-                );
-
-        String erroreCodificato =
-                URLEncoder.encode(
-                        errore,
-                        StandardCharsets.UTF_8
-                );
-
+            String query) throws IOException {
         response.sendRedirect(
-                request.getContextPath()
-                + "/admin/missioni/nuova"
-                + "?richiestaId="
-                + richiestaCodificata
-                + "&errore="
-                + erroreCodificato
+                request.getContextPath() + "/admin/richieste?" + query
         );
     }
 
-    private String normalizza(
-            String valore
-    ) {
+    private void redirectForm(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            String email,
+            String errore) throws IOException {
 
-        return valore == null
-                ? ""
-                : valore.trim();
+        if (email == null || email.isBlank()) {
+            redirectLista(request, response, "errore=" + errore);
+            return;
+        }
+
+        response.sendRedirect(
+                request.getContextPath()
+                + "/admin/missioni/nuova?richiestaId="
+                + URLEncoder.encode(email, StandardCharsets.UTF_8)
+                + "&errore="
+                + URLEncoder.encode(errore, StandardCharsets.UTF_8)
+        );
+    }
+
+    private String normalizza(String valore) {
+        return valore == null ? "" : valore.trim();
     }
 
     private void renderTemplate(
             HttpServletResponse response,
             String templateName,
-            Map<String, Object> data
-    ) throws ServletException, IOException {
+            Map<String, Object> data)
+            throws ServletException, IOException {
 
-        response.setContentType(
-                "text/html;charset=UTF-8"
-        );
-
+        response.setContentType("text/html;charset=UTF-8");
         try {
-
-            Template template =
-                    cfg.getTemplate(
-                            templateName
-                    );
-
-            template.process(
-                    data,
-                    response.getWriter()
-            );
-
+            Template template = cfg.getTemplate(templateName);
+            template.process(data, response.getWriter());
         } catch (Exception e) {
-
             throw new ServletException(
-                    "Errore nel caricamento "
-                    + "del template "
-                    + templateName,
+                    "Errore nel template " + templateName,
                     e
             );
         }

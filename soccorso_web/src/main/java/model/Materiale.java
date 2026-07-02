@@ -19,12 +19,12 @@ public class Materiale implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
-    private Long id;
+    private int id;
 
-    @Column(name = "tipo", nullable = false, length = 100)
+    @Column(name = "tipo", length = 255)
     private String tipo;
 
-    @Column(name = "descrizione", nullable = false, length = 500)
+    @Column(name = "descrizione", length = 255)
     private String descrizione;
 
     @ManyToMany(mappedBy = "materiali")
@@ -33,16 +33,17 @@ public class Materiale implements Serializable {
     public Materiale() {
     }
 
-    public Materiale(String tipo, String descrizione) {
+    public Materiale(int id, String tipo, String descrizione) {
+        this.id = id;
         this.tipo = tipo;
         this.descrizione = descrizione;
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -67,12 +68,12 @@ public class Materiale implements Serializable {
     }
 
     public void setMissioni(List<Missione> missioni) {
-        this.missioni = missioni;
+        this.missioni = missioni == null ? new ArrayList<>() : missioni;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hash(id);
     }
 
     @Override
@@ -80,9 +81,10 @@ public class Materiale implements Serializable {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Materiale other)) {
+        if (!(obj instanceof Materiale)) {
             return false;
         }
-        return id != null && id.equals(other.id);
+        Materiale other = (Materiale) obj;
+        return id != 0 && id == other.id;
     }
 }
