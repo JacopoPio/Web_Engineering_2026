@@ -1,34 +1,127 @@
 package jakarta_configuration.resources;
 
-import jakarta.mail.*;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 
-public class MailUtil {
+public final class MailUtil {
 
-    // Configura qui i dati del tuo server SMTP (o caricali da un file di properties)
-   // Sostituisci la parte alta della tua classe MailUtil con questi dati precisi:
-private static final String SMTP_HOST = "sandbox.smtp.mailtrap.io"; 
-private static final String SMTP_PORT = "2525"; // La porta 2525 è perfetta
-private static final String SMTP_USER = "19b8e6b29128f7"; 
-private static final String SMTP_PASSWORD = "4f2f02b562f35c"; // Clicca sull'occhio o copia il valore che finisce con 'f35c' 
+    private static final String SMTP_HOST = env("SOCCORSOWEB_SMTP_HOST", "sandbox.smtp.mailtrap.io");
+    private static final String SMTP_PORT = env("SOCCORSOWEB_SMTP_PORT", "2525");
+    private static final String SMTP_USER = env("SOCCORSOWEB_SMTP_USER", "");
+    private static final String SMTP_PASSWORD = env("SOCCORSOWEB_SMTP_PASSWORD", "");
+    private static final String SMTP_FROM = env("SOCCORSOWEB_SMTP_FROM", "noreply@soccorsoweb.local");
+
+    private MailUtil() {
+    }
 
     public static void inviaCredenziali(String destinatario,
                                         String nome,
                                         String username,
                                         String passwordTemporanea,
                                         String ruolo) {
+        String testo = "Ciao " + nome + ",\n\n"
+                + "Il tuo account SoccorsoWeb è stato creato.\n\n"
+                + "Ruolo: " + ruolo + "\n"
+                + "Username/Email: " + username + "\n"
+                + "Password temporanea: " + passwordTemporanea + "\n\n"
+                + "Accedi e modifica la password appena possibile.\n\n"
+                + "SoccorsoWeb";
 
-        // 1. Configurazione delle proprietà di rete per la connessione SMTP
+        invia(destinatario, "Credenziali di accesso - SoccorsoWeb", testo);
+    }
+
+    public static void inviaConfermaRichiesta(String destinatario,
+                                              String nomeSegnalante,
+                                              String linkConferma) {
+        String testo = "Ciao " + nomeSegnalante + ",\n\n"
+                + "abbiamo ricevuto la tua richiesta di soccorso.\n"
+                + "Per renderla attiva apri il seguente collegamento:\n\n"
+                + linkConferma + "\n\n"
+                + "Il collegamento scade dopo 24 ore.\n\n"
+                + "SoccorsoWeb";
+
+        invia(destinatario, "Conferma la richiesta - SoccorsoWeb", testo);
+    }
+
+    public static void inviaNotificaRichiestaAccettata(String destinatario,
+                                                       String nomeSegnalante,
+                                                       String descrizioneMissione) {
+        String testo = "Ciao " + nomeSegnalante + ",\n\n"
+                + "la tua richiesta è stata accettata ed è stata creata una missione.\n\n"
+                + "Obiettivo: " + descrizioneMissione + "\n\n"
+                + "SoccorsoWeb";
+
+        invia(destinatario, "Richiesta accettata - SoccorsoWeb", testo);
+    }
+
+    public static void inviaNotificaNuovaMissione(String destinatario,
+                                                  String nomeOperatore,
+                                                  String descrizioneMissione,
+                                                  String posizione) {
+        String testo = "Ciao " + nomeOperatore + ",\n\n"
+                + "sei stato assegnato a una nuova missione.\n\n"
+                + "Obiettivo: " + descrizioneMissione + "\n"
+                + "Posizione: " + posizione + "\n\n"
+                + "Accedi all'area operatore per consultare i dettagli.\n\n"
+                + "SoccorsoWeb";
+
+        invia(destinatario, "Nuova missione assegnata - SoccorsoWeb", testo);
+    }
+
+    public static void inviaNotificaAggiornamento(String destinatario,
+                                                  String nomeOperatore,
+                                                  String descrizioneMissione,
+                                                  String testoAggiornamento) {
+        String testo = "Ciao " + nomeOperatore + ",\n\n"
+                + "è stato inserito un aggiornamento per la missione:\n"
+                + descrizioneMissione + "\n\n"
+                + "Aggiornamento:\n" + testoAggiornamento + "\n\n"
+                + "SoccorsoWeb";
+
+        invia(destinatario, "Nuovo aggiornamento missione - SoccorsoWeb", testo);
+    }
+
+    public static void inviaNotificaMissioneChiusa(String destinatario,
+                                                   String nomeOperatore,
+                                                   String descrizioneMissione,
+                                                   int successo,
+                                                   String commentoFinale) {
+        String testo = "Ciao " + nomeOperatore + ",\n\n"
+                + "la missione è stata conclusa.\n\n"
+                + "Missione: " + descrizioneMissione + "\n"
+                + "Successo: " + successo + "/5\n"
+                + "Commento finale: "
+                + (commentoFinale == null || commentoFinale.isBlank()
+                        ? "Nessun commento"
+                        : commentoFinale)
+                + "\n\nSoccorsoWeb";
+
+        invia(destinatario, "Missione conclusa - SoccorsoWeb", testo);
+    }
+
+    private static void invia(String destinatario, String oggetto, String testo) {
+        if (destinatario == null || destinatario.isBlank()) {
+            return;
+        }
+        if (SMTP_USER.isBlank() || SMTP_PASSWORD.isBlank()) {
+            System.err.println("Email non inviata: configurare SOCCORSOWEB_SMTP_USER e SOCCORSOWEB_SMTP_PASSWORD");
+            return;
+        }
+
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true"); // Obbligatorio per canali cifrati sicuri
+        props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.host", SMTP_HOST);
         props.put("mail.smtp.port", SMTP_PORT);
         props.put("mail.smtp.ssl.trust", SMTP_HOST);
 
-        // 2. Creazione della Sessione con autenticazione protetta
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -37,110 +130,19 @@ private static final String SMTP_PASSWORD = "4f2f02b562f35c"; // Clicca sull'occ
         });
 
         try {
-            // 3. Creazione e composizione del messaggio email
             Message message = new MimeMessage(session);
-            
-            // Imposta il mittente (l'email configurata sopra)
-            message.setFrom(new InternetAddress(SMTP_USER));
-            
-            // Imposta il destinatario reale
+            message.setFrom(new InternetAddress(SMTP_FROM));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
-            
-            // Oggetto dell'email
-            message.setSubject("Credenziali di Accesso - SoccorsoWeb");
-
-            // Corpo del testo (Formattato)
-            String testoEmail = "Ciao " + nome + ",\n\n"
-                    + "Il tuo account per SoccorsoWeb è stato creato con successo dall'amministratore.\n"
-                    + "Di seguito trovi i tuoi dati di accesso temporanei:\n\n"
-                    + "Ruolo operativo: " + ruolo + "\n"
-                    + "Username/Email: " + username + "\n"
-                    + "Password Temporanea: " + passwordTemporanea + "\n\n"
-                    + "Nota: Ti consigliamo caldamente di modificare questa password al tuo primo login.\n\n"
-                    + "Cordiali saluti,\nIl Team di SoccorsoWeb";
-
-            message.setText(testoEmail);
-
-            // 4. Invio fisico dell'email attraverso la rete
+            message.setSubject(oggetto);
+            message.setText(testo);
             Transport.send(message);
-
-            System.out.println(" Email inviata con successo a: " + destinatario);
-
         } catch (MessagingException e) {
-            System.err.println("Errore critico durante l'invio dell'email: " + e.getMessage());
-            e.printStackTrace();
-            // Opzionale: puoi rilanciare un'eccezione personalizzata per catturarla nel Servlet
+            System.err.println("Errore invio email a " + destinatario + ": " + e.getMessage());
         }
     }
-    public static void inviaNotificaAggiornamento(
-        String destinatario,
-        String nomeOperatore,
-        String descrizioneMissione,
-        String testoAggiornamento) 
- {
 
-    Properties props = new Properties();
-    props.put("mail.smtp.auth", "true");
-    props.put("mail.smtp.starttls.enable", "true");
-    props.put("mail.smtp.host", SMTP_HOST);
-    props.put("mail.smtp.port", SMTP_PORT);
-    props.put("mail.smtp.ssl.trust", SMTP_HOST);
-
-    Session session = Session.getInstance(
-            props,
-            new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(
-                            SMTP_USER,
-                            SMTP_PASSWORD
-                    );
-                }
-            }
-    );
-
-    try {
-
-        Message message = new MimeMessage(session);
-
-        message.setFrom(
-                new InternetAddress(SMTP_USER)
-        );
-
-        message.setRecipients(
-                Message.RecipientType.TO,
-                InternetAddress.parse(destinatario)
-        );
-
-        message.setSubject(
-                "Nuovo aggiornamento missione - SoccorsoWeb"
-        );
-
-        String testoEmail =
-                "Ciao " + nomeOperatore + ",\n\n"
-                + "È stato inserito un nuovo aggiornamento "
-                + "per la missione a cui sei assegnato:\n\n"
-                + "Missione: " + descrizioneMissione + "\n\n"
-                + "Aggiornamento:\n" + testoAggiornamento + "\n\n"
-                + "Cordiali saluti,\nIl Team di SoccorsoWeb";
-
-        message.setText(testoEmail);
-
-        Transport.send(message);
-
-        System.out.println(
-                "Notifica aggiornamento inviata a: "
-                + destinatario
-        );
-
-    } catch (MessagingException e) {
-
-        System.err.println(
-                "Errore invio notifica aggiornamento: "
-                + e.getMessage()
-        );
-
-        e.printStackTrace();
+    private static String env(String nome, String valoreDefault) {
+        String valore = System.getenv(nome);
+        return valore == null || valore.isBlank() ? valoreDefault : valore.trim();
     }
-}
 }

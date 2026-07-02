@@ -1,73 +1,78 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
-import jakarta.persistence.*;
-import java.util.*;
 
-/**
- *
- * @author Jacopo Antonio
- */
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 @Entity
 @Table(name = "materiale")
-public class Materiale {
-    
+public class Materiale implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "ID")
+    private Long id;
+
+    @Column(name = "tipo", nullable = false, length = 100)
     private String tipo;
+
+    @Column(name = "descrizione", nullable = false, length = 500)
     private String descrizione;
-    
-    public Materiale()
-    {
-        super();
+
+    @ManyToMany(mappedBy = "materiali")
+    private List<Missione> missioni = new ArrayList<>();
+
+    public Materiale() {
     }
-    public Materiale(int id, String tipo, String descrizione) {
-        this.id = id;
+
+    public Materiale(String tipo, String descrizione) {
         this.tipo = tipo;
         this.descrizione = descrizione;
     }
-    @ManyToMany(mappedBy = "materiali")
-    private List<Missione> missioni = new ArrayList<>();
-    public int getId() {
-        return this.id;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTipo() {
-        return this.tipo;
-    }
-
-    public List<Missione> getMissioni() {
-        return this.missioni;
-    }
-
-    public void setMissioni(List<Missione> missioni) {
-        this.missioni = missioni;
-    }
-
-    public String getDescrizione() {
-        return this.descrizione;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+        return tipo;
     }
 
     public void setTipo(String tipo) {
         this.tipo = tipo;
     }
 
+    public String getDescrizione() {
+        return descrizione;
+    }
+
     public void setDescrizione(String descrizione) {
         this.descrizione = descrizione;
     }
 
+    public List<Missione> getMissioni() {
+        return missioni;
+    }
+
+    public void setMissioni(List<Missione> missioni) {
+        this.missioni = missioni;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 97 * hash + this.id;
-        return hash;
+        return Objects.hashCode(id);
     }
 
     @Override
@@ -75,15 +80,9 @@ public class Materiale {
         if (this == obj) {
             return true;
         }
-        if (obj == null || !(obj instanceof Materiale)) {
+        if (!(obj instanceof Materiale other)) {
             return false;
         }
-        Materiale other = (Materiale) obj;
-        return this.id == other.id;
-    }
-    @Override
-    public String toString()
-    {
-        return "Tipo: " + this.tipo + " Descrizione: " + this.descrizione;
+        return id != null && id.equals(other.id);
     }
 }
