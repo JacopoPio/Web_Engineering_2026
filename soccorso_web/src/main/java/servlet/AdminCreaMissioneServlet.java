@@ -139,6 +139,7 @@ public class AdminCreaMissioneServlet extends HttpServlet {
     }
 
     @Override
+    @SuppressWarnings("empty-statement")
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -247,13 +248,19 @@ public class AdminCreaMissioneServlet extends HttpServlet {
                     missione.getDescrizione()
             );
 
-            for (Operatore operatore : missione.getOperatori()) {
+       for (Operatore operatore : missione.getOperatori()) {
                 MailUtil.inviaNotificaNuovaMissione(
                         operatore.getEmail(),
                         operatore.getNome(),
                         missione.getDescrizione(),
                         missione.getPosizione()
                 );
+
+                try {
+                    Thread.sleep(1500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
 
             response.sendRedirect(
