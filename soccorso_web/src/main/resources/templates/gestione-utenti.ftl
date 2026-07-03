@@ -353,11 +353,6 @@
     <section class="pannello">
         <div class="intestazione-pannello">
             <h2>Amministratori</h2>
-
-            <input type="search"
-                   class="ricerca"
-                   placeholder="Cerca amministratore..."
-                   oninput="filtraTabella('tabella-amministratori', this.value)">
         </div>
 
         <#if amministratori?? && amministratori?has_content>
@@ -442,11 +437,6 @@
     <section class="pannello">
         <div class="intestazione-pannello">
             <h2>Operatori</h2>
-
-            <input type="search"
-                   class="ricerca"
-                   placeholder="Cerca operatore..."
-                   oninput="filtraTabella('tabella-operatori', this.value)">
         </div>
 
         <#if operatori?? && operatori?has_content>
