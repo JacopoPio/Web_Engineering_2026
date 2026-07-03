@@ -7,6 +7,7 @@ import jakarta.persistence.NoResultException;
 import java.time.LocalDateTime;
 import java.util.List;
 import model.Richiesta;
+import model.StatoRichiesta;
 
 public class DaoInterfaceRichiestaImpl implements DaoInterfaceRichiesta {
 
@@ -35,11 +36,7 @@ public class DaoInterfaceRichiestaImpl implements DaoInterfaceRichiesta {
         try {
             tx.begin();
 
-            /*
-             * Con email_segnalante come PK usiamo persist():
-             * una seconda richiesta con la stessa email non deve
-             * sovrascrivere quella già presente.
-             */
+           
             entityManager.persist(richiesta);
             entityManager.flush();
 
@@ -203,6 +200,56 @@ public class DaoInterfaceRichiestaImpl implements DaoInterfaceRichiesta {
             if (tx.isActive()) {
                 tx.rollback();
             }
+            throw e;
+        }
+    }
+    @Override
+public void archivia(String email) {
+
+    if (email == null || email.isBlank()) {
+        throw new IllegalArgumentException(
+                "Email della richiesta non valida"
+        );
+    }
+
+    EntityTransaction transaction =
+            entityManager.getTransaction();
+
+    try {
+        transaction.begin();
+
+        Richiesta richiesta =
+                entityManager.find(
+                        Richiesta.class,
+                        email.trim().toLowerCase()
+                );
+
+        if (richiesta == null) {
+            throw new IllegalArgumentException(
+                    "Richiesta non trovata"
+            );
+        }
+
+        if (!StatoRichiesta.CHIUSA.equalsIgnoreCase(
+                richiesta.getStato()
+        )) {
+            throw new IllegalStateException(
+                    "È possibile archiviare soltanto richieste chiuse"
+            );
+        }
+
+        richiesta.setArchiviata(true);
+
+        entityManager.merge(richiesta);
+
+        transaction.commit();
+
+        } catch (RuntimeException e) {
+
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+
             throw e;
         }
     }

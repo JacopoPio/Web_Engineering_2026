@@ -11,7 +11,9 @@ public interface DaoInterfaceRichiesta {
     List<Richiesta> findAll();
 
     Richiesta findByEmail(String emailSegnalante);
-
+ 
+    void archivia(String email);
+    
     Richiesta findByToken(String token);
 
     List<Richiesta> findByStato(String stato);

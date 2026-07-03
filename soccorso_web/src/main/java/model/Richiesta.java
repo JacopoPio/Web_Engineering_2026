@@ -13,13 +13,12 @@ import java.util.Objects;
 @Table(name = "richiesta")
 public class Richiesta implements Serializable {
 
-    /*
-     * Scelta progettuale mantenuta: l'email del segnalante
-     * continua a essere la chiave primaria della richiesta.
-     */
     @Id
     @Column(name = "email_segnalante", nullable = false, length = 50)
     private String email_segnalante;
+    
+    @Column(name = "archiviata", nullable = false)
+    private boolean archiviata = false;
 
     @Column(name = "nome_segnalante", length = 255)
     private String nome_segnalante;
@@ -146,6 +145,13 @@ public class Richiesta implements Serializable {
 
     public void setDataConferma(LocalDateTime dataConferma) {
         this.dataConferma = dataConferma;
+    }
+    public boolean isArchiviata() {
+    return archiviata;
+    }
+
+    public void setArchiviata(boolean archiviata) {
+    this.archiviata = archiviata;
     }
 
     @Override
