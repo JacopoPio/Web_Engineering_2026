@@ -190,14 +190,6 @@
             </p>
         </div>
 
-        <div class="servizio-card">
-            <h3>Contatto con il segnalante</h3>
-            <p>
-                L'email inserita nel modulo consente all'amministratore
-                di ricontattare il segnalante in caso di necessità.
-            </p>
-        </div>
-
     </div>
 
     <div class="btn-area">

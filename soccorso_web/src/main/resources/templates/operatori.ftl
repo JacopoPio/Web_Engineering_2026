@@ -47,7 +47,7 @@
 <nav>
     <a href="${contextPath}/operatori">Dashboard e missioni</a>
     <a href="${contextPath}/logout">Logout</a>
-    <a href=${contextPath}/cambio-password>Cambia Password</a>
+    <a href=${contextPath}/cambia-password>Cambia Password</a>
 </nav>
 <main>
     <#if successo??>
